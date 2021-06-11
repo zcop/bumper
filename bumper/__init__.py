@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from typing import Optional
 
 from bumper.confserver import ConfServer
 from bumper.mqttserver import MQTTServer, MQTTHelperBot
@@ -60,11 +61,11 @@ token_validity_seconds = 3600  # 1 hour
 oauth_validity_days = 15
 db = None
 
-mqtt_server = None
-mqtt_helperbot = None
-conf_server = None
-conf_server_2 = None
-xmpp_server = None
+mqtt_server: Optional[MQTTServer] = None
+mqtt_helperbot: Optional[MQTTHelperBot] = None
+conf_server: Optional[ConfServer] = None
+conf_server_2: Optional[ConfServer] = None
+xmpp_server: Optional[XMPPServer] = None
 
 # Plugins
 sys.path.append(os.path.join(bumper_dir, "bumper", "plugins"))

@@ -22,8 +22,7 @@ mqttserverlog = logging.getLogger("mqttserver")
 class MQTTHelperBot:
 
     Client = None
-    wait_resp_timeout_seconds = 10
-    expire_msg_seconds = 10
+    wait_resp_timeout_seconds = 60
 
     def __init__(self, address):
         self.address = address
@@ -150,7 +149,7 @@ class MQTTServer:
 
         mqttserverlog.info(
             "Starting MQTT Server at {}:{}".format(self.address[0], self.address[1])
-        )        
+        )
 
         try:
             await self.broker.start()
@@ -177,9 +176,9 @@ class MQTTServer:
             allow_anon = False
 
             for key, value in kwargs.items():
-                if key == "password_file":            
+                if key == "password_file":
                     passwd_file = kwargs["password_file"]
-                
+
                 elif key == "allow_anonymous":
                     allow_anon = kwargs["allow_anonymous"] # Set to True to allow anonymous authentication
 
@@ -204,7 +203,7 @@ class MQTTServer:
                 },
                 "sys_interval": 0,
                 "auth": {
-                    "allow-anonymous": allow_anon, 
+                    "allow-anonymous": allow_anon,
                     "password-file": passwd_file,
                     "plugins": ["bumper"],  # Bumper plugin provides auth and handling of bots/clients connecting
                 },
@@ -234,7 +233,7 @@ class BumperMQTTServer_Plugin:
 
     async def authenticate(self, *args, **kwargs):
         authenticated = False
-        
+
         try:
             session = kwargs.get("session", None)
             username = session.username
@@ -254,7 +253,7 @@ class BumperMQTTServer_Plugin:
                         tmpbotdetail[1],
                         "eco-ng",
                     )
-                    mqttserverlog.info(f"Bumper Authentication Success - Bot - SN: {username} - DID: {didsplit[0]} - Class: {tmpbotdetail[0]}")                    
+                    mqttserverlog.info(f"Bumper Authentication Success - Bot - SN: {username} - DID: {didsplit[0]} - Class: {tmpbotdetail[0]}")
                     authenticated = True
 
                 else:
@@ -302,7 +301,7 @@ class BumperMQTTServer_Plugin:
         # Check for allow anonymous
         allow_anonymous = self.auth_config.get(
             "allow-anonymous", True
-        )  
+        )
         if allow_anonymous and not authenticated: # If anonymous auth is allowed and it isn't already authenticated
             authenticated = True
             self.context.logger.debug(f"Anonymous Authentication Success: config allows anonymous - Username: {username}")
@@ -344,7 +343,7 @@ class BumperMQTTServer_Plugin:
 
     async def on_broker_message_received(self, client_id, message):
         self.handle_helperbot_msg(client_id, message)
-        
+
     def handle_helperbot_msg(self, client_id, message):
 
             if str(message.topic).split("/")[6] == "helperbot":
@@ -394,7 +393,7 @@ class BumperMQTTServer_Plugin:
             for msg in bumper.mqtt_helperbot.command_responses:
                 expire_time = (
                     datetime.fromtimestamp(msg["time"])
-                    + timedelta(seconds=bumper.mqtt_helperbot.expire_msg_seconds)
+                    + timedelta(seconds=MQTTHelperBot.wait_resp_timeout_seconds)
                 ).timestamp()
                 if time.time() > expire_time:
                     helperbotlog.debug(
