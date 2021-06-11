@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
+import asyncio
+import importlib
+import pkgutil
+import socket
+import sys
+from logging.handlers import RotatingFileHandler
 from typing import Optional
 
 from bumper.confserver import ConfServer
+from bumper.db import *
+from bumper.models import *
 from bumper.mqttserver import MQTTServer, MQTTHelperBot
 from bumper.xmppserver import XMPPServer
-from bumper.models import *
-from bumper.db import *
-import asyncio
-import os
-import logging
-from logging.handlers import RotatingFileHandler
-import socket
-import sys
 
-import importlib
-import pkgutil
-from pkgutil import extend_path
 
 def strtobool(strbool):
     if str(strbool).lower() in ["true", "1", "t", "y", "on", "yes"]:
@@ -39,8 +36,6 @@ os.makedirs(data_dir, exist_ok=True)  # Ensure data directory exists or create
 certs_dir = os.environ.get("BUMPER_CERTS") or os.path.join(bumper_dir, "certs")
 os.makedirs(certs_dir, exist_ok=True)  # Ensure data directory exists or create
 
-
-
 # Certs
 ca_cert = os.environ.get("BUMPER_CA") or os.path.join(certs_dir, "ca.crt")
 server_cert = os.environ.get("BUMPER_CERT") or os.path.join(certs_dir, "bumper.crt")
@@ -50,7 +45,6 @@ server_key = os.environ.get("BUMPER_KEY") or os.path.join(certs_dir, "bumper.key
 bumper_listen = os.environ.get("BUMPER_LISTEN") or socket.gethostbyname(
     socket.gethostname()
 )
-
 
 bumper_announce_ip = os.environ.get("BUMPER_ANNOUNCE_IP") or bumper_listen
 
@@ -89,7 +83,7 @@ if not log_to_stdout:
     bumper_rotate = RotatingFileHandler("logs/bumper.log", maxBytes=5000000, backupCount=5)
     bumper_rotate.setFormatter(logformat)
     bumperlog.addHandler(bumper_rotate)
-else: 
+else:
     bumperlog.addHandler(logging.StreamHandler(sys.stdout))
 # Override the logging level
 # bumperlog.setLevel(logging.INFO)
@@ -127,23 +121,23 @@ else:
 translog.setLevel(logging.CRITICAL + 1)  # Ignore this logger
 logging.getLogger("passlib").setLevel(logging.CRITICAL + 1)  # Ignore this logger
 brokerlog = logging.getLogger("hbmqtt.broker")
-#brokerlog.setLevel(
+# brokerlog.setLevel(
 #    logging.CRITICAL + 1
-#)  # Ignore this logger #There are some sublogs that could be set if needed (.plugins)
+# )  # Ignore this logger #There are some sublogs that could be set if needed (.plugins)
 if not log_to_stdout:
     brokerlog.addHandler(mqtt_rotate)
 else:
     brokerlog.addHandler(logging.StreamHandler(sys.stdout))
 protolog = logging.getLogger("hbmqtt.mqtt.protocol")
-#protolog.setLevel(
+# protolog.setLevel(
 #    logging.CRITICAL + 1
-#)  # Ignore this logger
+# )  # Ignore this logger
 if not log_to_stdout:
     protolog.addHandler(mqtt_rotate)
 else:
     protolog.addHandler(logging.StreamHandler(sys.stdout))
 clientlog = logging.getLogger("hbmqtt.client")
-#clientlog.setLevel(logging.CRITICAL + 1)  # Ignore this logger
+# clientlog.setLevel(logging.CRITICAL + 1)  # Ignore this logger
 if not log_to_stdout:
     clientlog.addHandler(mqtt_rotate)
 else:
@@ -186,7 +180,6 @@ else:
 
 logging.getLogger("asyncio").setLevel(logging.CRITICAL + 1)  # Ignore this logger
 
-
 mqtt_listen_port = 8883
 conf1_listen_port = 443
 conf2_listen_port = 8007
@@ -194,7 +187,6 @@ xmpp_listen_port = 5223
 
 
 async def start():
-
     try:
         loop = asyncio.get_event_loop()
     except:
@@ -218,9 +210,9 @@ async def start():
         return
 
     if not (
-        os.path.exists(ca_cert)
-        and os.path.exists(server_cert)
-        and os.path.exists(server_key)
+            os.path.exists(ca_cert)
+            and os.path.exists(server_cert)
+            and os.path.exists(server_key)
     ):
         logging.log(logging.FATAL, "Certificate(s) don't exist at paths specified")
         return
@@ -256,8 +248,10 @@ async def start():
 
     # Start web servers
     conf_server.confserver_app()
-    asyncio.create_task(conf_server.start_site(conf_server.app, address=bumper_listen, port=conf1_listen_port, usessl=True))
-    asyncio.create_task(conf_server.start_site(conf_server.app, address=bumper_listen, port=conf2_listen_port, usessl=False))
+    asyncio.create_task(
+        conf_server.start_site(conf_server.app, address=bumper_listen, port=conf1_listen_port, usessl=True))
+    asyncio.create_task(
+        conf_server.start_site(conf_server.app, address=bumper_listen, port=conf2_listen_port, usessl=False))
 
     # Start maintenance
     while not shutting_down:
@@ -363,15 +357,15 @@ def main(argv=None):
     try:
 
         if not (
-            os.path.exists(ca_cert)
-            and os.path.exists(server_cert)
-            and os.path.exists(server_key)
+                os.path.exists(ca_cert)
+                and os.path.exists(server_cert)
+                and os.path.exists(server_key)
         ):
             first_run()
             return
 
         if not (
-            os.path.exists(os.path.join(data_dir, "passwd"))
+                os.path.exists(os.path.join(data_dir, "passwd"))
         ):
             with open(os.path.join(data_dir, "passwd"), 'w'): pass
 
@@ -410,4 +404,3 @@ def main(argv=None):
 
     finally:
         asyncio.run(shutdown())
-
