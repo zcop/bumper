@@ -9,9 +9,9 @@ import aiohttp_jinja2
 import jinja2
 from aiohttp import web
 
-from bumper import plugins, get_logger
+from bumper import plugins
 from bumper.models import *
-
+from .util import get_logger
 
 class aiohttp_filter(logging.Filter):
     def filter(self, record):
