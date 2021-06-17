@@ -189,54 +189,6 @@ async def shutdown():
         bumperlog.info("Shutdown complete")
 
 
-def create_certs():
-    import platform
-    import os
-    import subprocess
-    import sys
-
-    path = os.path.dirname(sys.modules[__name__].__file__)
-    path = os.path.join(path, "..")
-    sys.path.insert(0, path)
-
-    print("Creating certificates")
-    odir = os.path.realpath(os.curdir)
-    os.chdir("certs")
-    if str(platform.system()).lower() == "windows":
-        # run for win
-        subprocess.run([os.path.join("..", "create_certs", "create_certs_windows.exe")])
-    elif str(platform.system()).lower() == "darwin":
-        # run on mac
-        subprocess.run([os.path.join("..", "create_certs", "create_certs_osx")])
-    elif str(platform.system()).lower() == "linux":
-        if "arm" in platform.machine().lower() or "aarch64" in platform.machine().lower():
-            # run for pi
-            subprocess.run([os.path.join("..", "create_certs", "create_certs_rpi")])
-        else:
-            # run for linux
-            subprocess.run([os.path.join("..", "create_certs", "create_certs_linux")])
-
-    else:
-        os.chdir(odir)
-        bumperlog.fatal("Can't determine platform. Create certs manually and try again.")
-        return
-
-    print("Certificates created")
-    os.chdir(odir)
-
-    if "__main__.py" in sys.argv[0]:
-        os.execv(
-            sys.executable, ["python", "-m", "bumper"] + sys.argv[1:]
-        )  # Start again
-
-    else:
-        os.execv(sys.executable, ["python"] + sys.argv)  # Start again
-
-
-def first_run():
-    create_certs()
-
-
 def main(argv=None):
     import argparse
 
@@ -252,8 +204,9 @@ def main(argv=None):
                 and os.path.exists(server_cert)
                 and os.path.exists(server_key)
         ):
-            first_run()
-            return
+            msg = "No certs found! Please generate them (More infos in the docs)"
+            bumperlog.fatal(msg)
+            sys.exit(msg)
 
         if not (
                 os.path.exists(os.path.join(data_dir, "passwd"))

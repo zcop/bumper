@@ -30,7 +30,6 @@ RUN pip3 install -r requirements.txt
 WORKDIR /bumper
 
 # Copy only required folders instead of all
-COPY create_certs/ create_certs/
 COPY bumper/ bumper/
 
 ENTRYPOINT ["python3", "-m", "bumper"]
