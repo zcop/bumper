@@ -4,13 +4,13 @@ import importlib
 import pkgutil
 import socket
 import sys
-from logging.handlers import RotatingFileHandler
 from typing import Optional
 
 from bumper.confserver import ConfServer
 from bumper.db import *
 from bumper.models import *
 from bumper.mqttserver import MQTTServer, MQTTHelperBot
+from bumper.util import get_logger, log_to_stdout
 from bumper.xmppserver import XMPPServer
 
 
@@ -23,8 +23,6 @@ def strtobool(strbool):
 
 # os.environ['PYTHONASYNCIODEBUG'] = '1' # Uncomment to enable ASYNCIODEBUG
 bumper_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-
-log_to_stdout = os.environ.get("LOG_TO_STDOUT")
 
 # Set defaults from environment variables first
 # Folders
@@ -73,111 +71,7 @@ discovered_plugins = {
 
 shutting_down = False
 
-# Set format for all logs
-logformat = logging.Formatter(
-    "[%(asctime)s] :: %(levelname)s :: %(name)s :: %(module)s :: %(funcName)s :: %(lineno)d :: %(message)s"
-)
-
-bumperlog = logging.getLogger("bumper")
-if not log_to_stdout:
-    bumper_rotate = RotatingFileHandler("logs/bumper.log", maxBytes=5000000, backupCount=5)
-    bumper_rotate.setFormatter(logformat)
-    bumperlog.addHandler(bumper_rotate)
-else:
-    bumperlog.addHandler(logging.StreamHandler(sys.stdout))
-# Override the logging level
-# bumperlog.setLevel(logging.INFO)
-
-confserverlog = logging.getLogger("confserver")
-if not log_to_stdout:
-    conf_rotate = RotatingFileHandler(
-        "logs/confserver.log", maxBytes=5000000, backupCount=5
-    )
-    conf_rotate.setFormatter(logformat)
-    confserverlog.addHandler(conf_rotate)
-else:
-    confserverlog.addHandler(logging.StreamHandler(sys.stdout))
-# Override the logging level
-# confserverlog.setLevel(logging.INFO)
-
-mqttserverlog = logging.getLogger("mqttserver")
-if not log_to_stdout:
-    mqtt_rotate = RotatingFileHandler(
-        "logs/mqttserver.log", maxBytes=5000000, backupCount=5
-    )
-    mqtt_rotate.setFormatter(logformat)
-    mqttserverlog.addHandler(mqtt_rotate)
-else:
-    mqttserverlog.addHandler(logging.StreamHandler(sys.stdout))
-# Override the logging level
-# mqttserverlog.setLevel(logging.INFO)
-
-### Additional MQTT Logs
-translog = logging.getLogger("transitions")
-if not log_to_stdout:
-    translog.addHandler(mqtt_rotate)
-else:
-    translog.addHandler(logging.StreamHandler(sys.stdout))
-translog.setLevel(logging.CRITICAL + 1)  # Ignore this logger
-logging.getLogger("passlib").setLevel(logging.CRITICAL + 1)  # Ignore this logger
-brokerlog = logging.getLogger("hbmqtt.broker")
-# brokerlog.setLevel(
-#    logging.CRITICAL + 1
-# )  # Ignore this logger #There are some sublogs that could be set if needed (.plugins)
-if not log_to_stdout:
-    brokerlog.addHandler(mqtt_rotate)
-else:
-    brokerlog.addHandler(logging.StreamHandler(sys.stdout))
-protolog = logging.getLogger("hbmqtt.mqtt.protocol")
-# protolog.setLevel(
-#    logging.CRITICAL + 1
-# )  # Ignore this logger
-if not log_to_stdout:
-    protolog.addHandler(mqtt_rotate)
-else:
-    protolog.addHandler(logging.StreamHandler(sys.stdout))
-clientlog = logging.getLogger("hbmqtt.client")
-# clientlog.setLevel(logging.CRITICAL + 1)  # Ignore this logger
-if not log_to_stdout:
-    clientlog.addHandler(mqtt_rotate)
-else:
-    clientlog.addHandler(logging.StreamHandler(sys.stdout))
-helperbotlog = logging.getLogger("helperbot")
-if not log_to_stdout:
-    helperbot_rotate = RotatingFileHandler(
-        "logs/helperbot.log", maxBytes=5000000, backupCount=5
-    )
-    helperbot_rotate.setFormatter(logformat)
-    helperbotlog.addHandler(helperbot_rotate)
-else:
-    helperbotlog.addHandler(logging.StreamHandler(sys.stdout))
-# Override the logging level
-# helperbotlog.setLevel(logging.INFO)
-
-boterrorlog = logging.getLogger("boterror")
-if not log_to_stdout:
-    boterrorlog_rotate = RotatingFileHandler(
-        "logs/boterror.log", maxBytes=5000000, backupCount=5
-    )
-    boterrorlog_rotate.setFormatter(logformat)
-    boterrorlog.addHandler(boterrorlog_rotate)
-else:
-    boterrorlog.addHandler(logging.StreamHandler(sys.stdout))
-# Override the logging level
-# boterrorlog.setLevel(logging.INFO)
-
-xmppserverlog = logging.getLogger("xmppserver")
-if not log_to_stdout:
-    xmpp_rotate = RotatingFileHandler(
-        "logs/xmppserver.log", maxBytes=5000000, backupCount=5
-    )
-    xmpp_rotate.setFormatter(logformat)
-    xmppserverlog.addHandler(xmpp_rotate)
-else:
-    xmppserverlog.addHandler(logging.StreamHandler(sys.stdout))
-# Override the logging level
-# xmppserverlog.setLevel(logging.INFO)
-
+bumperlog = get_logger("bumper")
 logging.getLogger("asyncio").setLevel(logging.CRITICAL + 1)  # Ignore this logger
 
 mqtt_listen_port = 8883
@@ -206,7 +100,7 @@ async def start():
         )
 
     if not bumper_listen:
-        logging.log(logging.FATAL, "No listen address configured")
+        bumperlog.fatal("No listen address configured")
         return
 
     if not (
@@ -214,7 +108,7 @@ async def start():
             and os.path.exists(server_cert)
             and os.path.exists(server_key)
     ):
-        logging.log(logging.FATAL, "Certificate(s) don't exist at paths specified")
+        bumperlog.fatal("Certificate(s) don't exist at paths specified")
         return
 
     bumperlog.info("Starting Bumper")
@@ -324,10 +218,7 @@ def create_certs():
 
     else:
         os.chdir(odir)
-        logging.log(
-            logging.FATAL,
-            "Can't determine platform. Create certs manually and try again.",
-        )
+        bumperlog.fatal("Can't determine platform. Create certs manually and try again.")
         return
 
     print("Certificates created")

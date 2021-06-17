@@ -9,7 +9,7 @@ import aiohttp_jinja2
 import jinja2
 from aiohttp import web
 
-from bumper import plugins
+from bumper import plugins, get_logger
 from bumper.models import *
 
 
@@ -23,14 +23,14 @@ class aiohttp_filter(logging.Filter):
 
         if (
             record.levelno == 10
-            and logging.getLogger("confserver").getEffectiveLevel() == 10
+            and get_logger("confserver").getEffectiveLevel() == 10
         ):
             return True
         else:
             return False
 
 
-confserverlog = logging.getLogger("confserver")
+confserverlog = get_logger("confserver")
 logging.getLogger("aiohttp.access").addFilter(
     aiohttp_filter()
 )  # Add logging filter above to aiohttp.access

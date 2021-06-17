@@ -7,9 +7,10 @@ from datetime import datetime, timedelta
 from tinydb import TinyDB, Query
 
 import bumper
+from bumper import get_logger
 from bumper.models import VacBotClient, VacBotDevice, BumperUser, EcoVacsHomeProducts, OAuth
 
-bumperlog = logging.getLogger("bumper")
+bumperlog = get_logger("bumper")
 
 
 def db_file():

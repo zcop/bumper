@@ -15,10 +15,11 @@ from hbmqtt.mqtt.constants import QOS_0
 from passlib.apps import custom_app_context as pwd_context
 
 import bumper
+from bumper.util import get_logger
 
-helperbotlog = logging.getLogger("helperbot")
-boterrorlog = logging.getLogger("boterror")
-mqttserverlog = logging.getLogger("mqttserver")
+mqttserverlog = get_logger("mqttserver")
+helperbotlog = get_logger("helperbot")
+boterrorlog = get_logger("boterror")
 
 
 class MQTTHelperBot:
@@ -31,7 +32,6 @@ class MQTTHelperBot:
         self.command_responses = []
 
     async def start_helper_bot(self):
-
         try:
             if self.Client is None:
                 self.Client = MQTTClient(
@@ -49,24 +49,11 @@ class MQTTHelperBot:
                     ("iot/atr/+", QOS_0),
                 ]
             )
-
-        #        except ConnectionRefusedError as e:
-        #            helperbotlog.Error(e)
-        #            pass
-
-        #        except asyncio.CancelledError as e:
-        #            pass
-
-        #        except hbmqtt.client.ConnectException as e:
-        #            helperbotlog.Error(e)
-        #            pass
-
         except Exception as e:
             helperbotlog.exception("{}".format(e))
 
     async def wait_for_resp(self, requestid):
         try:
-
             t_end = (
                     datetime.now() + timedelta(seconds=self.wait_resp_timeout_seconds)
             ).timestamp()
@@ -84,29 +71,17 @@ class MQTTHelperBot:
                             resp = {"id": requestid, "ret": "ok", "resp": resppayload}
                             self.command_responses.remove(msg)
                             return resp
-
-            return {
-                "id": requestid,
-                "errno": 500,
-                "ret": "fail",
-                "debug": "wait for response timed out",
-            }
-        except asyncio.CancelledError as e:
+        except asyncio.CancelledError:
             helperbotlog.debug("wait_for_resp cancelled by asyncio")
-            return {
-                "id": requestid,
-                "errno": 500,
-                "ret": "fail",
-                "debug": "wait for response timed out",
-            }
         except Exception as e:
             helperbotlog.exception("{}".format(e))
-            return {
-                "id": requestid,
-                "errno": 500,
-                "ret": "fail",
-                "debug": "wait for response timed out",
-            }
+
+        return {
+            "id": requestid,
+            "errno": 500,
+            "ret": "fail",
+            "debug": "wait for response timed out",
+        }
 
     async def send_command(self, cmdjson, requestid):
         if not self.Client._handler.writer is None:
