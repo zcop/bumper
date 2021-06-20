@@ -1,6 +1,6 @@
 ARG ARCH=amd64
 
-FROM $ARCH/python:3.8-alpine
+FROM $ARCH/python:3.7-alpine
 
 COPY requirements.txt /requirements.txt
 
