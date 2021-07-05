@@ -2,9 +2,6 @@ name: Build docker images
 
 on:
   push:
-    branches:
-      - master
-      - next
 
 jobs:
   build:
@@ -12,6 +9,19 @@ jobs:
     steps:
       - name: checkout code
         uses: actions/checkout@v2
+
+      - name: Get tag name
+        shell: bash
+        run: |
+          branch=$(echo ${GITHUB_REF#refs/heads/});
+          if [ -z $BRANCH ]; then
+            exit 1;
+          elif  [ $BRANCH == "master" ]; then
+            branch=latest;
+          fi
+
+          echo "##[set-output name=tag;]$(echo $branch)"
+        id: tag_name
 
       # https://github.com/docker/setup-qemu-action
       - name: Set up QEMU
@@ -28,5 +38,5 @@ jobs:
       - name: build the image
         run: |
           docker buildx build --push \
-          --tag edenhaus/bumper:latest \
+          --tag edenhaus/bumper:${{ steps.tag_name.outputs.tag }} \
           --platform linux/amd64,linux/arm/v7,linux/arm64 .
