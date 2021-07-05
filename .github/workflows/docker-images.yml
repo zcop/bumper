@@ -13,14 +13,14 @@ jobs:
       - name: Get tag name
         shell: bash
         run: |
-          branch=$(echo ${GITHUB_REF#refs/heads/});
+          BRANCH=$(echo ${GITHUB_REF#refs/heads/});
           if [ -z $BRANCH ]; then
             exit 1;
           elif  [ $BRANCH == "master" ]; then
-            branch=latest;
+            BRANCH=latest;
           fi
 
-          echo "##[set-output name=tag;]$(echo $branch)"
+          echo "##[set-output name=tag;]$(echo $BRANCH)"
         id: tag_name
 
       # https://github.com/docker/setup-qemu-action
