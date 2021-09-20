@@ -175,8 +175,7 @@
                     <th>DID</th>
                     <th>Resource</th>
                     <th>Company</th>
-                    <th>MQTT Connected</th>
-                    <th>XMPP Connected</th>
+                    <th>Connected</th>
                     <th>Action</th>
                 </tr>
                 </thead>
@@ -189,10 +188,16 @@
                         <td>{{ bot.resource }} </td>
                         <td>{{ bot.company }} </td>
 
-                        <td {% if bot.mqtt_connection == True %}
-                            class="table-success" {% endif %}> {{ bot.mqtt_connection }} </td>
-                        <td {% if bot.xmpp_connection == True %}
-                            class="table-success" {% endif %}> {{ bot.xmpp_connection }}</td>
+                        {% if bot.mqtt_connection == True and bot.xmpp_connection == True %}
+                            <td class="table-success">MQTT & XMPP</td>
+                        {% elif bot.mqtt_connection == True %}
+                            <td class="table-success">MQTT</td>
+                        {% elif bot.xmpp_connection == True %}
+                            <td class="table-success">XMPP</td>
+                        {% else %}
+                            <td>False</td>
+                        {% endif %}
+
                         <td>
                             <button type="button" class="btn btn-outline-danger btn-sm"
                                     onclick="removeBot('{{ bot.did }}');">Remove
@@ -204,7 +209,7 @@
         </div>
     </div>
 
-    <br />
+    <br/>
 
     <!-- Section Clients -->
     <div class="card border-dark">
@@ -218,8 +223,7 @@
                     <th>User ID</th>
                     <th>Realm</th>
                     <th>Resource</th>
-                    <th>MQTT Connected</th>
-                    <th>XMPP Connected</th>
+                    <th>Connected</th>
                     <th>Action</th>
                 </tr>
                 </thead>
@@ -228,10 +232,17 @@
                         <td>{{ client.userid }}</td>
                         <td>{{ client.realm }}</td>
                         <td>{{ client.resource }}</td>
-                        <td {% if client.mqtt_connection == True %}
-                            class="table-success" {% endif %}> {{ client.mqtt_connection }} </td>
-                        <td {% if client.xmpp_connection == True %}
-                            class="table-success" {% endif %}> {{ client.xmpp_connection }}</td>
+
+                        {% if client.mqtt_connection == True and client.xmpp_connection == True %}
+                            <td class="table-success">MQTT & XMPP</td>
+                        {% elif client.mqtt_connection == True %}
+                            <td class="table-success">MQTT</td>
+                        {% elif client.xmpp_connection == True %}
+                            <td class="table-success">XMPP</td>
+                        {% else %}
+                            <td>False</td>
+                        {% endif %}
+
                         <td>
                             <button type="button" class="btn btn-outline-danger btn-sm"
                                     onclick="removeClient('{{ client.resource }}');">Remove
