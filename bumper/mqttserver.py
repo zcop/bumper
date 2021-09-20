@@ -3,11 +3,11 @@
 import asyncio
 import json
 import os
-import time
-from datetime import datetime, timedelta
+from typing import MutableMapping
 
 import hbmqtt
 import pkg_resources
+from cachetools import TTLCache
 from hbmqtt.broker import Broker
 from hbmqtt.client import MQTTClient
 from hbmqtt.mqtt.constants import QOS_0
@@ -21,26 +21,47 @@ helperbotlog = get_logger("helperbot")
 boterrorlog = get_logger("boterror")
 
 
+class CommandDto:
+
+    def __init__(self, payload_type: str) -> None:
+        self._payload_type = payload_type
+        self._event = asyncio.Event()
+        self._response = None
+
+    async def wait_for_response(self):
+        await self._event.wait()
+        if self._payload_type == "j":
+            return json.loads(self._response)
+        else:
+            return str(self._response)
+
+    def add_response(self, response):
+        self._response = response
+        self._event.set()
+
+
 class MQTTHelperBot:
     Client = None
     wait_resp_timeout_seconds = 60
 
-    def __init__(self, address):
-        self.address = address
+    def __init__(self, host: str, port: int):
+        self._commands: MutableMapping[str, CommandDto] = TTLCache(maxsize=self.wait_resp_timeout_seconds * 60,
+                                                                   ttl=self.wait_resp_timeout_seconds + 10)
+        self._host = host
+        self._port = port
         self.client_id = "helperbot@bumper/helperbot"
-        self.command_responses = []
+
+    @property
+    def commands(self) -> MutableMapping[str, CommandDto]:
+        return self._commands
 
     async def start_helper_bot(self):
         try:
             if self.Client is None:
-                self.Client = MQTTClient(
-                    client_id=self.client_id, config={"check_hostname": False, "reconnect_retries": 20}
-                )
+                self.Client = MQTTClient(client_id=self.client_id,
+                                         config={"check_hostname": False, "reconnect_retries": 20})
 
-            await self.Client.connect(
-                "mqtts://{}:{}/".format(self.address[0], self.address[1]),
-                cafile=bumper.ca_cert,
-            )
+            await self.Client.connect(f"mqtts://{self._host}:{self._port}/", cafile=bumper.ca_cert)
             await self.Client.subscribe(
                 [
                     ("iot/p2p/+/+/+/+/helperbot/bumper/helperbot/+/+/+", QOS_0),
@@ -51,32 +72,23 @@ class MQTTHelperBot:
         except Exception as e:
             helperbotlog.exception("{}".format(e))
 
-    async def wait_for_resp(self, requestid):
+    async def _wait_for_resp(self, command_dto: CommandDto, request_id: str):
         try:
-            t_end = (
-                    datetime.now() + timedelta(seconds=self.wait_resp_timeout_seconds)
-            ).timestamp()
-
-            while time.time() < t_end:
-                await asyncio.sleep(0.1)
-                if len(self.command_responses) > 0:
-                    for msg in self.command_responses:
-                        topic = str(msg["topic"]).split("/")
-                        if topic[6] == "helperbot" and topic[10] == requestid:
-                            if topic[11] == "j":
-                                resppayload = json.loads(msg["payload"])
-                            else:
-                                resppayload = str(msg["payload"])
-                            resp = {"id": requestid, "ret": "ok", "resp": resppayload}
-                            self.command_responses.remove(msg)
-                            return resp
-        except asyncio.CancelledError:
-            helperbotlog.debug("wait_for_resp cancelled by asyncio")
+            payload = await asyncio.wait_for(command_dto.wait_for_response(), timeout=self.wait_resp_timeout_seconds)
+            return {
+                "id": request_id,
+                "ret": "ok",
+                "resp": payload
+            }
+        except asyncio.TimeoutError:
+            helperbotlog.debug("wait_for_resp timeout reached")
+        except asyncio.CancelledError as e:
+            helperbotlog.debug("wait_for_resp cancelled by asyncio", e, exc_info=True)
         except Exception as e:
             helperbotlog.exception("{}".format(e))
 
         return {
-            "id": requestid,
+            "id": request_id,
             "errno": 500,
             "ret": "fail",
             "debug": "wait for response timed out",
@@ -85,7 +97,7 @@ class MQTTHelperBot:
     async def send_command(self, cmdjson, requestid):
         if not self.Client._handler.writer is None:
             try:
-                ttopic = "iot/p2p/{}/helperbot/bumper/helperbot/{}/{}/{}/q/{}/{}".format(
+                topic = "iot/p2p/{}/helperbot/bumper/helperbot/{}/{}/{}/q/{}/{}".format(
                     cmdjson["cmdName"],
                     cmdjson["toId"],
                     cmdjson["toType"],
@@ -93,16 +105,17 @@ class MQTTHelperBot:
                     requestid,
                     cmdjson["payloadType"],
                 )
-                if cmdjson["payloadType"] == "x":
-                    await self.Client.publish(
-                        ttopic, str(cmdjson["payload"]).encode(), QOS_0
-                    )
-                elif cmdjson["payloadType"] == "j":
-                    await self.Client.publish(
-                        ttopic, json.dumps(cmdjson["payload"]).encode(), QOS_0
-                    )
+                command_dto = CommandDto(cmdjson["payloadType"])
+                self.commands[requestid] = command_dto
 
-                resp = await self.wait_for_resp(requestid)
+                if cmdjson["payloadType"] == "j":
+                    payload = json.dumps(cmdjson["payload"])
+                else:
+                    payload = str(cmdjson["payload"])
+
+                await self.Client.publish(topic, payload.encode(), QOS_0)
+
+                resp = await self._wait_for_resp(command_dto, requestid)
                 return resp
             except Exception as e:
                 helperbotlog.exception("{}".format(e))
@@ -112,39 +125,25 @@ class MQTTHelperBot:
                     "ret": "fail",
                     "debug": "exception occurred please check bumper logs",
                 }
+            finally:
+                self.commands.pop(requestid, None)
 
 
 class MQTTServer:
     default_config = None
     broker = None
 
-    async def broker_coro(self):
-
-        mqttserverlog.info(
-            "Starting MQTT Server at {}:{}".format(self.address[0], self.address[1])
-        )
-
+    def __init__(self, host: str, port: int, **kwargs):
         try:
-            await self.broker.start()
-
-        except hbmqtt.broker.BrokerException as e:
-            mqttserverlog.exception(e)
-            # asyncio.create_task(bumper.shutdown())
-            pass
-
-        except Exception as e:
-            mqttserverlog.exception("{}".format(e))
-            # asyncio.create_task(bumper.shutdown())
-            pass
-
-    def __init__(self, address, **kwargs):
-        try:
-            self.address = address
+            self._host = host
+            self._port = port
 
             # Default config opts
             passwd_file = os.path.join(
                 os.path.join(bumper.data_dir, "passwd")
-            )  # For file auth, set user:hash in passwd file see (https://hbmqtt.readthedocs.io/en/latest/references/hbmqtt.html#configuration-example)
+            )
+            # For file auth, set user:hash in passwd file see
+            # (https://hbmqtt.readthedocs.io/en/latest/references/hbmqtt.html#configuration-example)
 
             allow_anon = False
 
@@ -168,7 +167,7 @@ class MQTTServer:
                 "listeners": {
                     "default": {"type": "tcp"},
                     "tls1": {
-                        "bind": "{}:{}".format(address[0], address[1]),
+                        "bind": f"{host}:{port}",
                         "ssl": "on",
                         "certfile": bumper.server_cert,
                         "keyfile": bumper.server_key,
@@ -187,6 +186,22 @@ class MQTTServer:
 
         except Exception as e:
             mqttserverlog.exception("{}".format(e))
+
+    async def broker_coro(self):
+        mqttserverlog.info(f"Starting MQTT Server at {self._host}:{self._port}")
+
+        try:
+            await self.broker.start()
+
+        except hbmqtt.broker.BrokerException as e:
+            mqttserverlog.exception(e)
+            # asyncio.create_task(bumper.shutdown())
+            pass
+
+        except Exception as e:
+            mqttserverlog.exception("{}".format(e))
+            # asyncio.create_task(bumper.shutdown())
+            pass
 
 
 class BumperMQTTServer_Plugin:
@@ -314,13 +329,8 @@ class BumperMQTTServer_Plugin:
         if topic_split[6] == "helperbot":
             # Response to command
             helperbotlog.debug(f"Received Response - Topic: {topic} - Message: {data_decoded}")
-            bumper.mqtt_helperbot.command_responses.append(
-                {
-                    "time": time.time(),
-                    "topic": topic,
-                    "payload": data_decoded,
-                }
-            )
+            if topic_split[10] in bumper.mqtt_helperbot.commands:
+                bumper.mqtt_helperbot.commands[topic_split[10]].add_response(data_decoded)
         elif topic_split[3] == "helperbot":
             # Helperbot sending command
             helperbotlog.debug(f"Send Command - Topic: {topic} - Message: {data_decoded}")
@@ -332,15 +342,6 @@ class BumperMQTTServer_Plugin:
                 helperbotlog.debug(f"Received Broadcast - Topic: {topic} - Message: {data_decoded}")
         else:
             helperbotlog.debug(f"Received Message - Topic: {topic} - Message: {data_decoded}")
-
-        # Cleanup "expired messages" > 60 seconds from time
-        for msg in bumper.mqtt_helperbot.command_responses:
-            expire_time = (
-                    datetime.fromtimestamp(msg["time"]) + timedelta(seconds=MQTTHelperBot.wait_resp_timeout_seconds)
-            ).timestamp()
-            if time.time() > expire_time:
-                helperbotlog.debug(f"Pruning Message Due To Expiration - Message Topic: {msg['topic']}")
-                bumper.mqtt_helperbot.command_responses.remove(msg)
 
     async def on_broker_client_disconnected(self, client_id):
         self._set_client_connected(client_id, False)
