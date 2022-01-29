@@ -1,14 +1,10 @@
 # Ignore pycache
 __pycache__
 
-# Ignore .hidden files
-.*
-
 # Except .
 !.github/
 !.gitignore
 !.dockerignore
-!.travis.yml
 
 # Ignore items in test (report, cache, etc), except files starting with test
 tests/* 
