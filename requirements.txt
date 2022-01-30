@@ -1,7 +1,6 @@
 aiohttp==3.8.1
 aiohttp-jinja2==1.5
 cachetools==5.0.0
-hbmqtt==0.9.5
+amqtt==0.10.0
 Jinja2==3.0.3
 tinydb==4.6.1
-websockets==8.1

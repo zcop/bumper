@@ -5,12 +5,12 @@ import json
 import os
 from typing import MutableMapping
 
-import hbmqtt
+import amqtt
 import pkg_resources
+from amqtt.broker import Broker
+from amqtt.client import MQTTClient
+from amqtt.mqtt.constants import QOS_0
 from cachetools import TTLCache
-from hbmqtt.broker import Broker
-from hbmqtt.client import MQTTClient
-from hbmqtt.mqtt.constants import QOS_0
 from passlib.apps import custom_app_context as pwd_context
 
 import bumper
@@ -160,12 +160,12 @@ class MQTTServer:
                         "allow_anonymous"
                     ]  # Set to True to allow anonymous authentication
 
-            # The below adds a plugin to the hbmqtt.broker.plugins without having to futz with setup.py
-            distribution = pkg_resources.Distribution("hbmqtt.broker.plugins")
+            # The below adds a plugin to the amqtt.broker.plugins without having to futz with setup.py
+            distribution = pkg_resources.Distribution("amqtt.broker.plugins")
             bumper_plugin = pkg_resources.EntryPoint.parse(
                 "bumper = bumper.mqttserver:BumperMQTTServer_Plugin", dist=distribution
             )
-            distribution._ep_map = {"hbmqtt.broker.plugins": {"bumper": bumper_plugin}}
+            distribution._ep_map = {"amqtt.broker.plugins": {"bumper": bumper_plugin}}
             pkg_resources.working_set.add(distribution)
 
             # Initialize bot server
@@ -187,10 +187,13 @@ class MQTTServer:
                         "bumper"
                     ],  # Bumper plugin provides auth and handling of bots/clients connecting
                 },
-                "topic-check": {"enabled": False},
+                "topic-check": {
+                    "enabled": True,  # Workaround until https://github.com/Yakifo/amqtt/pull/93 is merged
+                    "plugins": [],
+                },
             }
 
-            self.broker = hbmqtt.broker.Broker(config=self.default_config)
+            self.broker = amqtt.broker.Broker(config=self.default_config)
 
         except Exception as e:
             mqttserverlog.exception(f"{e}")
@@ -201,7 +204,7 @@ class MQTTServer:
         try:
             await self.broker.start()
 
-        except hbmqtt.broker.BrokerException as e:
+        except amqtt.broker.BrokerException as e:
             mqttserverlog.exception(e)
             # asyncio.create_task(bumper.shutdown())
             pass

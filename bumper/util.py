@@ -38,8 +38,8 @@ def get_logger(name: str, rotate: RotatingFileHandler = None) -> logging.Logger:
         get_logger("passlib", rotate).setLevel(
             logging.CRITICAL + 1
         )  # Ignore this logger
-        get_logger("hbmqtt.broker", rotate)
-        get_logger("hbmqtt.mqtt.protocol", rotate)
-        get_logger("hbmqtt.client", rotate)
+        get_logger("amqtt.broker", rotate)
+        get_logger("amqtt.mqtt.protocol", rotate)
+        get_logger("amqtt.client", rotate)
 
     return logger
