@@ -50,7 +50,6 @@ class ConfServer:
 
     def confserver_app(self):
         self.app = web.Application(
-            loop=asyncio.get_event_loop(),
             middlewares=[
                 self.log_all_requests,
             ],

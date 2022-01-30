@@ -71,7 +71,7 @@ async def test_confserver_exceptions():
 async def test_confserver_no_ssl():
     conf_server = bumper.ConfServer((HOST, 111111), usessl=False)
     conf_server.confserver_app()
-    asyncio.create_task(conf_server.start_server())
+    await conf_server.start_server()
 
 
 def test_get_milli_time():

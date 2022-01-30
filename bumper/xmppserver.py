@@ -570,8 +570,8 @@ class XMPPAsyncClient:
             if client:
                 bumper.client_set_xmpp(client["resource"], True)
 
-            clientbindxml = xml.getchildren()
-            clientresourcexml = clientbindxml[0].getchildren()
+            clientbindxml = list(xml)
+            clientresourcexml = list(clientbindxml[0])
             if self.devclass:  # its a bot
                 self.name = f"XMPP_Client_{self.uid}_{self.devclass}"
                 self.bumper_jid = "{}@{}.ecorobot.net/atom".format(

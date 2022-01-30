@@ -68,8 +68,7 @@ class portal_api_lg(plugins.ConfServerApp):
                     logs = []
                     logsroot = ET.fromstring(retcmd["resp"])
                     if logsroot.attrib["ret"] == "ok":
-                        cleanlogs = logsroot.getchildren()
-                        for l in cleanlogs:
+                        for l in logsroot:
                             cleanlog = {
                                 "ts": l.attrib["s"],
                                 "area": l.attrib["a"],
