@@ -64,8 +64,8 @@ class portal_api_lg(plugins.ConfServerApp):
                         json_body, randomid
                     )
                     body = retcmd
-                    logging.debug("Send Bot - {}".format(json_body))
-                    logging.debug("Bot Response - {}".format(body))
+                    logging.debug(f"Send Bot - {json_body}")
+                    logging.debug(f"Bot Response - {body}")
                     logs = []
                     logsroot = ET.fromstring(retcmd["resp"])
                     if logsroot.attrib["ret"] == "ok":
@@ -88,7 +88,7 @@ class portal_api_lg(plugins.ConfServerApp):
                     else:
                         body = {"ret": "ok", "logs": []}
 
-                    logging.debug("lg logs return: {}".format(json.dumps(body)))
+                    logging.debug(f"lg logs return: {json.dumps(body)}")
                     return web.json_response(body)
                 else:
                     # No response, send error back
@@ -99,7 +99,7 @@ class portal_api_lg(plugins.ConfServerApp):
                     )
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
         body = {"id": randomid, "errno": bumper.ERR_COMMON, "ret": "fail"}
         return web.json_response(body)

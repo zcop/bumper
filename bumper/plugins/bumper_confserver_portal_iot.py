@@ -41,8 +41,8 @@ class portal_api_iot(plugins.ConfServerApp):
                         json_body, randomid
                     )
                     body = retcmd
-                    logging.debug("Send Bot - {}".format(json_body))
-                    logging.debug("Bot Response - {}".format(body))
+                    logging.debug(f"Send Bot - {json_body}")
+                    logging.debug(f"Bot Response - {body}")
                     return web.json_response(body)
                 else:
                     # No response, send error back
@@ -75,7 +75,7 @@ class portal_api_iot(plugins.ConfServerApp):
     
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
 plugin = portal_api_iot()
 

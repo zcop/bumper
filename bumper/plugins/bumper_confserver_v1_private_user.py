@@ -76,7 +76,7 @@ class v1_private_user(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))        
+            logging.exception(f"{e}")        
 
     async def handle_getUserMenuInfo(self, request):
         try:
@@ -145,7 +145,7 @@ class v1_private_user(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))                    
+            logging.exception(f"{e}")                    
 
     async def handle_changeArea(self, request):
         try:
@@ -162,7 +162,7 @@ class v1_private_user(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
     async def handle_acceptAgreementBatch(self, request):
         try:
@@ -177,7 +177,7 @@ class v1_private_user(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
 plugin = v1_private_user()
 

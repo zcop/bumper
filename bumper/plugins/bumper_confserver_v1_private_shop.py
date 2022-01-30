@@ -42,7 +42,7 @@ class v1_private_shop(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e)) 
+            logging.exception(f"{e}") 
 
 plugin = v1_private_shop()
 

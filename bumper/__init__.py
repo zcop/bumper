@@ -183,7 +183,7 @@ async def shutdown():
         bumperlog.info("Coroutine canceled")
 
     except Exception as e:
-        bumperlog.info("Exception: {}".format(e))
+        bumperlog.info(f"Exception: {e}")
 
     finally:
         bumperlog.info("Shutdown complete")

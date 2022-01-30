@@ -127,7 +127,7 @@ class ConfServer:
     async def start_server(self):
         try:
             confserverlog.info(
-                "Starting ConfServer at {}:{}".format(self.address[0], self.address[1])
+                f"Starting ConfServer at {self.address[0]}:{self.address[1]}"
             )
             self.runner = web.AppRunner(self.app)
             await self.runner.setup()
@@ -157,7 +157,7 @@ class ConfServer:
             pass
 
         except Exception as e:
-            confserverlog.exception("{}".format(e))
+            confserverlog.exception(f"{e}")
             asyncio.create_task(bumper.shutdown())
 
     async def stop_server(self):
@@ -165,7 +165,7 @@ class ConfServer:
             await self.runner.shutdown()
 
         except Exception as e:
-            confserverlog.exception("{}".format(e))
+            confserverlog.exception(f"{e}")
 
     async def handle_base(self, request):
         try:
@@ -205,7 +205,7 @@ class ConfServer:
             return resp
 
         except Exception as e:
-            confserverlog.exception("{}".format(e))
+            confserverlog.exception(f"{e}")
 
     @web.middleware
     async def log_all_requests(self, request, handler):
@@ -231,7 +231,7 @@ class ConfServer:
                         try:
                             postbody = json.loads(await request.text())
                         except Exception as e:
-                            confserverlog.error("Request body not json: {} - {}".format(e, e.doc))
+                            confserverlog.error(f"Request body not json: {e} - {e.doc}")
                             postbody = e.doc
                     
                     else:
@@ -256,12 +256,12 @@ class ConfServer:
                 return response
 
             except web.HTTPNotFound as notfound:
-                confserverlog.debug("Request path {} not found".format(request.raw_path))
+                confserverlog.debug(f"Request path {request.raw_path} not found")
                 confserverlog.debug(json.dumps(to_log))
                 return notfound
 
             except Exception as e:
-                confserverlog.exception("{}".format(e))
+                confserverlog.exception(f"{e}")
                 confserverlog.error(json.dumps(to_log))
                 return e 
 
@@ -319,7 +319,7 @@ class ConfServer:
                 return web.json_response({"status": "invalid service"})
 
         except Exception as e:
-            confserverlog.exception("{}".format(e))
+            confserverlog.exception(f"{e}")
             pass
 
     async def handle_RemoveBot(self, request):
@@ -332,7 +332,7 @@ class ConfServer:
                 return web.json_response({"status": "successfully removed bot"})
 
         except Exception as e:
-            confserverlog.exception("{}".format(e))
+            confserverlog.exception(f"{e}")
             pass        
 
     async def handle_RemoveClient(self, request):
@@ -345,7 +345,7 @@ class ConfServer:
                return web.json_response({"status": "successfully removed client"})
 
         except Exception as e:
-            confserverlog.exception("{}".format(e))
+            confserverlog.exception(f"{e}")
             pass                
 
     async def handle_login(self, request):
@@ -354,7 +354,7 @@ class ConfServer:
             countrycode = request.match_info.get("country", "us")
             apptype = request.match_info.get("apptype", "")
             confserverlog.info(
-                "client with devid {} attempting login".format(user_devid)
+                f"client with devid {user_devid} attempting login"
             )
             if bumper.use_auth:
                 if (
@@ -417,7 +417,7 @@ class ConfServer:
                 )
 
         except Exception as e:
-            confserverlog.exception("{}".format(e))
+            confserverlog.exception(f"{e}")
 
     async def handle_lookup(self, request):
         try:
@@ -464,7 +464,7 @@ class ConfServer:
             return web.json_response(body)
 
         except Exception as e:
-            confserverlog.exception("{}".format(e))
+            confserverlog.exception(f"{e}")
 
     async def handle_newauth(self, request):
         # Bumper is only returning the submitted token. No reason yet to create another new token
@@ -485,7 +485,7 @@ class ConfServer:
             return web.json_response(body)
 
         except Exception as e:
-            confserverlog.exception("{}".format(e))
+            confserverlog.exception(f"{e}")
 
     async def disconnect(self):
         try:
@@ -493,7 +493,7 @@ class ConfServer:
             await self.app.shutdown()
 
         except Exception as e:
-            confserverlog.exception("{}".format(e))
+            confserverlog.exception(f"{e}")
 
     class ConfServer_GeneralFunctions:
         def __init__(self):
@@ -514,16 +514,16 @@ class ConfServer:
                 return tmpaccesstoken
 
             except Exception as e:
-                confserverlog.exception("{}".format(e))
+                confserverlog.exception(f"{e}")
 
         def generate_authcode(self, user, countrycode, token):
             try:
-                tmpauthcode = "{}_{}".format(countrycode, uuid.uuid4().hex)
+                tmpauthcode = f"{countrycode}_{uuid.uuid4().hex}"
                 bumper.user_add_authcode(user["userid"], token, tmpauthcode)
                 return tmpauthcode
 
             except Exception as e:
-                confserverlog.exception("{}".format(e))                
+                confserverlog.exception(f"{e}")                
 
 
         async def login(self, request):
@@ -532,7 +532,7 @@ class ConfServer:
                     countrycode = request.match_info.get("country", "us")
                     apptype = request.match_info.get("apptype", "")
                     confserverlog.info(
-                        "client with devid {} attempting login".format(user_devid)
+                        f"client with devid {user_devid} attempting login"
                     )
                     if bumper.use_auth:
                         if (
@@ -595,7 +595,7 @@ class ConfServer:
                         )
 
                 except Exception as e:
-                    confserverlog.exception("{}".format(e))
+                    confserverlog.exception(f"{e}")
 
 
         async def get_AuthCode(self, request):
@@ -660,7 +660,7 @@ class ConfServer:
                 return web.json_response(body)
 
             except Exception as e:
-                confserverlog.exception("{}".format(e))                    
+                confserverlog.exception(f"{e}")                    
 
         def check_token(self, apptype, countrycode, user, token):
             try:
@@ -705,7 +705,7 @@ class ConfServer:
                     return web.json_response(body)
 
             except Exception as e:
-                confserverlog.exception("{}".format(e))                
+                confserverlog.exception(f"{e}")                
 
         def _auth_any(self, devid, apptype, country, request):
             try:
@@ -752,7 +752,7 @@ class ConfServer:
                     if "did" in bot:
                         bumper.user_add_bot(tmpuser["userid"], bot["did"])
                     else:
-                        confserverlog.error("No DID for bot: {}".format(bot))
+                        confserverlog.error(f"No DID for bot: {bot}")
 
                 if "checkLogin" in request.path:  # If request was to check a token do so
                     checkToken = self.check_token(
@@ -782,7 +782,7 @@ class ConfServer:
                 return body
 
             except Exception as e:
-                confserverlog.exception("{}".format(e))     
+                confserverlog.exception(f"{e}")     
 
 
         def getUserAccountInfo(self, request):
@@ -851,7 +851,7 @@ class ConfServer:
                 return web.json_response(body)
 
             except Exception as e:
-                confserverlog.exception("{}".format(e))                           
+                confserverlog.exception(f"{e}")                           
 
         async def logout(self, request):
             try:
@@ -875,4 +875,4 @@ class ConfServer:
                 return web.json_response(body)
 
             except Exception as e:
-                confserverlog.exception("{}".format(e))
+                confserverlog.exception(f"{e}")

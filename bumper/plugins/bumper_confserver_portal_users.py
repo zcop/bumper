@@ -110,7 +110,7 @@ class portal_api_users(plugins.ConfServerApp):
                 return web.json_response(body)
 
             except Exception as e:
-                logging.exception("{}".format(e))
+                logging.exception(f"{e}")
 
         # Return fail for GET
         body = {"result": "fail", "todo": "result"}

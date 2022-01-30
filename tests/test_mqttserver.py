@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 import bumper
 import asyncio
 import pytest
@@ -398,7 +398,7 @@ async def test_mqttserver():
     )
 
     await test_client.Client.connect(
-        "mqtts://{}:{}/".format(test_client.address[0], test_client.address[1]),
+        f"mqtts://{test_client.address[0]}:{test_client.address[1]}/",
         cafile=bumper.ca_cert,
     )
     assert (

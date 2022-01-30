@@ -32,7 +32,7 @@ class portal_api_ecms(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
 
 plugin = portal_api_ecms()

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import bumper
 
 
-class VacBotDevice(object):
+class VacBotDevice:
     def __init__(
             self, did="", vac_bot_device_class="", resource="", name="", nick="", company=""
     ):
@@ -32,7 +32,7 @@ class VacBotDevice(object):
         }
 
 
-class BumperUser(object):
+class BumperUser:
     def __init__(self, userid=""):
         self.userid = userid
         self.devices = []
@@ -50,7 +50,7 @@ class GlobalVacBotDevice(VacBotDevice):  # EcoVacs Home
     deviceName = ""
 
 
-class VacBotClient(object):
+class VacBotClient:
     def __init__(self, userid="", realm="", token=""):
         self.userid = userid
         self.realm = realm
@@ -101,7 +101,7 @@ class OAuth:
         oauth = OAuth()
         oauth.userId = userId
         oauth.access_token = uuid.uuid4().hex
-        oauth.expire_at = "{}".format(datetime.utcnow() + timedelta(days=bumper.oauth_validity_days))
+        oauth.expire_at = f"{datetime.utcnow() + timedelta(days=bumper.oauth_validity_days)}"
         oauth.refresh_token = uuid.uuid4().hex
         return oauth
 

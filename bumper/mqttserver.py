@@ -70,7 +70,7 @@ class MQTTHelperBot:
                 ]
             )
         except Exception as e:
-            helperbotlog.exception("{}".format(e))
+            helperbotlog.exception(f"{e}")
 
     async def _wait_for_resp(self, command_dto: CommandDto, request_id: str):
         try:
@@ -85,7 +85,7 @@ class MQTTHelperBot:
         except asyncio.CancelledError as e:
             helperbotlog.debug("wait_for_resp cancelled by asyncio", e, exc_info=True)
         except Exception as e:
-            helperbotlog.exception("{}".format(e))
+            helperbotlog.exception(f"{e}")
 
         return {
             "id": request_id,
@@ -118,7 +118,7 @@ class MQTTHelperBot:
                 resp = await self._wait_for_resp(command_dto, requestid)
                 return resp
             except Exception as e:
-                helperbotlog.exception("{}".format(e))
+                helperbotlog.exception(f"{e}")
                 return {
                     "id": requestid,
                     "errno": 500,
@@ -185,7 +185,7 @@ class MQTTServer:
             self.broker = hbmqtt.broker.Broker(config=self.default_config)
 
         except Exception as e:
-            mqttserverlog.exception("{}".format(e))
+            mqttserverlog.exception(f"{e}")
 
     async def broker_coro(self):
         mqttserverlog.info(f"Starting MQTT Server at {self._host}:{self._port}")
@@ -199,7 +199,7 @@ class MQTTServer:
             pass
 
         except Exception as e:
-            mqttserverlog.exception("{}".format(e))
+            mqttserverlog.exception(f"{e}")
             # asyncio.create_task(bumper.shutdown())
             pass
 
@@ -217,7 +217,7 @@ class BumperMQTTServer_Plugin:
                 "'bumper' section not found in context configuration"
             )
         except Exception as e:
-            mqttserverlog.exception("{}".format(e))
+            mqttserverlog.exception(f"{e}")
 
     async def authenticate(self, *args, **kwargs):
         authenticated = False

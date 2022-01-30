@@ -33,7 +33,7 @@ class portal_api_neng(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
     async def handle_neng_getShareMsgs(self, request):  # EcoVacs Home
         try:
@@ -65,7 +65,7 @@ class portal_api_neng(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))       
+            logging.exception(f"{e}")       
 
     async def handle_neng_getlist(self, request):  # EcoVacs Home
         try:
@@ -91,7 +91,7 @@ class portal_api_neng(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))                     
+            logging.exception(f"{e}")                     
   
 plugin = portal_api_neng()
 

@@ -34,6 +34,6 @@ class api_rapp(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
 plugin = api_rapp()

@@ -35,7 +35,7 @@ class portal_api_pim(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
     async def handle_pimFile(self, request):
         try:
@@ -44,7 +44,7 @@ class portal_api_pim(plugins.ConfServerApp):
             return web.FileResponse(os.path.join(bumper.bumper_dir, "bumper", "web", "images", "robotvac_image.jpg"))
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
     async def handle_getConfignetAll(self, request):
         try:
@@ -52,7 +52,7 @@ class portal_api_pim(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
     async def handle_getConfigGroups(self, request):
         try:
@@ -60,7 +60,7 @@ class portal_api_pim(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
     async def handle_getErrDetail(self, request):
         try:
@@ -72,7 +72,7 @@ class portal_api_pim(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
     async def handle_product_config_batch(self, request):
         try:
@@ -99,7 +99,7 @@ class portal_api_pim(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
 
 plugin = portal_api_pim()

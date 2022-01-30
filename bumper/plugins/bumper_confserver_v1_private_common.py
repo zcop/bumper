@@ -48,7 +48,7 @@ class v1_private_common(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
     async def handle_checkAPPVersion(self, request):  # EcoVacs Home
         try:
@@ -73,7 +73,7 @@ class v1_private_common(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
     async def handle_uploadDeviceInfo(self, request):  # EcoVacs Home
         try:
@@ -88,7 +88,7 @@ class v1_private_common(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
     async def handle_getSystemReminder(self, request):  # EcoVacs Home
         try:
@@ -110,7 +110,7 @@ class v1_private_common(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
     async def handle_getConfig(self, request):
         try:
@@ -132,7 +132,7 @@ class v1_private_common(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
     async def handle_getAreas(self, request):
         try:
@@ -147,7 +147,7 @@ class v1_private_common(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
     async def handle_getAgreementURLBatch(self, request):  # EcoVacs Home
         try:
@@ -179,7 +179,7 @@ class v1_private_common(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
     async def handle_getTimestamp(self, request):  # EcoVacs Home
         try:
@@ -197,7 +197,7 @@ class v1_private_common(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
 
 plugin = v1_private_common()

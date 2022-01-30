@@ -33,7 +33,7 @@ class upload_global(plugins.ConfServerApp):
             return web.FileResponse(os.path.join(bumper.bumper_dir,"bumper","web","images","robotvac_image.jpg"))
             
         except Exception as e:
-            logging.exception("{}".format(e))          
+            logging.exception(f"{e}")          
 
                                
   
