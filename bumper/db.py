@@ -8,7 +8,13 @@ from tinydb import TinyDB, Query
 
 import bumper
 from .util import get_logger
-from bumper.models import VacBotClient, VacBotDevice, BumperUser, EcoVacsHomeProducts, OAuth
+from bumper.models import (
+    VacBotClient,
+    VacBotDevice,
+    BumperUser,
+    EcoVacsHomeProducts,
+    OAuth,
+)
 
 bumperlog = get_logger("bumper")
 
@@ -265,8 +271,8 @@ def check_authcode(uid, authcode):
     tmpauth = tokens.get(
         (Query().authcode == authcode)
         & (  # Match authcode
-                (Query().userid == uid.replace("fuid_", ""))
-                | (Query().userid == f"fuid_{uid}")
+            (Query().userid == uid.replace("fuid_", ""))
+            | (Query().userid == f"fuid_{uid}")
         )  # Userid with or without fuid_
     )
     if tmpauth:
@@ -279,7 +285,8 @@ def loginByItToken(authcode):
     bumperlog.debug(f"Checking for authcode: {authcode}")
     tokens = db_get().table("tokens")
     tmpauth = tokens.get(
-        Query().authcode == authcode
+        Query().authcode
+        == authcode
         # & (  # Match authcode
         #    (Query().userid == uid.replace("fuid_", ""))
         #    | (Query().userid == "fuid_{}".format(uid))
@@ -297,8 +304,8 @@ def check_token(uid, token):
     tmpauth = tokens.get(
         (Query().token == token)
         & (  # Match token
-                (Query().userid == uid.replace("fuid_", ""))
-                | (Query().userid == f"fuid_{uid}")
+            (Query().userid == uid.replace("fuid_", ""))
+            | (Query().userid == f"fuid_{uid}")
         )  # Userid with or without fuid_
     )
     if tmpauth:
@@ -326,11 +333,9 @@ def bot_add(sn, did, devclass, resource, company):
     bot = bot_get(did)
     if not bot:  # Not existing bot in database
         if (
-                not devclass == "" or "@" not in sn or "tmp" not in sn
+            not devclass == "" or "@" not in sn or "tmp" not in sn
         ):  # try to prevent bad additions to the bot list
-            bumperlog.info(
-                f"Adding new bot with SN: {newbot.name} DID: {newbot.did}"
-            )
+            bumperlog.info(f"Adding new bot with SN: {newbot.name} DID: {newbot.did}")
             bot_full_upsert(newbot.asdict())
 
 
@@ -357,7 +362,11 @@ def bot_toEcoVacsHome_JSON(bot):  # EcoVacs Home
             bot["pip"] = botprod["product"]["_id"]
             bot["deviceName"] = botprod["product"]["name"]
             bot["materialNo"] = botprod["product"]["materialNo"]
-            bot["product_category"] = "DEEBOT" if botprod["product"]["name"].startswith("DEEBOT") else "UNKNOWN"
+            bot["product_category"] = (
+                "DEEBOT"
+                if botprod["product"]["name"].startswith("DEEBOT")
+                else "UNKNOWN"
+            )
             # bot["updateInfo"] = {
             #     "changeLog": "",
             #     "needUpdate": False

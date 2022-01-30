@@ -70,9 +70,7 @@ class XMPPServer_Protocol(asyncio.Protocol):
 
     def connection_made(self, transport):
         if self.aclient:  # Existing client... upgrading to TLS
-            xmppserverlog.debug(
-                f"Upgraded connection for {self.aclient.address}"
-            )
+            xmppserverlog.debug(f"Upgraded connection for {self.aclient.address}")
             self.aclient.transport = transport
         else:
             aclient = XMPPAsyncClient(transport)
@@ -254,9 +252,7 @@ class XMPPAsyncClient:
 
                     if client.type == self.BOT:
                         if client.uid.lower() in ctl_to.lower():
-                            xmppserverlog.debug(
-                                f"Sending ctl to bot: {rxmlstring}"
-                            )
+                            xmppserverlog.debug(f"Sending ctl to bot: {rxmlstring}")
                             client.send(rxmlstring)
 
         except Exception as e:
@@ -310,17 +306,21 @@ class XMPPAsyncClient:
             if not "from" in xml.attrib:
                 xml.attrib["from"] = f"{self.bumper_jid}"
             if "errno" in data:
-                xmppserverlog.error(f"Error from bot - {data}")                
+                xmppserverlog.error(f"Error from bot - {data}")
             if (
                 "errno='103'" in data
             ):  # No permissions, usually if bot was last on Ecovac network, Bumper will try to add fuid user as owner
                 if self.type == self.BOT:
-                    xmppserverlog.info("Bot reported user has no permissions, Bumper will attempt to add user to bot. This is typical if bot was last on Ecovacs Network.")
+                    xmppserverlog.info(
+                        "Bot reported user has no permissions, Bumper will attempt to add user to bot. This is typical if bot was last on Ecovacs Network."
+                    )
                     xquery = xml.getchildren()
                     ctl = xquery[0].getchildren()
                     if "error" in ctl[0].attrib:
                         ctlerr = ctl[0].attrib["error"]
-                        adminuser = ctlerr.replace("permission denied, please contact ", "")
+                        adminuser = ctlerr.replace(
+                            "permission denied, please contact ", ""
+                        )
                         adminuser = adminuser.replace(" ", "")
                     elif "admin" in ctl[0].attrib:
                         adminuser = ctl[0].attrib["admin"]
@@ -473,9 +473,7 @@ class XMPPAsyncClient:
     async def _handle_starttls(self, data):
         try:
             if self.TLSUpgraded == False:
-                self.TLSUpgraded = (
-                    True
-                )  # Set TLSUpgraded true to prevent further attempts to upgrade connection
+                self.TLSUpgraded = True  # Set TLSUpgraded true to prevent further attempts to upgrade connection
                 xmppserverlog.debug(
                     "Upgrading connection with STARTTLS for {}:{}".format(
                         self.address[0], self.address[1]
@@ -662,9 +660,7 @@ class XMPPAsyncClient:
                 )
 
                 # Send dummy return
-                self.send(
-                    f'<presence to="{self.bumper_jid}"> dummy </presence>'
-                )
+                self.send(f'<presence to="{self.bumper_jid}"> dummy </presence>')
             elif xml.get("type") == "unavailable":
                 xmppserverlog.debug(
                     "client presence unavailable (DISCONNECT) - {} ".format(
@@ -681,9 +677,7 @@ class XMPPAsyncClient:
                     )
                 )
                 # Send dummy return
-                self.send(
-                    f'<presence to="{self.bumper_jid}"> dummy </presence>'
-                )
+                self.send(f'<presence to="{self.bumper_jid}"> dummy </presence>')
 
     def _parse_data(self, data):
 
@@ -768,9 +762,7 @@ class XMPPAsyncClient:
                         self._handle_connect(newdata.encode("utf-8"))
                 else:
                     if not (newdata == "" or newdata == " "):
-                        xmppserverlog.error(
-                            f"xml parse error - {newdata} - {e}"
-                        )
+                        xmppserverlog.error(f"xml parse error - {newdata} - {e}")
 
             elif "not well-formed (invalid token)" in e.msg:
                 # If a lone </stream:stream> - client is signalling end of session/disconnect
@@ -782,15 +774,11 @@ class XMPPAsyncClient:
             else:
                 if "<stream:stream" in newdata:  # Handle start stream and connect
                     if self.state == self.CONNECT or self.state == self.INIT:
-                        xmppserverlog.debug(
-                            f"Handling connect data - {newdata}"
-                        )
+                        xmppserverlog.debug(f"Handling connect data - {newdata}")
                         self._handle_connect(newdata.encode("utf-8"))
                 else:
                     if not "</stream:stream>" in newdata:
-                        xmppserverlog.error(
-                            f"xml parse error - {newdata} - {e}"
-                        )
+                        xmppserverlog.error(f"xml parse error - {newdata} - {e}")
                     else:
                         self.send("</stream:stream>")  # Close stream
                         self._set_state("DISCONNECT")

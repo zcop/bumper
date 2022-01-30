@@ -59,4 +59,3 @@ async def test_start_stop_debug():
             ("bumper", "INFO", "Shutting down"), ("bumper", "INFO", "Shutdown complete")
         )
         assert b.shutting_down == True
-

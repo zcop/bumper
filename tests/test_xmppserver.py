@@ -513,7 +513,9 @@ async def test_client_send_iq(*args, **kwargs):
     bumper.xmppserver.XMPPServer.clients.append(xmppclient2)
 
     # Roster IQ - Only seen from Android app so far
-    test_data = b'<iq id="EE0XQ-2" type="get"><query xmlns="jabber:iq:roster" ></query></iq>'
+    test_data = (
+        b'<iq id="EE0XQ-2" type="get"><query xmlns="jabber:iq:roster" ></query></iq>'
+    )
     xmppclient._parse_data(test_data)
 
     assert (
@@ -594,4 +596,3 @@ async def test_client_send_iq(*args, **kwargs):
 
     # Reset mock calls
     mock_send.reset_mock()
-

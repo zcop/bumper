@@ -10,20 +10,24 @@ from datetime import datetime, timedelta
 
 
 class portal_api_users(plugins.ConfServerApp):
-
     def __init__(self):
         self.name = "portal_api_users"
-        self.plugin_type = "sub_api"        
+        self.plugin_type = "sub_api"
         self.sub_api = "portal_api"
-        
+
         self.routes = [
-
-            web.route("*", "/users/user.do", self.handle_usersapi, name="portal_api_users_user"),
-
+            web.route(
+                "*",
+                "/users/user.do",
+                self.handle_usersapi,
+                name="portal_api_users_user",
+            ),
         ]
 
-        self.get_milli_time = bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
-  
+        self.get_milli_time = (
+            bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
+        )
+
     async def handle_usersapi(self, request):
         if not request.method == "GET":  # Skip GET for now
             try:
@@ -116,5 +120,5 @@ class portal_api_users(plugins.ConfServerApp):
         body = {"result": "fail", "todo": "result"}
         return web.json_response(body)
 
-plugin = portal_api_users()
 
+plugin = portal_api_users()

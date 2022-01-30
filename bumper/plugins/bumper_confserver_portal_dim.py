@@ -12,19 +12,23 @@ import random
 
 
 class portal_api_dim(plugins.ConfServerApp):
-
     def __init__(self):
         self.name = "portal_api_dimr"
-        self.plugin_type = "sub_api"        
+        self.plugin_type = "sub_api"
         self.sub_api = "portal_api"
-        
+
         self.routes = [
-
-            web.route("*", "/dim/devmanager.do", self.handle_dim_devmanager, name="portal_api_dim_devmanager"),
-
+            web.route(
+                "*",
+                "/dim/devmanager.do",
+                self.handle_dim_devmanager,
+                name="portal_api_dim_devmanager",
+            ),
         ]
 
-        self.get_milli_time = bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
+        self.get_milli_time = (
+            bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
+        )
 
     async def handle_dim_devmanager(self, request):  # Used in EcoVacs Home App
         try:
@@ -66,11 +70,11 @@ class portal_api_dim(plugins.ConfServerApp):
                         return web.json_response(body)
 
                     if json_body["td"] == "ReceiveShareDevice":  # EcoVacs Home
-                        body = {"ret":"ok"}
-                        return web.json_response(body)                        
+                        body = {"ret": "ok"}
+                        return web.json_response(body)
 
         except Exception as e:
-            logging.exception(f"{e}")  
+            logging.exception(f"{e}")
+
 
 plugin = portal_api_dim()
-
