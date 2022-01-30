@@ -8,6 +8,7 @@ pytest-asyncio
 pytest-aiohttp
 testfixtures
 pytest-env
+pytest-timeout
 
 #pbr = "*"
 #pytest-aiohttp = "*"
