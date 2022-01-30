@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-import bumper
-from bumper.models import VacBotClient, VacBotDevice, BumperUser, EcoVacsHomeProducts
-from tinydb import TinyDB, Query
-from tinydb.storages import MemoryStorage
-from datetime import datetime, timedelta
-import os
 import json
 import logging
+import os
+from datetime import datetime, timedelta
+
+from tinydb import Query, TinyDB
+from tinydb.storages import MemoryStorage
+
+import bumper
+from bumper.models import BumperUser, EcoVacsHomeProducts, VacBotClient, VacBotDevice
 
 
 def test_db_path():
@@ -79,7 +81,7 @@ def test_user_db():
         {
             "userid": "testuser",
             "token": "token_1234",
-            "expiration": "{}".format(datetime.now() + timedelta(seconds=-10)),
+            "expiration": f"{datetime.now() + timedelta(seconds=-10)}",
         }
     )  # Add expired token
     db.close()
@@ -93,7 +95,7 @@ def test_user_db():
         {
             "userid": "testuser",
             "token": "token_1234",
-            "expiration": "{}".format(datetime.now() + timedelta(seconds=-10)),
+            "expiration": f"{datetime.now() + timedelta(seconds=-10)}",
         }
     )  # Add expired token
     db.close()

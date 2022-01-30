@@ -24,7 +24,7 @@ A Gitter community has been created for Bumper so users can chat and dig into is
 
 
 ***Testing needed***
-Bumper needs users to assist with testing in order to ensure compatability as bumper moves forward!  If you've tested Bumper with your bot, please open an issue with details on success or issues.
+Bumper needs users to assist with testing in order to ensure compatibility as bumper moves forward!  If you've tested Bumper with your bot, please open an issue with details on success or issues.
 
 ***Please note**: this software is experimental and not ready for production use. Use at your own risk.* 
 

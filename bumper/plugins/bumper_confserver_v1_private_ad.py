@@ -1,29 +1,40 @@
 #!/usr/bin/env python3
 import asyncio
-from aiohttp import web
-from bumper import plugins
 import logging
-import bumper
-from bumper.models import *
-from bumper import plugins
 from datetime import datetime, timedelta
+
+from aiohttp import web
+
+import bumper
+from bumper import plugins
+from bumper.models import *
 
 
 class v1_private_ad(plugins.ConfServerApp):
-
     def __init__(self):
         self.name = "v1_private_ad"
-        self.plugin_type = "sub_api"        
+        self.plugin_type = "sub_api"
         self.sub_api = "api_v1"
-        
-        self.routes = [
-            web.route("*", "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/ad/getAdByPositionType", self.handle_getAdByPositionType, name="v1_ad_getAdByPositionType"),
-            web.route("*", "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/ad/getBootScreen", self.handle_getBootScreen, name="v1_ad_getBootScreen"),
 
+        self.routes = [
+            web.route(
+                "*",
+                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/ad/getAdByPositionType",
+                self.handle_getAdByPositionType,
+                name="v1_ad_getAdByPositionType",
+            ),
+            web.route(
+                "*",
+                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/ad/getBootScreen",
+                self.handle_getBootScreen,
+                name="v1_ad_getBootScreen",
+            ),
         ]
 
-        self.get_milli_time = bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
-   
+        self.get_milli_time = (
+            bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
+        )
+
     async def handle_getAdByPositionType(self, request):  # EcoVacs Home
         try:
             body = {
@@ -37,7 +48,7 @@ class v1_private_ad(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
 
     async def handle_getBootScreen(self, request):  # EcoVacs Home
         try:
@@ -52,7 +63,7 @@ class v1_private_ad(plugins.ConfServerApp):
             return web.json_response(body)
 
         except Exception as e:
-            logging.exception("{}".format(e))
+            logging.exception(f"{e}")
+
 
 plugin = v1_private_ad()
-
