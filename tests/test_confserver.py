@@ -13,6 +13,8 @@ import logging
 from testfixtures import LogCapture
 from unittest.mock import MagicMock
 
+from tests.const import HOST, MQTT_PORT
+
 
 def create_confserver():
     return bumper.ConfServer("127.0.0.1:11111", False)
@@ -36,14 +38,14 @@ def remove_existing_db():
 
 
 async def test_confserver_ssl():
-    conf_server = bumper.ConfServer(("127.0.0.1", 111111), usessl=True)
+    conf_server = bumper.ConfServer((HOST, 111111), usessl=True)
     conf_server.confserver_app()
     asyncio.create_task(conf_server.start_server())
 
 async def test_confserver_exceptions():
     with LogCapture() as l:
 
-            conf_server = bumper.ConfServer(("127.0.0.1", 8007), usessl=True)
+            conf_server = bumper.ConfServer((HOST, 8007), usessl=True)
             conf_server.confserver_app()        
             conf_server.site = web.TCPSite
 
@@ -67,7 +69,7 @@ async def test_confserver_exceptions():
 
 
 async def test_confserver_no_ssl():
-    conf_server = bumper.ConfServer(("127.0.0.1", 111111), usessl=False)
+    conf_server = bumper.ConfServer((HOST, 111111), usessl=False)
     conf_server.confserver_app()
     asyncio.create_task(conf_server.start_server())
 
@@ -89,19 +91,18 @@ async def test_base(aiohttp_client):
     bumper.db = "tests/tmp.db"  # Set db location for testing
     
     # Start MQTT
-    mqtt_address = ("127.0.0.1", 8883)    
-    mqtt_server = bumper.MQTTServer(mqtt_address, password_file="tests/passwd")
+    mqtt_server = bumper.MQTTServer(HOST, MQTT_PORT, password_file="tests/passwd")
     bumper.mqtt_server = mqtt_server
     await mqtt_server.broker_coro()
 
     # Start XMPP
-    xmpp_address = ("127.0.0.1", 5223)
+    xmpp_address = (HOST, 5223)
     xmpp_server = bumper.XMPPServer(xmpp_address)
     bumper.xmpp_server = xmpp_server
     await xmpp_server.start_async_server()
     
     # Start Helperbot
-    mqtt_helperbot = bumper.MQTTHelperBot(mqtt_address)
+    mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
     bumper.mqtt_helperbot = mqtt_helperbot
     await mqtt_helperbot.start_helper_bot()
 
@@ -121,19 +122,18 @@ async def test_restartService(aiohttp_client):
     bumper.db = "tests/tmp.db"  # Set db location for testing
     
     # Start MQTT
-    mqtt_address = ("127.0.0.1", 8883)    
-    mqtt_server = bumper.MQTTServer(mqtt_address, password_file="tests/passwd")
+    mqtt_server = bumper.MQTTServer(HOST, MQTT_PORT, password_file="tests/passwd")
     bumper.mqtt_server = mqtt_server
     await mqtt_server.broker_coro()
 
     # Start XMPP
-    xmpp_address = ("127.0.0.1", 5223)
+    xmpp_address = (HOST, 5223)
     xmpp_server = bumper.XMPPServer(xmpp_address)
     bumper.xmpp_server = xmpp_server
     await xmpp_server.start_async_server()
     
     # Start Helperbot
-    mqtt_helperbot = bumper.MQTTHelperBot(mqtt_address)
+    mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
     bumper.mqtt_helperbot = mqtt_helperbot
     await mqtt_helperbot.start_helper_bot()
 
@@ -830,7 +830,7 @@ async def test_lg_logs(aiohttp_client):
     bumper.bot_set_mqtt("did_1234", True)
     confserver = create_confserver()
     client = await aiohttp_client(create_app)
-    bumper.mqtt_helperbot = bumper.mqttserver.MQTTHelperBot("127.0.0.1")
+    bumper.mqtt_helperbot = bumper.mqttserver.MQTTHelperBot(HOST, MQTT_PORT)
 
     # Test return get status
     command_getstatus_resp = {
@@ -889,7 +889,7 @@ async def test_devmgr(aiohttp_client):
     bumper.db = "tests/tmp.db"  # Set db location for testing
     confserver = create_confserver()
     client = await aiohttp_client(create_app)
-    bumper.mqtt_helperbot = bumper.mqttserver.MQTTHelperBot("127.0.0.1")
+    bumper.mqtt_helperbot = bumper.mqttserver.MQTTHelperBot(HOST, MQTT_PORT)
 
     # Test PollSCResult
     postbody = {"td": "PollSCResult"}
@@ -945,7 +945,7 @@ async def test_dim_devmanager(aiohttp_client):
     bumper.db = "tests/tmp.db"  # Set db location for testing
     confserver = create_confserver()
     client = await aiohttp_client(create_app)
-    bumper.mqtt_helperbot = bumper.mqttserver.MQTTHelperBot("127.0.0.1")
+    bumper.mqtt_helperbot = bumper.mqttserver.MQTTHelperBot(HOST, MQTT_PORT)
 
     # Test PollSCResult
     postbody = {"td": "PollSCResult"}

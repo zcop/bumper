@@ -42,18 +42,22 @@ class CommandDto:
 
 class MQTTHelperBot:
     Client = None
-    wait_resp_timeout_seconds = 60
 
-    def __init__(self, host: str, port: int):
-        self._commands: MutableMapping[str, CommandDto] = TTLCache(maxsize=self.wait_resp_timeout_seconds * 60,
-                                                                   ttl=self.wait_resp_timeout_seconds + 10)
+    def __init__(self, host: str, port: int, timeout: float = 60):
+        self._commands: MutableMapping[str, CommandDto] = TTLCache(maxsize=timeout * 60,
+                                                                   ttl=timeout*1.1)
         self._host = host
         self._port = port
         self.client_id = "helperbot@bumper/helperbot"
+        self._timeout = timeout
 
     @property
     def commands(self) -> MutableMapping[str, CommandDto]:
         return self._commands
+
+    @property
+    def timeout(self)->float:
+        return self._timeout
 
     async def start_helper_bot(self):
         try:
@@ -74,7 +78,7 @@ class MQTTHelperBot:
 
     async def _wait_for_resp(self, command_dto: CommandDto, request_id: str):
         try:
-            payload = await asyncio.wait_for(command_dto.wait_for_response(), timeout=self.wait_resp_timeout_seconds)
+            payload = await asyncio.wait_for(command_dto.wait_for_response(), timeout=self.timeout)
             return {
                 "id": request_id,
                 "ret": "ok",

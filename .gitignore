@@ -7,10 +7,11 @@ __pycache__
 !.dockerignore
 
 # Ignore items in test (report, cache, etc), except files starting with test
-tests/* 
+tests/logs
+tests/tmp.db
 !tests/test*
 !tests/test_certs
-!tests/pytest.ini
+!pytest.ini
 !tests/passwd
 !tests/passwd_bad
 
