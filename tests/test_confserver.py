@@ -105,7 +105,7 @@ async def test_base(conf_server_client):
     resp = await conf_server_client.get("/")
     assert resp.status == 200
 
-    mqtt_helperbot.Client.disconnect()
+    await mqtt_helperbot.Client.disconnect()
 
     bumper.xmpp_server.disconnect()
 
@@ -135,7 +135,7 @@ async def test_restartService(conf_server_client):
     resp = await conf_server_client.get("/restart_XMPPServer")
     assert resp.status == 200
 
-    mqtt_helperbot.Client.disconnect()
+    await mqtt_helperbot.Client.disconnect()
 
     xmpp_server.disconnect()
 
@@ -155,7 +155,9 @@ async def test_login(conf_server_client):
     bumper.db = "tests/tmp.db"  # Set db location for testing
 
     # Test without user
-    resp = await conf_server_client.get("/v1/private/us/en/dev_1234/ios/1/0/0/user/login")
+    resp = await conf_server_client.get(
+        "/v1/private/us/en/dev_1234/ios/1/0/0/user/login"
+    )
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -168,7 +170,9 @@ async def test_login(conf_server_client):
     bumper.db = "tests/tmp.db"  # Set db location for testing
 
     # Test global_e without user
-    resp = await conf_server_client.get("/v1/private/us/en/dev_1234/global_e/1/0/0/user/login")
+    resp = await conf_server_client.get(
+        "/v1/private/us/en/dev_1234/global_e/1/0/0/user/login"
+    )
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -179,7 +183,9 @@ async def test_login(conf_server_client):
 
     # Add a user to db and test with existing users
     bumper.user_add("testuser")
-    resp = await conf_server_client.get("/v1/private/us/en/dev_1234/ios/1/0/0/user/login")
+    resp = await conf_server_client.get(
+        "/v1/private/us/en/dev_1234/ios/1/0/0/user/login"
+    )
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -190,7 +196,9 @@ async def test_login(conf_server_client):
 
     # Add a bot to db that will be added to user
     bumper.bot_add("sn_123", "did_123", "dev_123", "res_123", "com_123")
-    resp = await conf_server_client.get("/v1/private/us/en/dev_1234/ios/1/0/0/user/login")
+    resp = await conf_server_client.get(
+        "/v1/private/us/en/dev_1234/ios/1/0/0/user/login"
+    )
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -209,7 +217,9 @@ async def test_login(conf_server_client):
     }
     bumper.bot_full_upsert(newbot)
 
-    resp = await conf_server_client.get("/v1/private/us/en/dev_1234/ios/1/0/0/user/login")
+    resp = await conf_server_client.get(
+        "/v1/private/us/en/dev_1234/ios/1/0/0/user/login"
+    )
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -386,7 +396,9 @@ async def test_checkAgreement(conf_server_client):
     remove_existing_db()
     bumper.db = "tests/tmp.db"  # Set db location for testing
 
-    resp = await conf_server_client.get("/v1/private/us/en/dev_1234/ios/1/0/0/user/checkAgreement")
+    resp = await conf_server_client.get(
+        "/v1/private/us/en/dev_1234/ios/1/0/0/user/checkAgreement"
+    )
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -419,7 +431,9 @@ async def test_checkVersion(conf_server_client):
     remove_existing_db()
     bumper.db = "tests/tmp.db"  # Set db location for testing
 
-    resp = await conf_server_client.get("/v1/private/us/en/dev_1234/ios/1/0/0/common/checkVersion")
+    resp = await conf_server_client.get(
+        "/v1/private/us/en/dev_1234/ios/1/0/0/common/checkVersion"
+    )
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -543,7 +557,9 @@ async def test_neng_hasUnreadMessage(conf_server_client):
         },
         "count": 20,
     }
-    resp = await conf_server_client.post("/api/neng/message/hasUnreadMsg", json=postbody)
+    resp = await conf_server_client.post(
+        "/api/neng/message/hasUnreadMsg", json=postbody
+    )
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
