@@ -2,6 +2,11 @@ ARG ARCH=amd64
 
 FROM $ARCH/python:3.7-alpine
 
+EXPOSE 443
+EXPOSE 5223
+EXPOSE 8007
+EXPOSE 8883
+
 COPY requirements.txt /requirements.txt
 
 # install required python packages
