@@ -24,7 +24,7 @@ repos:
     hooks:
       - id: codespell
         args:
-          - --ignore-words-list=hass,deebot
+          - -L bumper
           - --skip="./.*,*.csv,*.json"
           - --quiet-level=2
         exclude_types: [csv, json]

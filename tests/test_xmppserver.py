@@ -312,7 +312,7 @@ async def test_client_init(*args, **kwargs):
     # Reset mock calls
     mock_send.reset_mock()
 
-    # Send presense from client
+    # Send presence from client
     test_data = b'<presence type="available"/>'
     xmppclient._parse_data(test_data)
 
@@ -418,7 +418,7 @@ async def test_bot_init(*args, **kwargs):
     # Reset mock calls
     mock_send.reset_mock()
 
-    # Send presense from bot
+    # Send presence from bot
     test_data = b"<presence><status>hello world</status></presence><iq type='result' from='E0000000000000001234@159.ecorobot.net/atom' to='ecouser.net' id='s2c1'/>"
     xmppclient._parse_data(test_data)
 

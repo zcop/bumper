@@ -756,7 +756,7 @@ class XMPPAsyncClient:
             if (
                 "no element found" in e.msg
             ):  # Element not closed or not all bytes received
-                # Happens wth connect stream often
+                # Happens with connect stream often
                 if "<stream:stream " in newdata:
                     if self.state == self.CONNECT or self.state == self.INIT:
                         self._handle_connect(newdata.encode("utf-8"))
