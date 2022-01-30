@@ -1,15 +1,17 @@
-from unittest import mock
-import bumper
 import asyncio
-import pytest
-import os
 import json
-import tinydb
-import pytest_asyncio
-import xml.etree.ElementTree as ET
+import os
 import socket
-from testfixtures import LogCapture
 import ssl
+import xml.etree.ElementTree as ET
+from unittest import mock
+
+import pytest
+import pytest_asyncio
+import tinydb
+from testfixtures import LogCapture
+
+import bumper
 
 
 def return_send_data(data, *args, **kwargs):

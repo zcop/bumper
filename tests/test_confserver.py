@@ -1,18 +1,20 @@
-from unittest import mock
-import bumper
 import asyncio
-import pytest
-import os
+import datetime
 import json
-import tinydb
-import pytest_aiohttp
-import pytest_asyncio
-import datetime, time
-from aiohttp import web
 import logging
-from testfixtures import LogCapture
+import os
+import time
+from unittest import mock
 from unittest.mock import MagicMock
 
+import pytest
+import pytest_aiohttp
+import pytest_asyncio
+import tinydb
+from aiohttp import web
+from testfixtures import LogCapture
+
+import bumper
 from tests.const import HOST, MQTT_PORT
 
 

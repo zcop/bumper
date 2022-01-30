@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
+import asyncio
+import base64
 import logging
 import re
+import ssl
 import uuid
 import xml.etree.ElementTree as ET
-import base64
-import ssl
-import bumper
-import asyncio
 
+import bumper
 from bumper import get_logger
 
 xmppserverlog = get_logger("xmppserver")
