@@ -184,7 +184,7 @@ class ConfServer:
 
             bots = bumper.db_get().table("bots").all()
             clients = bumper.db_get().table("clients").all()
-            helperbot = bumper.mqtt_helperbot.Client.session.transitions.state
+            helperbot = bumper.mqtt_helperbot.client.session.transitions.state
             mqttserver = bumper.mqtt_server.broker
             xmppserver = bumper.xmpp_server
             mq_sessions = []
@@ -284,8 +284,8 @@ class ConfServer:
 
     async def restart_Helper(self):
 
-        await bumper.mqtt_helperbot.Client.disconnect()
-        asyncio.create_task(bumper.mqtt_helperbot.start_helper_bot())
+        await bumper.mqtt_helperbot.client.disconnect()
+        asyncio.create_task(bumper.mqtt_helperbot.start())
 
     async def restart_MQTT(self):
 
@@ -307,7 +307,7 @@ class ConfServer:
 
         aloop = asyncio.get_event_loop()
         aloop.call_later(
-            1.5, lambda: asyncio.create_task(bumper.mqtt_server.broker_coro())
+            1.5, lambda: asyncio.create_task(bumper.mqtt_server.start())
         )  # In 1.5 seconds start broker
 
     async def restart_XMPP(self):

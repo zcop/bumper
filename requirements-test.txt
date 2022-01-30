@@ -9,6 +9,4 @@ pytest-env==0.6.2
 pytest-timeout==2.1.0
 testfixtures==6.18.3
 types-cachetools==4.2.9
-
-#pbr = "*"
-#autoflake = "*"
+types-setuptools==57.4.8

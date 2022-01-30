@@ -7,7 +7,7 @@ from tests import HOST, MQTT_PORT
 @pytest.fixture
 async def mqtt_server():
     mqtt_server = bumper.MQTTServer(HOST, MQTT_PORT, password_file="tests/passwd")
-    await mqtt_server.broker_coro()
+    await mqtt_server.start()
     bumper.mqtt_server = mqtt_server
 
     yield

@@ -100,12 +100,12 @@ async def test_base(conf_server_client):
     # Start Helperbot
     mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
     bumper.mqtt_helperbot = mqtt_helperbot
-    await mqtt_helperbot.start_helper_bot()
+    await mqtt_helperbot.start()
 
     resp = await conf_server_client.get("/")
     assert resp.status == 200
 
-    await mqtt_helperbot.Client.disconnect()
+    await mqtt_helperbot.client.disconnect()
 
     bumper.xmpp_server.disconnect()
 
@@ -124,7 +124,7 @@ async def test_restartService(conf_server_client):
     # Start Helperbot
     mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
     bumper.mqtt_helperbot = mqtt_helperbot
-    await mqtt_helperbot.start_helper_bot()
+    await mqtt_helperbot.start()
 
     resp = await conf_server_client.get("/restart_Helperbot")
     assert resp.status == 200
@@ -135,7 +135,7 @@ async def test_restartService(conf_server_client):
     resp = await conf_server_client.get("/restart_XMPPServer")
     assert resp.status == 200
 
-    await mqtt_helperbot.Client.disconnect()
+    await mqtt_helperbot.client.disconnect()
 
     xmpp_server.disconnect()
 

@@ -125,19 +125,19 @@ async def start():
 
     # Start MQTT Server
     # await start otherwise we get an error connecting the helper bot
-    await asyncio.create_task(mqtt_server.broker_coro())
+    await asyncio.create_task(mqtt_server.start())
 
     # Start MQTT Helperbot
-    asyncio.create_task(mqtt_helperbot.start_helper_bot())
+    asyncio.create_task(mqtt_helperbot.start())
 
     # Start XMPP Server
     asyncio.create_task(xmpp_server.start_async_server())
 
     # Wait for helperbot to connect first
-    while mqtt_helperbot.Client is None:
+    while mqtt_helperbot.client is None:
         await asyncio.sleep(0.1)
 
-    while not mqtt_helperbot.Client.session.transitions.state == "connected":
+    while not mqtt_helperbot.client.session.transitions.state == "connected":
         await asyncio.sleep(0.1)
 
     # Start web servers
@@ -177,7 +177,7 @@ async def shutdown():
                 await asyncio.sleep(0.1)
             if mqtt_server.broker.transitions.state == "started":
                 await mqtt_server.broker.shutdown()
-                await mqtt_helperbot.Client.disconnect()
+                await mqtt_helperbot.client.disconnect()
         if xmpp_server.server:
             if xmpp_server.server._serving:
                 xmpp_server.server.close()
