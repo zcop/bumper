@@ -14,11 +14,11 @@ from testfixtures import LogCapture
 import bumper
 
 
-def return_send_data(data, *args, **kwargs):
+def return_send_data(data):
     return data
 
 
-def mock_transport_extra_info(*args, **kwargs):
+def mock_transport_extra_info():
     return ("127.0.0.1", 5223)
 
 
@@ -59,8 +59,8 @@ async def test_xmpp_server():
     xmpp_server.disconnect()
 
 
-async def test_client_connect_no_starttls(*args, **kwargs):
-    test_transport = asyncio.Transport()
+async def test_client_connect_no_starttls():
+    test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
     xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
@@ -98,8 +98,8 @@ async def test_client_connect_no_starttls(*args, **kwargs):
     assert xmppclient.state == xmppclient.INIT  # Client moved to INIT state
 
 
-async def test_client_end_stream(*args, **kwargs):
-    test_transport = asyncio.Transport()
+async def test_client_end_stream():
+    test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
     xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
@@ -130,8 +130,8 @@ async def test_client_end_stream(*args, **kwargs):
     xmppclient._parse_data(test_data)
 
 
-async def test_client_connect_starttls_called(*args, **kwargs):
-    test_transport = asyncio.Transport()
+async def test_client_connect_starttls_called():
+    test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
     xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
@@ -199,65 +199,9 @@ async def test_client_connect_starttls_called(*args, **kwargs):
     assert xmppclient.state == xmppclient.INIT  # Client moved to INIT state
 
 
-async def test_xmpp_server_client_tls():
 
-    xmpp_address = ("127.0.0.1", 5223)
-    xmpp_server = bumper.XMPPServer(xmpp_address)
-    await xmpp_server.start_async_server()
-
-    with LogCapture("xmppserver") as l:
-
-        async def do_stuff_after_start_tls(
-            ssl_reader, ssl_writer
-        ):  # Used after starttls
-
-            writer.write(
-                b"<stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0' to='ecouser.net'>"
-            )  # New Stream
-
-            await writer.drain()
-
-            writer.write(
-                b'<auth xmlns="urn:ietf:params:xml:ns:xmpp-sasl" mechanism="PLAIN">AGZ1aWRfdG1wdXNlcgAwL0lPU0Y1M0QwN0JBL3VzXzg5ODgwMmZkYmM0NDQxYjBiYzgxNWIxZDFjNjgzMDJl</auth>'
-            )  # Send Auth
-
-            await writer.drain()
-
-    reader, writer = await asyncio.open_connection("127.0.0.1", 5223)
-
-    writer.write(
-        b"<stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0' to='ecouser.net'>"
-    )  # Start stream
-    await writer.drain()
-
-    await asyncio.sleep(0.1)
-
-    writer.write(
-        b"<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>"
-    )  # Send StartTLS
-    await writer.drain()
-
-    await asyncio.sleep(0.1)
-
-    # Below will upgrade connection to TLS then callback to "do_stuff_after_start_tls"
-    ssl_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-    ssl_context.check_hostname = False
-    ssl_context.load_verify_locations(cafile=bumper.ca_cert)
-    loop = asyncio.get_event_loop()
-    transport = writer.transport
-    protocol = writer.transport.get_protocol()
-    new_transport = await loop.start_tls(
-        transport, protocol, ssl_context, server_side=False
-    )
-    protocol._stream_reader = asyncio.StreamReader(loop=loop)
-    protocol._client_connected_cb = do_stuff_after_start_tls
-    protocol.connection_made(new_transport)
-
-    print(l)
-
-
-async def test_client_init(*args, **kwargs):
-    test_transport = asyncio.Transport()
+async def test_client_init():
+    test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
     xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
@@ -324,8 +268,8 @@ async def test_client_init(*args, **kwargs):
     )  # client presence - dummy response
 
 
-async def test_bot_connect(*args, **kwargs):
-    test_transport = asyncio.Transport()
+async def test_bot_connect():
+    test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
     xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
@@ -364,8 +308,8 @@ async def test_bot_connect(*args, **kwargs):
     assert xmppclient.type == xmppclient.BOT  # Client type is now bot
 
 
-async def test_bot_init(*args, **kwargs):
-    test_transport = asyncio.Transport()
+async def test_bot_init():
+    test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
     xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
@@ -430,8 +374,8 @@ async def test_bot_init(*args, **kwargs):
     )  # bot presence - dummy response
 
 
-async def test_ping_server(*args, **kwargs):
-    test_transport = asyncio.Transport()
+async def test_ping_server():
+    test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
     xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
@@ -450,9 +394,8 @@ async def test_ping_server(*args, **kwargs):
     )  # ping response
 
 
-async def test_ping_client_to_client(*args, **kwargs):
-
-    test_transport = asyncio.Transport()
+async def test_ping_client_to_client():
+    test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
     xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
@@ -478,7 +421,7 @@ async def test_ping_client_to_client(*args, **kwargs):
 
     assert (
         mock_send2.mock_calls[0][1][0]
-        == '<iq from="E0000000000000001234@159.ecorobot.net/atom" id="104934615" to="fuid_tmpuser@ecouser.net/IOSF53D07BA" type="get"><ping xmlns="urn:xmpp:ping" /></iq>'
+        == '<iq id="104934615" to="fuid_tmpuser@ecouser.net/IOSF53D07BA" type="get" from="E0000000000000001234@159.ecorobot.net/atom"><ping xmlns="urn:xmpp:ping" /></iq>'
     )  # ping response
 
     # Ping response from bot to user
@@ -487,12 +430,12 @@ async def test_ping_client_to_client(*args, **kwargs):
 
     assert (
         mock_send.mock_calls[0][1][0]
-        == '<iq from="fuid_tmpuser@ecouser.net/IOSF53D07BA" id="104934615" to="E0000000000000001234@159.ecorobot.net/atom" type="result" />'
+        ==  '<iq type="result" to="E0000000000000001234@159.ecorobot.net/atom" id="104934615" from="fuid_tmpuser@ecouser.net/IOSF53D07BA" />'
     )  # ping response
 
 
-async def test_client_send_iq(*args, **kwargs):
-    test_transport = asyncio.Transport()
+async def test_client_send_iq():
+    test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
     xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
@@ -534,7 +477,7 @@ async def test_client_send_iq(*args, **kwargs):
 
     assert (
         mock_send2.mock_calls[0][1][0]
-        == '<iq from="fuid_tmpuser@ecouser.net/IOSF53D07BA" id="7" to="E0000000000000001234@159.ecorobot.net/atom" type="set"><query xmlns="com:ctl"><ctl id="72107787" td="GetCleanState" /></query></iq>'
+        == '<iq id="7" to="E0000000000000001234@159.ecorobot.net/atom" type="set" from="fuid_tmpuser@ecouser.net/IOSF53D07BA"><query xmlns="com:ctl"><ctl id="72107787" td="GetCleanState" /></query></iq>'
     )  # command was sent to bot
 
     # Reset mock calls
@@ -546,7 +489,7 @@ async def test_client_send_iq(*args, **kwargs):
 
     assert (
         mock_send.mock_calls[0][1][0]
-        == '<iq from="E0000000000000001234@159.ecorobot.net/atom" id="2679" to="fuid_tmpuser@ecouser.net/IOSF53D07BA" type="set"><query xmlns="com:ctl"><ctl td="ChargeState"><charge h="0" r="a" type="Going" /></ctl></query></iq>'
+        == '<iq id="2679" to="fuid_tmpuser@ecouser.net/IOSF53D07BA" type="set" from="E0000000000000001234@159.ecorobot.net/atom"><query xmlns="com:ctl"><ctl td="ChargeState"><charge h="0" r="a" type="Going" /></ctl></query></iq>'
     )  # result sent to client
 
     # Reset mock calls
@@ -558,7 +501,7 @@ async def test_client_send_iq(*args, **kwargs):
 
     assert (
         mock_send.mock_calls[0][1][0]
-        == '<iq from="E0000000000000001234@159.ecorobot.net/atom" id="s2c1" to="ecouser.net" type="result" />'
+        == '<iq type="result" from="E0000000000000001234@159.ecorobot.net/atom" to="ecouser.net" id="s2c1" />'
     )  # result sent to ecouser.net
 
     # Reset mock calls
@@ -570,7 +513,7 @@ async def test_client_send_iq(*args, **kwargs):
 
     assert (
         mock_send.mock_calls[0][1][0]
-        == '<iq from="E0000000000000001234@159.ecorobot.net/atom" id="2700" to="fuid_tmpuser@ecouser.net/IOSF53D07BA" type="set"><query xmlns="com:ctl"><ctl td="BatteryInfo"><battery power="100" /></ctl></query></iq>'
+        == '<iq to="fuid_tmpuser@ecouser.net/IOSF53D07BA" type="set" id="2700" from="E0000000000000001234@159.ecorobot.net/atom"><query xmlns="com:ctl"><ctl td="BatteryInfo"><battery power="100" /></ctl></query></iq>'
     )  # result sent to ecouser.net
 
     # Reset mock calls
@@ -582,7 +525,7 @@ async def test_client_send_iq(*args, **kwargs):
 
     assert (
         mock_send.mock_calls[0][1][0]
-        == '<iq from="E0000000000000001234@159.ecorobot.net/atom" id="631" to="fuid_tmpuser@ecouser.net/IOSF53D07BA" type="set"><query xmlns="com:ctl"><ctl errs="102" td="error" /></query></iq>'
+        == '<iq to="fuid_tmpuser@ecouser.net/IOSF53D07BA" type="set" id="631" from="E0000000000000001234@159.ecorobot.net/atom"><query xmlns="com:ctl"><ctl td="error" errs="102" /></query></iq>'
     )  # result sent to ecouser.net
 
     # Reset mock calls
@@ -593,7 +536,7 @@ async def test_client_send_iq(*args, **kwargs):
     xmppclient2._parse_data(test_data)
     assert (
         mock_send.mock_calls[0][1][0]
-        == '<iq xmlns="com:sf" from="E0000000000000001234@159.ecorobot.net/atom" id="1234" to="rl.ecorobot.net" type="set"><query xmlns="com:ctl"><sf f="E0000000000000001234@159.ecorobot.net" g="fuid_tmpuser@ecouser.net" k="DeviceAlert" t="log" td="pub" tp="p" ts="1559893796000" v="DorpError" /></query></iq>'
+        == ('<iq xmlns="com:sf" to="rl.ecorobot.net" type="set" id="1234" from="E0000000000000001234@159.ecorobot.net/atom"><query xmlns="com:ctl"><sf td="pub" t="log" ts="1559893796000" tp="p" k="DeviceAlert" v="DorpError" f="E0000000000000001234@159.ecorobot.net" g="fuid_tmpuser@ecouser.net" /></query></iq>')
     )  # result sent to ecouser.net
 
     # Reset mock calls

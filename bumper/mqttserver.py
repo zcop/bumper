@@ -28,7 +28,7 @@ class CommandDto:
         self._event = asyncio.Event()
         self._response: Union[str, bytes]
 
-    async def wait_for_response(self) -> Union[str, Dict[str, Any]]:
+    async def wait_for_response(self) -> Union[str, dict[str, Any]]:
         await self._event.wait()
         if self._payload_type == "j":
             return json.loads(self._response)
@@ -87,7 +87,7 @@ class MQTTHelperBot:
 
     async def _wait_for_resp(
         self, command_dto: CommandDto, request_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         try:
             payload = await asyncio.wait_for(
                 command_dto.wait_for_response(), timeout=self.timeout
@@ -108,8 +108,8 @@ class MQTTHelperBot:
         }
 
     async def send_command(
-        self, cmdjson: Dict[str, Any], request_id: str
-    ) -> Dict[str, Any]:
+        self, cmdjson: dict[str, Any], request_id: str
+    ) -> dict[str, Any]:
         if self.client is None:
             await self.start()
             assert self.client is not None
@@ -148,7 +148,7 @@ class MQTTHelperBot:
 
 
 class MQTTServer:
-    def __init__(self, host: str, port: int, **kwargs: Dict[str, Any]) -> None:
+    def __init__(self, host: str, port: int, **kwargs: dict[str, Any]) -> None:
         try:
             self._host = host
             self._port = port
@@ -226,7 +226,7 @@ class BumperMQTTServer_Plugin:
         except Exception as e:
             mqttserverlog.exception(f"{e}")
 
-    async def authenticate(self, session: Session, **kwargs: Dict[str, Any]) -> bool:
+    async def authenticate(self, session: Session, **kwargs: dict[str, Any]) -> bool:
         authenticated = False
         username = session.username
         password = session.password
@@ -314,9 +314,9 @@ class BumperMQTTServer_Plugin:
 
         return authenticated
 
-    def _read_password_file(self) -> Dict[str, str]:
+    def _read_password_file(self) -> dict[str, str]:
         password_file = self.auth_config.get("password-file", None)
-        users: Dict[str, str] = {}
+        users: dict[str, str] = {}
         if password_file:
             try:
                 with open(password_file) as f:
@@ -357,7 +357,7 @@ class BumperMQTTServer_Plugin:
             bumper.client_set_mqtt(client["resource"], connected)
 
     async def on_broker_message_received(
-        self, message: IncomingApplicationMessage, **kwargs: Dict[str, Any]
+        self, message: IncomingApplicationMessage, **kwargs: dict[str, Any]
     ) -> None:
         topic = message.topic
         topic_split = str(topic).split("/")

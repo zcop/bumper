@@ -9,7 +9,7 @@ on:
       - dev
 
 env:
-  DEFAULT_PYTHON: 3.7
+  DEFAULT_PYTHON: 3.9
 
 jobs:
   code-quality:

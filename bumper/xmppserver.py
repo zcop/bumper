@@ -40,17 +40,9 @@ class XMPPServer:
 
             self.server_coro = loop.create_task(self.server.serve_forever())
 
-        except PermissionError as e:
-            xmppserverlog.error(e.strerror)
-            asyncio.create_task(bumper.shutdown())
-            pass
-
-        except asyncio.CancelledError:
-            pass
-
         except Exception as e:
             xmppserverlog.exception(f"{e}")
-            asyncio.create_task(bumper.shutdown())
+            raise e
 
     def disconnect(self):
 

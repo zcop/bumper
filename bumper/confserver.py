@@ -159,17 +159,9 @@ class ConfServer:
                 )
 
             await self.site.start()
-
-        except PermissionError as e:
-            confserverlog.error(e.strerror)
-            asyncio.create_task(bumper.shutdown())
-
-        except asyncio.CancelledError:
-            pass
-
         except Exception as e:
             confserverlog.exception(f"{e}")
-            asyncio.create_task(bumper.shutdown())
+            raise e
 
     async def stop_server(self):
         try:

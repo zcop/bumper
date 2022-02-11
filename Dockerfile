@@ -1,6 +1,6 @@
 ARG ARCH=amd64
 
-FROM $ARCH/python:3.7-alpine
+FROM $ARCH/python:3.9-alpine
 
 EXPOSE 443
 EXPOSE 5223
