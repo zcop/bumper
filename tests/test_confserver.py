@@ -28,48 +28,13 @@ def remove_existing_db():
 
 
 async def test_confserver_ssl():
-    conf_server = bumper.ConfServer((HOST, 111111), usessl=True)
+    conf_server = bumper.ConfServer((HOST, 11111), usessl=True)
     conf_server.confserver_app()
-    asyncio.create_task(conf_server.start_server())
-
-
-async def test_confserver_exceptions():
-    with LogCapture() as l:
-
-        conf_server = bumper.ConfServer((HOST, 8007), usessl=True)
-        conf_server.confserver_app()
-        conf_server.site = web.TCPSite
-
-        # bind permission
-        conf_server.site.start = mock.Mock(
-            side_effect=OSError(
-                1,
-                "error while attempting to bind on address ('127.0.0.1', 8007): permission denied",
-            )
-        )
-        await conf_server.start_server()
-
-        # asyncio Cancel
-        conf_server.site = web.TCPSite
-        conf_server.site.start = mock.Mock(side_effect=asyncio.CancelledError)
-        await conf_server.start_server()
-
-        # general exception
-        conf_server.site = web.TCPSite
-        conf_server.site.start = mock.Mock(side_effect=Exception(1, "general"))
-        await conf_server.start_server()
-
-    l.check_present(
-        (
-            "confserver",
-            "ERROR",
-            "error while attempting to bind on address ('127.0.0.1', 8007): permission denied",
-        )
-    )
+    await conf_server.start_server()
 
 
 async def test_confserver_no_ssl():
-    conf_server = bumper.ConfServer((HOST, 111111), usessl=False)
+    conf_server = bumper.ConfServer((HOST, 11112), usessl=False)
     conf_server.confserver_app()
     await conf_server.start_server()
 
