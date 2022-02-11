@@ -153,12 +153,11 @@ def include_EcoVacsHomeProducts_info(bot) -> Dict[str, Any]:
 
             # mqtt_connection is not always set correctly, therefore workaround until fixed properly
             for session in bumper.mqtt_server.broker._sessions:
-                did = str(session[0].client_id).split("@")[0]
+                did = session.split("@")[0]
                 if did == bot["did"]:
                     result["status"] = 1
 
             return result
-
 
 # EcoVacs Home Product IOT Map - 2021-04-15
 # https://portal-ww.ecouser.net/api/pim/product/getProductIotMap
