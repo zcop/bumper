@@ -122,7 +122,7 @@ class OAuth:
         return data
 
 
-def include_EcoVacsHomeProducts_info(bot) -> Dict[str, Any]:
+def include_EcoVacsHomeProducts_info(bot) -> dict[str, Any]:
     result = copy.deepcopy(bot)
 
     for botprod in EcoVacsHomeProducts:
