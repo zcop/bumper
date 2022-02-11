@@ -53,9 +53,12 @@ async def test_start_stop_debug():
         asyncio.create_task(b.start())
 
         await asyncio.sleep(0.1)
-        asyncio.create_task(b.shutdown())
+        while b.mqtt_server.broker.transitions.state == "starting":
+            await asyncio.sleep(0.1)
         l.check_present(("bumper", "INFO", "Starting Bumper"))
         l.clear()
+
+        asyncio.create_task(b.shutdown())
         await asyncio.sleep(0.1)
         l.check_present(
             ("bumper", "INFO", "Shutting down"), ("bumper", "INFO", "Shutdown complete")
