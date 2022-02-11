@@ -352,37 +352,6 @@ def bot_get(did):
     Bot = Query()
     return bots.get(Bot.did == did)
 
-
-def bot_toEcoVacsHome_JSON(bot):  # EcoVacs Home
-    for botprod in EcoVacsHomeProducts:
-        if botprod["classid"] == bot["class"]:
-            bot["UILogicId"] = botprod["product"]["UILogicId"]
-            bot["ota"] = botprod["product"]["ota"]
-            bot["icon"] = botprod["product"]["iconUrl"]
-            bot["model"] = botprod["product"]["model"]
-            bot["pip"] = botprod["product"]["_id"]
-            bot["deviceName"] = botprod["product"]["name"]
-            bot["materialNo"] = botprod["product"]["materialNo"]
-            bot["product_category"] = (
-                "DEEBOT"
-                if botprod["product"]["name"].startswith("DEEBOT")
-                else "UNKNOWN"
-            )
-            # bot["updateInfo"] = {
-            #     "changeLog": "",
-            #     "needUpdate": False
-            # }
-            # bot["service"] = {
-            #     "jmq": "jmq-ngiot-eu.dc.ww.ecouser.net",
-            #     "mqs": "api-ngiot.dc-as.ww.ecouser.net"
-            # }
-            bot["status"] = 1 if bot["mqtt_connection"] or bot["xmpp_connection"] else 0
-
-            return json.dumps(
-                bot, default=lambda o: o.__dict__, sort_keys=False
-            )  # , indent=4)
-
-
 def bot_full_upsert(vacbot):
     bots = db_get().table("bots")
     Bot = Query()

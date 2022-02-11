@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+import copy
 import json
 import uuid
 from datetime import datetime, timedelta
+from typing import Dict, Any
 
 import bumper
 
@@ -118,6 +120,44 @@ class OAuth:
             datetime.fromisoformat(self.expire_at).timestamp()
         )
         return data
+
+
+def include_EcoVacsHomeProducts_info(bot) -> Dict[str, Any]:
+    result = copy.deepcopy(bot)
+
+    for botprod in EcoVacsHomeProducts:
+        if botprod["classid"] == result["class"]:
+            result["UILogicId"] = botprod["product"]["UILogicId"]
+            result["ota"] = botprod["product"]["ota"]
+            result["icon"] = botprod["product"]["iconUrl"]
+            result["model"] = botprod["product"]["model"]
+            result["pip"] = botprod["product"]["_id"]
+            result["deviceName"] = botprod["product"]["name"]
+            result["materialNo"] = botprod["product"]["materialNo"]
+            result["product_category"] = (
+                "DEEBOT"
+                if botprod["product"]["name"].startswith("DEEBOT")
+                else "UNKNOWN"
+            )
+            # bot["updateInfo"] = {
+            #     "changeLog": "",
+            #     "needUpdate": False
+            # }
+            # bot["service"] = {
+            #     "jmq": "jmq-ngiot-eu.dc.ww.ecouser.net",
+            #     "mqs": "api-ngiot.dc-as.ww.ecouser.net"
+            # }
+
+            # todo refactor it
+            result["status"] = 1 if bot["mqtt_connection"] or bot["xmpp_connection"] else 0
+
+            # mqtt_connection is not always set correctly, therefore workaround until fixed properly
+            for session in bumper.mqtt_server.broker._sessions:
+                did = str(session[0].client_id).split("@")[0]
+                if did == bot["did"]:
+                    result["status"] = 1
+
+            return result
 
 
 # EcoVacs Home Product IOT Map - 2021-04-15

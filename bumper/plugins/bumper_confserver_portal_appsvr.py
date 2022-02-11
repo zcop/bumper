@@ -41,12 +41,8 @@ class portal_api_appsvr(plugins.ConfServerApp):
     async def handle_appsvr_app(self, request):
         if not request.method == "GET":  # Skip GET for now
             try:
-
-                body = {}
-                postbody = {}
                 if request.content_type == "application/x-www-form-urlencoded":
                     postbody = await request.post()
-
                 else:
                     postbody = json.loads(await request.text())
 
@@ -57,11 +53,9 @@ class portal_api_appsvr(plugins.ConfServerApp):
                     botlist = []
                     for bot in bots:
                         if bot["class"] != "":
-                            b = bumper.bot_toEcoVacsHome_JSON(bot)
-                            if (
-                                not b is None
-                            ):  # Happens if the bot isn't on the EcoVacs Home list
-                                botlist.append(json.loads(b))
+                            b = bumper.include_EcoVacsHomeProducts_info(bot)
+                            if b is not None:  # Happens if the bot isn't on the EcoVacs Home list
+                                botlist.append(b)
 
                     body = {
                         "code": 0,
