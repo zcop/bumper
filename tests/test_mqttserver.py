@@ -13,18 +13,16 @@ from tests import HOST, MQTT_PORT
 
 
 @pytest.mark.usefixtures("mqtt_server")
-async def test_helperbot_message():
+async def test_helperbot_message(mqtt_client: MQTTClient):
     with LogCapture() as l:
 
         # Test broadcast message
         mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
         await mqtt_helperbot.start()
-        assert (
-            mqtt_helperbot.client._connected_state._value == True
-        )  # Check helperbot is connected
+        assert mqtt_helperbot.is_connected
         msg_payload = "<ctl ts='1547822804960' td='DustCaseST' st='0'/>"
         msg_topic_name = "iot/atr/DustCaseST/bot_serial/ls1ok3/wC3g/x"
-        await mqtt_helperbot.client.publish(msg_topic_name, msg_payload.encode(), QOS_0)
+        await mqtt_client.publish(msg_topic_name, msg_payload.encode(), QOS_0)
 
         await asyncio.sleep(0.1)
 
@@ -36,17 +34,15 @@ async def test_helperbot_message():
             )
         )  # Check broadcast message was logged
         l.clear()
-        await mqtt_helperbot.client.disconnect()
+        await mqtt_helperbot.disconnect()
 
         # Send command to bot
         mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
         await mqtt_helperbot.start()
-        assert (
-            mqtt_helperbot.client._connected_state._value == True
-        )  # Check helperbot is connected
+        assert mqtt_helperbot.is_connected
         msg_payload = "{}"
         msg_topic_name = "iot/p2p/GetWKVer/helperbot/bumper/helperbot/bot_serial/ls1ok3/wC3g/q/iCmuqp/j"
-        await mqtt_helperbot.client.publish(msg_topic_name, msg_payload.encode(), QOS_0)
+        await mqtt_client.publish(msg_topic_name, msg_payload.encode(), QOS_0)
 
         await asyncio.sleep(0.1)
 
@@ -58,17 +54,15 @@ async def test_helperbot_message():
             )
         )  # Check send command message was logged
         l.clear()
-        await mqtt_helperbot.client.disconnect()
+        await mqtt_helperbot.disconnect()
 
         # Received response to command
         mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
         await mqtt_helperbot.start()
-        assert (
-            mqtt_helperbot.client._connected_state._value == True
-        )  # Check helperbot is connected
+        assert mqtt_helperbot.is_connected
         msg_payload = '{"ret":"ok","ver":"0.13.5"}'
         msg_topic_name = "iot/p2p/GetWKVer/bot_serial/ls1ok3/wC3g/helperbot/bumper/helperbot/p/iCmuqp/j"
-        await mqtt_helperbot.client.publish(msg_topic_name, msg_payload.encode(), QOS_0)
+        await mqtt_client.publish(msg_topic_name, msg_payload.encode(), QOS_0)
 
         await asyncio.sleep(0.1)
 
@@ -80,17 +74,15 @@ async def test_helperbot_message():
             )
         )  # Check received response message was logged
         l.clear()
-        await mqtt_helperbot.client.disconnect()
+        await mqtt_helperbot.disconnect()
 
         # Received unknown message
         mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
         await mqtt_helperbot.start()
-        assert (
-            mqtt_helperbot.client._connected_state._value == True
-        )  # Check helperbot is connected
+        assert mqtt_helperbot.is_connected
         msg_payload = "test"
         msg_topic_name = "iot/p2p/GetWKVer/bot_serial/ls1ok3/wC3g/TESTBAD/bumper/helperbot/p/iCmuqp/j"
-        await mqtt_helperbot.client.publish(msg_topic_name, msg_payload.encode(), QOS_0)
+        await mqtt_client.publish(msg_topic_name, msg_payload.encode(), QOS_0)
 
         await asyncio.sleep(0.1)
 
@@ -102,17 +94,15 @@ async def test_helperbot_message():
             )
         )  # Check received message was logged
         l.clear()
-        await mqtt_helperbot.client.disconnect()
+        await mqtt_helperbot.disconnect()
 
         # Received error message
         mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
         await mqtt_helperbot.start()
-        assert (
-            mqtt_helperbot.client._connected_state._value == True
-        )  # Check helperbot is connected
+        assert mqtt_helperbot.is_connected
         msg_payload = "<ctl ts='1560904925396' td='errors' old='' new='110'/>"
         msg_topic_name = "iot/atr/errors/bot_serial/ls1ok3/wC3g/x"
-        await mqtt_helperbot.client.publish(msg_topic_name, msg_payload.encode(), QOS_0)
+        await mqtt_client.publish(msg_topic_name, msg_payload.encode(), QOS_0)
 
         await asyncio.sleep(0.1)
 
@@ -124,19 +114,17 @@ async def test_helperbot_message():
             )
         )  # Check received message was logged
         l.clear()
-        await mqtt_helperbot.client.disconnect()
+        await mqtt_helperbot.disconnect()
 
 
 @pytest.mark.usefixtures("mqtt_server")
-async def test_helperbot_expire_message():
+async def test_helperbot_expire_message(mqtt_client: MQTTClient):
     timeout = 0.1
     # Test broadcast message
     mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT, timeout)
     bumper.mqtt_helperbot = mqtt_helperbot
     await mqtt_helperbot.start()
-    assert (
-        mqtt_helperbot.client._connected_state._value == True
-    )  # Check helperbot is connected
+    assert mqtt_helperbot.is_connected
 
     expire_msg_payload = '{"ret":"ok","ver":"0.13.5"}'
     expire_msg_topic_name = "iot/p2p/GetWKVer/bot_serial/ls1ok3/wC3g/helperbot/bumper/helperbot/p/testgood/j"
@@ -148,33 +136,31 @@ async def test_helperbot_expire_message():
         "payload": expire_msg_payload,
     }
 
-    mqtt_helperbot.commands[request_id] = data
+    mqtt_helperbot._commands[request_id] = data
 
-    assert mqtt_helperbot.commands[request_id] == data
+    assert mqtt_helperbot._commands[request_id] == data
 
     await asyncio.sleep(0.1)
     msg_payload = "<ctl ts='1547822804960' td='DustCaseST' st='0'/>"
     msg_topic_name = "iot/atr/DustCaseST/bot_serial/ls1ok3/wC3g/x"
-    await mqtt_helperbot.client.publish(
+    await mqtt_client.publish(
         msg_topic_name, msg_payload.encode(), QOS_0
     )  # Send another message to force get_msg
 
     await asyncio.sleep(timeout * 2)
 
-    assert mqtt_helperbot.commands.get(request_id, None) == None
+    assert mqtt_helperbot._commands.get(request_id, None) == None
 
-    await mqtt_helperbot.client.disconnect()
+    await mqtt_helperbot.disconnect()
 
 
 @pytest.mark.usefixtures("mqtt_server")
-async def test_helperbot_sendcommand():
+async def test_helperbot_sendcommand(mqtt_client: MQTTClient):
     timeout = 0.1
     mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT, timeout)
     bumper.mqtt_helperbot = mqtt_helperbot
     await mqtt_helperbot.start()
-    assert (
-        mqtt_helperbot.client._connected_state._value == True
-    )  # Check helperbot is connected
+    assert mqtt_helperbot.is_connected
 
     cmdjson = {
         "toType": "ls1ok3",
@@ -204,7 +190,7 @@ async def test_helperbot_sendcommand():
     # Send response beforehand
     msg_payload = '{"ret":"ok","ver":"0.13.5"}'
     msg_topic_name = "iot/p2p/GetWKVer/bot_serial/ls1ok3/wC3g/helperbot/bumper/helperbot/p/testgood/j"
-    await mqtt_helperbot.client.publish(msg_topic_name, msg_payload.encode(), QOS_0)
+    await mqtt_client.publish(msg_topic_name, msg_payload.encode(), QOS_0)
 
     commandresult = await mqtt_helperbot.send_command(cmdjson, "testgood")
     assert commandresult == {
@@ -236,7 +222,7 @@ async def test_helperbot_sendcommand():
     # Send response beforehand
     msg_payload = "<ctl ret='ok' type='Brush' left='4142' total='18000'/>"
     msg_topic_name = "iot/p2p/GetLifeSpan/bot_serial/ls1ok3/wC3g/helperbot/bumper/helperbot/p/testx/q"
-    await mqtt_helperbot.client.publish(msg_topic_name, msg_payload.encode(), QOS_0)
+    await mqtt_client.publish(msg_topic_name, msg_payload.encode(), QOS_0)
 
     commandresult = await mqtt_helperbot.send_command(cmdjson, "testx")
     assert commandresult == {
@@ -271,7 +257,7 @@ async def test_helperbot_sendcommand():
     msg_topic_name = (
         "iot/p2p/getStats/bot_serial/ls1ok3/wC3g/helperbot/bumper/helperbot/p/testj/j"
     )
-    await mqtt_helperbot.client.publish(msg_topic_name, msg_payload.encode(), QOS_0)
+    await mqtt_client.publish(msg_topic_name, msg_payload.encode(), QOS_0)
 
     commandresult = await mqtt_helperbot.send_command(cmdjson, "testj")
 
@@ -301,7 +287,7 @@ async def test_helperbot_sendcommand():
         "ret": "ok",
     }
 
-    await mqtt_helperbot.client.disconnect()
+    await mqtt_helperbot.disconnect()
 
 
 async def test_mqttserver():
@@ -320,10 +306,8 @@ async def test_mqttserver():
         # Test helperbot connect
         mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
         await mqtt_helperbot.start()
-        assert (
-            mqtt_helperbot.client._connected_state._value == True
-        )  # Check helperbot is connected
-        await mqtt_helperbot.client.disconnect()
+        assert mqtt_helperbot.is_connected
+        await mqtt_helperbot.disconnect()
 
         # Test client connect
         bumper.user_add("user_123")  # Add user to db
@@ -408,7 +392,7 @@ async def test_mqttserver():
                 order_matters=False,
             )
     finally:
-        await mqtt_server.broker.shutdown()
+        await mqtt_server.shutdown()
 
 
 async def test_nofileauth_mqttserver():
@@ -418,7 +402,7 @@ async def test_nofileauth_mqttserver():
             HOST, MQTT_PORT, password_file="tests/passwd-notfound"
         )
         await mqtt_server.start()
-        await mqtt_server.broker.shutdown()
+        await mqtt_server.shutdown()
 
     l.check_present(
         (

@@ -148,9 +148,9 @@
                 </div>
 
                 <div class="card-body">
-                    Status: {% if helperbot[0].state == "connected" %}
-                    <span class="badge badge-success">{{ helperbot[0].state }}</span> {% else %}
-                    <span class="badge badge-danger">{{ helperbot[0].state }}</span> {% endif %}
+                    Status: {% if helperbot.connected %}
+                    <span class="badge badge-success">Connected</span> {% else %}
+                    <span class="badge badge-danger">Disconnected</span> {% endif %}
 
                 </div>
             </div>

@@ -70,7 +70,7 @@ async def test_base(conf_server_client):
     resp = await conf_server_client.get("/")
     assert resp.status == 200
 
-    await mqtt_helperbot.client.disconnect()
+    await mqtt_helperbot.disconnect()
 
     bumper.xmpp_server.disconnect()
 
@@ -100,7 +100,7 @@ async def test_restartService(conf_server_client):
     resp = await conf_server_client.get("/restart_XMPPServer")
     assert resp.status == 200
 
-    await mqtt_helperbot.client.disconnect()
+    await mqtt_helperbot.disconnect()
 
     xmpp_server.disconnect()
 

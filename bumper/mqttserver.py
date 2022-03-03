@@ -3,6 +3,7 @@
 import asyncio
 import json
 import os
+from asyncio import Task
 from typing import Any, Dict, MutableMapping, Optional, Union
 
 import amqtt
@@ -50,18 +51,15 @@ class MQTTHelperBot:
         self._client_id = "helperbot@bumper/helperbot"
         self._timeout = timeout
         self._client: Optional[MQTTClient] = None
+        self._new_messages_task: Optional[Task] = None
 
     @property
-    def commands(self) -> MutableMapping[str, CommandDto]:
-        return self._commands
-
-    @property
-    def timeout(self) -> float:
-        return self._timeout
-
-    @property
-    def client(self) -> MQTTClient:
-        return self._client
+    def is_connected(self) -> bool:
+        """Return True if client is connected successfully."""
+        return (
+            self._client is not None
+            and self._client.session.transitions.state == "connected"
+        )
 
     async def start(self) -> None:
         try:
@@ -77,20 +75,39 @@ class MQTTHelperBot:
             await self._client.subscribe(
                 [
                     ("iot/p2p/+/+/+/+/helperbot/bumper/helperbot/+/+/+", QOS_0),
-                    ("iot/p2p/+", QOS_0),
-                    ("iot/atr/+", QOS_0),
                 ]
+            )
+            self._new_messages_task = asyncio.create_task(
+                self._check_for_new_messages()
             )
         except Exception as e:
             helperbotlog.exception(f"{e}")
             raise e
+
+    async def _check_for_new_messages(self):
+        while True:
+            try:
+                message: IncomingApplicationMessage = (
+                    await self._client.deliver_message()
+                )
+                if message is not None:
+                    topic_split = str(message.topic).split("/")
+                    data_decoded = str(message.data.decode("utf-8"))
+                    if topic_split[10] in self._commands:
+                        self._commands[topic_split[10]].add_response(data_decoded)
+            except asyncio.CancelledError:
+                pass
+            except Exception as ex:  # pylint: disable=broad-except
+                helperbotlog.error(
+                    "An exception occurred during handling new messages", exc_info=True
+                )
 
     async def _wait_for_resp(
         self, command_dto: CommandDto, request_id: str
     ) -> dict[str, Any]:
         try:
             payload = await asyncio.wait_for(
-                command_dto.wait_for_response(), timeout=self.timeout
+                command_dto.wait_for_response(), timeout=self._timeout
             )
             return {"id": request_id, "ret": "ok", "resp": payload}
         except asyncio.TimeoutError:
@@ -110,9 +127,9 @@ class MQTTHelperBot:
     async def send_command(
         self, cmdjson: dict[str, Any], request_id: str
     ) -> dict[str, Any]:
-        if self.client is None:
+        if self._client is None:
             await self.start()
-            assert self.client is not None
+            assert self._client is not None
 
         try:
             topic = "iot/p2p/{}/helperbot/bumper/helperbot/{}/{}/{}/q/{}/{}".format(
@@ -124,14 +141,14 @@ class MQTTHelperBot:
                 cmdjson["payloadType"],
             )
             command_dto = CommandDto(cmdjson["payloadType"])
-            self.commands[request_id] = command_dto
+            self._commands[request_id] = command_dto
 
             if cmdjson["payloadType"] == "j":
                 payload = json.dumps(cmdjson["payload"])
             else:
                 payload = str(cmdjson["payload"])
 
-            await self.client.publish(topic, payload.encode(), QOS_0)
+            await self._client.publish(topic, payload.encode(), QOS_0)
 
             resp = await self._wait_for_resp(command_dto, request_id)
             return resp
@@ -144,7 +161,16 @@ class MQTTHelperBot:
                 "debug": "exception occurred please check bumper logs",
             }
         finally:
-            self.commands.pop(request_id, None)
+            self._commands.pop(request_id, None)
+
+    async def disconnect(self):
+        if self._new_messages_task is not None:
+            self._new_messages_task.cancel()
+            self._new_messages_task = None
+
+        if self._client is not None:
+            await self._client.disconnect()
+            self._client = None
 
 
 class MQTTServer:
@@ -199,6 +225,11 @@ class MQTTServer:
             mqttserverlog.exception(f"{e}")
 
     @property
+    def state(self) -> Broker.states:
+        """Return the state of the broker."""
+        return self._broker.transitions.state
+
+    @property
     def broker(self) -> Broker:
         return self._broker
 
@@ -206,10 +237,13 @@ class MQTTServer:
         mqttserverlog.info(f"Starting MQTT Server at {self._host}:{self._port}")
 
         try:
-            await self.broker.start()
+            await self._broker.start()
         except Exception as e:
             mqttserverlog.exception(f"{e}")
             raise e
+
+    async def shutdown(self):
+        await self._broker.shutdown()
 
 
 class BumperMQTTServer_Plugin:
@@ -367,10 +401,6 @@ class BumperMQTTServer_Plugin:
             helperbotlog.debug(
                 f"Received Response - Topic: {topic} - Message: {data_decoded}"
             )
-            if topic_split[10] in bumper.mqtt_helperbot.commands:
-                bumper.mqtt_helperbot.commands[topic_split[10]].add_response(
-                    data_decoded
-                )
         elif topic_split[3] == "helperbot":
             # Helperbot sending command
             helperbotlog.debug(

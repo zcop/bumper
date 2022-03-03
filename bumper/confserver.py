@@ -175,7 +175,7 @@ class ConfServer:
 
             bots = bumper.db_get().table("bots").all()
             clients = bumper.db_get().table("clients").all()
-            helperbot = bumper.mqtt_helperbot.client.session.transitions.state
+            helperbot_connected = bumper.mqtt_helperbot.is_connected
             mqttserver = bumper.mqtt_server.broker
             xmppserver = bumper.xmpp_server
             mq_sessions = []
@@ -193,9 +193,9 @@ class ConfServer:
             all = {
                 "bots": bots,
                 "clients": clients,
-                "helperbot": [{"state": helperbot}],
+                "helperbot": {"connected": helperbot_connected},
                 "mqtt_server": [
-                    {"state": mqttserver.transitions.state},
+                    {"state": bumper.mqtt_server.state},
                     {
                         "sessions": [
                             {"count": len(mqttserver._sessions)},
@@ -274,32 +274,24 @@ class ConfServer:
             return await handler(request)
 
     async def restart_Helper(self):
-
-        await bumper.mqtt_helperbot.client.disconnect()
+        await bumper.mqtt_helperbot.disconnect()
         asyncio.create_task(bumper.mqtt_helperbot.start())
 
     async def restart_MQTT(self):
+        loop = asyncio.get_event_loop()
 
-        if not (
-            bumper.mqtt_server.broker.transitions.state == "stopped"
-            or bumper.mqtt_server.broker.transitions.state == "not_started"
-        ):
+        if bumper.mqtt_server.state not in ["stopped", "not_started"]:
             # close session writers - this was required so bots would reconnect properly after restarting
             for sess in list(bumper.mqtt_server.broker._sessions):
                 sessobj = bumper.mqtt_server.broker._sessions[sess][1]
                 if sessobj.session.transitions.state == "connected":
                     await sessobj.writer.close()
 
-            # await bumper.mqtt_server.broker.shutdown()
-            aloop = asyncio.get_event_loop()
-            aloop.call_later(
-                0.1, lambda: asyncio.create_task(bumper.mqtt_server.broker.shutdown())
-            )  # In .1 seconds shutdown broker
+            loop.call_later(
+                0.1, lambda: asyncio.create_task(bumper.mqtt_server.shutdown())
+            )
 
-        aloop = asyncio.get_event_loop()
-        aloop.call_later(
-            1.5, lambda: asyncio.create_task(bumper.mqtt_server.start())
-        )  # In 1.5 seconds start broker
+        loop.call_later(1.5, lambda: asyncio.create_task(bumper.mqtt_server.start()))
 
     async def restart_XMPP(self):
         bumper.xmpp_server.disconnect()
