@@ -54,7 +54,8 @@ class portal_api_appsvr(plugins.ConfServerApp):
                     for bot in bots:
                         if bot["class"] != "":
                             b = bumper.include_EcoVacsHomeProducts_info(bot)
-                            if b is not None:  # Happens if the bot isn't on the EcoVacs Home list
+                            # Happens if the bot isn't on the EcoVacs Home list
+                            if b is not None:
                                 botlist.append(b)
 
                     body = {

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
+"""Mqtt module."""
 
 import asyncio
 import json
 import os
 from asyncio import Task
-from typing import Any, Dict, MutableMapping, Optional, Union
+from typing import Any, MutableMapping, Optional, Union
 
 import amqtt
 import pkg_resources
@@ -24,24 +25,30 @@ boterrorlog = get_logger("boterror")
 
 
 class CommandDto:
+    """Command DTO."""
+
     def __init__(self, payload_type: str) -> None:
         self._payload_type = payload_type
         self._event = asyncio.Event()
         self._response: Union[str, bytes]
 
     async def wait_for_response(self) -> Union[str, dict[str, Any]]:
+        """Wait for the response to be received."""
         await self._event.wait()
         if self._payload_type == "j":
-            return json.loads(self._response)
-        else:
-            return str(self._response)
+            return json.loads(self._response)  # type:ignore[no-any-return]
+
+        return str(self._response)
 
     def add_response(self, response: Union[str, bytes]) -> None:
+        """Add received response."""
         self._response = response
         self._event.set()
 
 
 class MQTTHelperBot:
+    """Helper bot, which converts commands from the rest api to mqtt ones."""
+
     def __init__(self, host: str, port: int, timeout: float = 60):
         self._commands: MutableMapping[str, CommandDto] = TTLCache(
             maxsize=timeout * 60, ttl=timeout * 1.1
@@ -62,6 +69,7 @@ class MQTTHelperBot:
         )
 
     async def start(self) -> None:
+        """Connect and subscribe helper bot."""
         try:
             if self._client is None:
                 self._client = MQTTClient(
@@ -80,16 +88,19 @@ class MQTTHelperBot:
             self._new_messages_task = asyncio.create_task(
                 self._check_for_new_messages()
             )
-        except Exception as e:
-            helperbotlog.exception(f"{e}")
-            raise e
+        except Exception:
+            mqttserverlog.exception(
+                "An exception occurred during startup", exc_info=True
+            )
+            raise
 
-    async def _check_for_new_messages(self):
+    async def _check_for_new_messages(self) -> None:
+        assert self._client is not None
         while True:
             try:
-                message: IncomingApplicationMessage = (
-                    await self._client.deliver_message()
-                )
+                message: Optional[
+                    IncomingApplicationMessage
+                ] = await self._client.deliver_message()
                 if message is not None:
                     topic_split = str(message.topic).split("/")
                     data_decoded = str(message.data.decode("utf-8"))
@@ -97,7 +108,7 @@ class MQTTHelperBot:
                         self._commands[topic_split[10]].add_response(data_decoded)
             except asyncio.CancelledError:
                 pass
-            except Exception as ex:  # pylint: disable=broad-except
+            except Exception:  # pylint: disable=broad-except
                 helperbotlog.error(
                     "An exception occurred during handling new messages", exc_info=True
                 )
@@ -112,10 +123,10 @@ class MQTTHelperBot:
             return {"id": request_id, "ret": "ok", "resp": payload}
         except asyncio.TimeoutError:
             helperbotlog.debug("wait_for_resp timeout reached")
-        except asyncio.CancelledError as e:
-            helperbotlog.debug("wait_for_resp cancelled by asyncio", e, exc_info=True)
-        except Exception as e:
-            helperbotlog.exception(f"{e}")
+        except asyncio.CancelledError:
+            helperbotlog.debug("wait_for_resp cancelled by asyncio", exc_info=True)
+        except Exception:  # pylint: disable=broad-except
+            helperbotlog.exception("An unknown error occurred", exc_info=True)
 
         return {
             "id": request_id,
@@ -127,19 +138,13 @@ class MQTTHelperBot:
     async def send_command(
         self, cmdjson: dict[str, Any], request_id: str
     ) -> dict[str, Any]:
+        """Send command over MQTT."""
         if self._client is None:
             await self.start()
             assert self._client is not None
 
         try:
-            topic = "iot/p2p/{}/helperbot/bumper/helperbot/{}/{}/{}/q/{}/{}".format(
-                cmdjson["cmdName"],
-                cmdjson["toId"],
-                cmdjson["toType"],
-                cmdjson["toRes"],
-                request_id,
-                cmdjson["payloadType"],
-            )
+            topic = f"iot/p2p/{cmdjson['cmdName']}/helperbot/bumper/helperbot/{cmdjson['toId']}/{cmdjson['toType']}/{cmdjson['toRes']}/q/{request_id}/{cmdjson['payloadType']}"
             command_dto = CommandDto(cmdjson["payloadType"])
             self._commands[request_id] = command_dto
 
@@ -152,8 +157,8 @@ class MQTTHelperBot:
 
             resp = await self._wait_for_resp(command_dto, request_id)
             return resp
-        except Exception as e:
-            helperbotlog.exception(f"{e}")
+        except Exception:  # pylint: disable=broad-except
+            helperbotlog.exception("Could not send command.", exc_info=True)
             return {
                 "id": request_id,
                 "errno": 500,
@@ -163,7 +168,8 @@ class MQTTHelperBot:
         finally:
             self._commands.pop(request_id, None)
 
-    async def disconnect(self):
+    async def disconnect(self) -> None:
+        """Disconnect client."""
         if self._new_messages_task is not None:
             self._new_messages_task.cancel()
             self._new_messages_task = None
@@ -174,6 +180,8 @@ class MQTTHelperBot:
 
 
 class MQTTServer:
+    """Mqtt server."""
+
     def __init__(self, host: str, port: int, **kwargs: dict[str, Any]) -> None:
         try:
             self._host = host
@@ -189,9 +197,9 @@ class MQTTServer:
             # The below adds a plugin to the amqtt.broker.plugins without having to futz with setup.py
             distribution = pkg_resources.Distribution("amqtt.broker.plugins")
             bumper_plugin = pkg_resources.EntryPoint.parse(
-                "bumper = bumper.mqttserver:BumperMQTTServer_Plugin", dist=distribution
+                "bumper = bumper.mqttserver:BumperMQTTServerPlugin", dist=distribution
             )
-            distribution._ep_map = {"amqtt.broker.plugins": {"bumper": bumper_plugin}}
+            distribution._ep_map = {"amqtt.broker.plugins": {"bumper": bumper_plugin}}  # type: ignore[attr-defined]
             pkg_resources.working_set.add(distribution)
 
             # Initialize bot server
@@ -221,8 +229,11 @@ class MQTTServer:
 
             self._broker = amqtt.broker.Broker(config=config)
 
-        except Exception as e:
-            mqttserverlog.exception(f"{e}")
+        except Exception:
+            mqttserverlog.exception(
+                "An exception occurred during initialize", exc_info=True
+            )
+            raise
 
     @property
     def state(self) -> Broker.states:
@@ -231,22 +242,32 @@ class MQTTServer:
 
     @property
     def broker(self) -> Broker:
+        """Get MQTT broker."""
         return self._broker
 
     async def start(self) -> None:
-        mqttserverlog.info(f"Starting MQTT Server at {self._host}:{self._port}")
-
+        """Start MQTT server."""
+        mqttserverlog.info("Starting MQTT Server at %s:%d", self._host, self._port)
         try:
             await self._broker.start()
-        except Exception as e:
-            mqttserverlog.exception(f"{e}")
-            raise e
+        except Exception:
+            mqttserverlog.exception(
+                "An exception occurred during startup", exc_info=True
+            )
+            raise
 
-    async def shutdown(self):
+    async def shutdown(self) -> None:
+        """Shutdown server."""
         await self._broker.shutdown()
 
 
-class BumperMQTTServer_Plugin:
+def _log__helperbot_message(custom_log_message: str, topic: str, data: str) -> None:
+    helperbotlog.debug("%s - Topic: %s - Message: %s", custom_log_message, topic, data)
+
+
+class BumperMQTTServerPlugin:
+    """MQTT Server plugin which handles the authentication."""
+
     def __init__(self, context: BrokerContext) -> None:
         self.context = context
         try:
@@ -257,11 +278,14 @@ class BumperMQTTServer_Plugin:
             self.context.logger.warning(
                 "'bumper' section not found in context configuration"
             )
-        except Exception as e:
-            mqttserverlog.exception(f"{e}")
+        except Exception:
+            mqttserverlog.exception(
+                "An exception occurred during plugin initialization", exc_info=True
+            )
+            raise
 
     async def authenticate(self, session: Session, **kwargs: dict[str, Any]) -> bool:
-        authenticated = False
+        """Authenticate session."""
         username = session.username
         password = session.password
         client_id = session.client_id
@@ -281,84 +305,75 @@ class BumperMQTTServer_Plugin:
                         "eco-ng",
                     )
                     mqttserverlog.info(
-                        f"Bumper Authentication Success - Bot - SN: {username} - DID: {didsplit[0]}"
-                        f" - Class: {tmpbotdetail[0]}"
+                        "Bumper Authentication Success - Bot - SN: %s - DID: %s - Class: %s",
+                        username,
+                        didsplit[0],
+                        tmpbotdetail[0],
                     )
-                    authenticated = True
-                else:
-                    tmpclientdetail = str(didsplit[1]).split("/")
-                    userid = didsplit[0]
-                    realm = tmpclientdetail[0]
-                    resource = tmpclientdetail[1]
+                    return True
 
-                    if userid == "helperbot":
-                        mqttserverlog.info(
-                            f"Bumper Authentication Success - Helperbot: {client_id}"
-                        )
-                        authenticated = True
-                    elif (
-                        bumper.check_authcode(didsplit[0], password)
-                        or not bumper.use_auth
-                    ):
-                        bumper.client_add(userid, realm, resource)
-                        mqttserverlog.info(
-                            f"Bumper Authentication Success - Client - Username: {username} - "
-                            f"ClientID: {client_id}"
-                        )
-                        authenticated = True
+                tmpclientdetail = str(didsplit[1]).split("/")
+                userid = didsplit[0]
+                realm = tmpclientdetail[0]
+                resource = tmpclientdetail[1]
+
+                if userid == "helperbot":
+                    mqttserverlog.info(
+                        "Bumper Authentication Success - Helperbot: %s", client_id
+                    )
+                    return True
+                if bumper.check_authcode(didsplit[0], password) or not bumper.use_auth:
+                    bumper.client_add(userid, realm, resource)
+                    mqttserverlog.info(
+                        "Bumper Authentication Success - Client - Username: %s - ClientID: %s",
+                        username,
+                        client_id,
+                    )
+                    return True
 
             # Check for File Auth
-            if (
-                username and not authenticated
-            ):  # If there is a username and it isn't already authenticated
-                hash = self._users.get(username, None)
-                if hash:  # If there is a matching entry in passwd, check hash
-                    authenticated = pwd_context.verify(password, hash)
-                    if authenticated:
+            if username:
+                # If there is a username and it isn't already authenticated
+                password_hash = self._users.get(username, None)
+                message_suffix = f"- Username: {username} - ClientID: {client_id}"
+                if password_hash:  # If there is a matching entry in passwd, check hash
+                    if pwd_context.verify(password, password_hash):
                         mqttserverlog.info(
-                            f"File Authentication Success - Username: {username} - ClientID: {client_id}"
+                            "File Authentication Success %s", message_suffix
                         )
-                    else:
-                        mqttserverlog.info(
-                            f"File Authentication Failed - Username: {username} - ClientID: {client_id}"
-                        )
+                        return True
+
+                    mqttserverlog.info("File Authentication Failed %s", message_suffix)
                 else:
                     mqttserverlog.info(
-                        f"File Authentication Failed - No Entry for Username: {username} - ClientID: {client_id}"
+                        "File Authentication Failed - No Entry %s", message_suffix
                     )
 
-        except Exception as e:
+        except Exception:  # pylint: disable=broad-except
             mqttserverlog.exception(
-                "Session: {} - {}".format((kwargs.get("session", None)), e)
+                "Session: %s", kwargs.get("session", ""), exc_info=True
             )
-            authenticated = False
 
         # Check for allow anonymous
-        allow_anonymous = self.auth_config.get("allow-anonymous", True)
-        if (
-            allow_anonymous and not authenticated
-        ):  # If anonymous auth is allowed and it isn't already authenticated
-            authenticated = True
-            self.context.logger.debug(
-                f"Anonymous Authentication Success: config allows anonymous - Username: {username}"
-            )
-            mqttserverlog.info(
-                f"Anonymous Authentication Success: config allows anonymous - Username: {username}"
-            )
+        if self.auth_config.get("allow-anonymous", True):
+            message = f"Anonymous Authentication Success: config allows anonymous - Username: {username}"
+            self.context.logger.debug(message)
+            mqttserverlog.info(message)
+            return True
 
-        return authenticated
+        return False
 
     def _read_password_file(self) -> dict[str, str]:
         password_file = self.auth_config.get("password-file", None)
         users: dict[str, str] = {}
         if password_file:
             try:
-                with open(password_file) as f:
+                with open(password_file, encoding="utf-8") as file:
                     self.context.logger.debug(
                         f"Reading user database from {password_file}"
                     )
-                    for l in f:
-                        line = l.strip()
+                    for line in file:
+                        line = line.strip()
                         if not line.startswith("#"):  # Allow comments in files
                             (username, pwd_hash) = line.split(sep=":", maxsplit=3)
                             if username:
@@ -375,9 +390,12 @@ class BumperMQTTServer_Plugin:
         return users
 
     async def on_broker_client_connected(self, client_id: str) -> None:
+        """On client connected."""
         self._set_client_connected(client_id, True)
 
-    def _set_client_connected(self, client_id: str, connected: bool) -> None:
+    def _set_client_connected(  # pylint: disable=no-self-use
+        self, client_id: str, connected: bool
+    ) -> None:
         didsplit = str(client_id).split("@")
 
         bot = bumper.bot_get(didsplit[0])
@@ -390,36 +408,30 @@ class BumperMQTTServer_Plugin:
         if client:
             bumper.client_set_mqtt(client["resource"], connected)
 
-    async def on_broker_message_received(
-        self, message: IncomingApplicationMessage, **kwargs: dict[str, Any]
+    async def on_broker_message_received(  # pylint: disable=no-self-use
+        self, message: IncomingApplicationMessage, **_: dict[str, Any]
     ) -> None:
+        """On message received."""
         topic = message.topic
         topic_split = str(topic).split("/")
         data_decoded = str(message.data.decode("utf-8"))
         if topic_split[6] == "helperbot":
             # Response to command
-            helperbotlog.debug(
-                f"Received Response - Topic: {topic} - Message: {data_decoded}"
-            )
+            _log__helperbot_message("Received Response", topic, data_decoded)
         elif topic_split[3] == "helperbot":
             # Helperbot sending command
-            helperbotlog.debug(
-                f"Send Command - Topic: {topic} - Message: {data_decoded}"
-            )
+            _log__helperbot_message("Send Command", topic, data_decoded)
         elif topic_split[1] == "atr":
             # Broadcast message received on atr
             if topic_split[2] == "errors":
                 boterrorlog.error(
-                    f"Received Error - Topic: {topic} - Message: {data_decoded}"
+                    "Received Error - Topic: %s - Message: %s", topic, data_decoded
                 )
             else:
-                helperbotlog.debug(
-                    f"Received Broadcast - Topic: {topic} - Message: {data_decoded}"
-                )
+                _log__helperbot_message("Received Broadcast", topic, data_decoded)
         else:
-            helperbotlog.debug(
-                f"Received Message - Topic: {topic} - Message: {data_decoded}"
-            )
+            _log__helperbot_message("Received Message", topic, data_decoded)
 
     async def on_broker_client_disconnected(self, client_id: str) -> None:
+        """On client disconnect."""
         self._set_client_connected(client_id, False)

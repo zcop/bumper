@@ -266,7 +266,7 @@ def get_disconnected_xmpp_clients():
     return clients.search(Client.xmpp_connection == False)
 
 
-def check_authcode(uid, authcode):
+def check_authcode(uid: str, authcode: str) -> bool:
     bumperlog.debug(f"Checking for authcode: {authcode}")
     tokens = db_get().table("tokens")
     tmpauth = tokens.get(
@@ -323,7 +323,7 @@ def revoke_expired_tokens():
             db_get().table("tokens").remove(doc_ids=[i.doc_id])
 
 
-def bot_add(sn, did, devclass, resource, company):
+def bot_add(sn: str, did: str, devclass: str, resource: str, company: str) -> None:
     newbot = VacBotDevice()
     newbot.did = did
     newbot.name = sn
@@ -347,10 +347,11 @@ def bot_remove(did):
         bots.remove(doc_ids=[bot.doc_id])
 
 
-def bot_get(did):
+def bot_get(did: str):
     bots = db_get().table("bots")
     Bot = Query()
     return bots.get(Bot.did == did)
+
 
 def bot_full_upsert(vacbot):
     bots = db_get().table("bots")
@@ -367,7 +368,7 @@ def bot_set_nick(did, nick):
     bots.upsert({"nick": nick}, Bot.did == did)
 
 
-def bot_set_mqtt(did, mqtt):
+def bot_set_mqtt(did: str, mqtt: bool) -> None:
     bots = db_get().table("bots")
     Bot = Query()
     bots.upsert({"mqtt_connection": mqtt}, Bot.did == did)
@@ -379,7 +380,7 @@ def bot_set_xmpp(did, xmpp):
     bots.upsert({"xmpp_connection": xmpp}, Bot.did == did)
 
 
-def client_add(userid, realm, resource):
+def client_add(userid: str, realm: str, resource: str) -> None:
     newclient = VacBotClient()
     newclient.userid = userid
     newclient.realm = realm
@@ -398,7 +399,7 @@ def client_remove(resource):
         clients.remove(doc_ids=[client.doc_id])
 
 
-def client_get(resource):
+def client_get(resource: str):
     clients = db_get().table("clients")
     Client = Query()
     return clients.get(Client.resource == resource)
@@ -410,7 +411,7 @@ def client_full_upsert(client):
     clients.upsert(client, Client.resource == client["resource"])
 
 
-def client_set_mqtt(resource, mqtt):
+def client_set_mqtt(resource: str, mqtt: bool) -> None:
     clients = db_get().table("clients")
     Client = Query()
     clients.upsert({"mqtt_connection": mqtt}, Client.resource == resource)

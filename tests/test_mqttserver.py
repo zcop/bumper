@@ -376,6 +376,8 @@ async def test_mqttserver():
                 ),
                 order_matters=False,
             )
+            l.clear()
+
             # no username in file
             await client.connect(
                 f"mqtts://test-client-noexist:notvalid!@{HOST}:{MQTT_PORT}/",
@@ -387,7 +389,7 @@ async def test_mqttserver():
                 (
                     "mqttserver",
                     "INFO",
-                    "File Authentication Failed - No Entry for Username: test-client-noexist - ClientID: test-file-auth",
+                    "File Authentication Failed - No Entry - Username: test-client-noexist - ClientID: test-file-auth",
                 ),
                 order_matters=False,
             )

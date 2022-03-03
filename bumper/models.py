@@ -3,7 +3,7 @@ import copy
 import json
 import uuid
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Any
 
 import bumper
 
@@ -149,7 +149,9 @@ def include_EcoVacsHomeProducts_info(bot) -> dict[str, Any]:
             # }
 
             # todo refactor it
-            result["status"] = 1 if bot["mqtt_connection"] or bot["xmpp_connection"] else 0
+            result["status"] = (
+                1 if bot["mqtt_connection"] or bot["xmpp_connection"] else 0
+            )
 
             # mqtt_connection is not always set correctly, therefore workaround until fixed properly
             for session in bumper.mqtt_server.broker._sessions:
@@ -158,6 +160,7 @@ def include_EcoVacsHomeProducts_info(bot) -> dict[str, Any]:
                     result["status"] = 1
 
             return result
+
 
 # EcoVacs Home Product IOT Map - 2021-04-15
 # https://portal-ww.ecouser.net/api/pim/product/getProductIotMap

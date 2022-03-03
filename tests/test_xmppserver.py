@@ -199,7 +199,6 @@ async def test_client_connect_starttls_called():
     assert xmppclient.state == xmppclient.INIT  # Client moved to INIT state
 
 
-
 async def test_client_init():
     test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
@@ -430,7 +429,7 @@ async def test_ping_client_to_client():
 
     assert (
         mock_send.mock_calls[0][1][0]
-        ==  '<iq type="result" to="E0000000000000001234@159.ecorobot.net/atom" id="104934615" from="fuid_tmpuser@ecouser.net/IOSF53D07BA" />'
+        == '<iq type="result" to="E0000000000000001234@159.ecorobot.net/atom" id="104934615" from="fuid_tmpuser@ecouser.net/IOSF53D07BA" />'
     )  # ping response
 
 
@@ -534,9 +533,8 @@ async def test_client_send_iq():
     # Bot "DorpError" to all
     test_data = b"<iq to='rl.ecorobot.net' type='set' id='1234'><query xmlns='com:sf'><sf td='pub' t='log' ts='1559893796000' tp='p' k='DeviceAlert' v='DorpError' f='E0000000000000001234@159.ecorobot.net' g='fuid_tmpuser@ecouser.net'/></query></iq>"
     xmppclient2._parse_data(test_data)
-    assert (
-        mock_send.mock_calls[0][1][0]
-        == ('<iq xmlns="com:sf" to="rl.ecorobot.net" type="set" id="1234" from="E0000000000000001234@159.ecorobot.net/atom"><query xmlns="com:ctl"><sf td="pub" t="log" ts="1559893796000" tp="p" k="DeviceAlert" v="DorpError" f="E0000000000000001234@159.ecorobot.net" g="fuid_tmpuser@ecouser.net" /></query></iq>')
+    assert mock_send.mock_calls[0][1][0] == (
+        '<iq xmlns="com:sf" to="rl.ecorobot.net" type="set" id="1234" from="E0000000000000001234@159.ecorobot.net/atom"><query xmlns="com:ctl"><sf td="pub" t="log" ts="1559893796000" tp="p" k="DeviceAlert" v="DorpError" f="E0000000000000001234@159.ecorobot.net" g="fuid_tmpuser@ecouser.net" /></query></iq>'
     )  # result sent to ecouser.net
 
     # Reset mock calls
