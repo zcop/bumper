@@ -5,6 +5,8 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any
 
+from amqtt.session import Session
+
 import bumper
 
 
@@ -154,9 +156,10 @@ def include_EcoVacsHomeProducts_info(bot) -> dict[str, Any]:
             )
 
             # mqtt_connection is not always set correctly, therefore workaround until fixed properly
-            for session in bumper.mqtt_server.broker._sessions:
-                did = session.split("@")[0]
-                if did == bot["did"]:
+            session: Session
+            for (session, _) in bumper.mqtt_server.broker._sessions.values():
+                did = session.client_id.split("@")[0]
+                if did == bot["did"] and session.transitions.state == "connected":
                     result["status"] = 1
 
             return result
