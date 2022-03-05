@@ -1,10 +1,9 @@
-
 import logging
 
 from aiohttp import web
 
+import bumper
 from bumper import plugins
-from bumper.models import *
 from bumper.util import get_current_time_as_millis
 
 

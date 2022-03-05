@@ -1,11 +1,11 @@
-
+import json
 import logging
 import os
 
 from aiohttp import web
 
-from bumper import plugins
-from bumper.models import *
+import bumper
+from bumper import EcoVacsHomeProducts, plugins
 
 
 class portal_api_pim(plugins.ConfServerApp):

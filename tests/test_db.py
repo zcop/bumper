@@ -1,14 +1,9 @@
-
-import json
-import logging
 import os
 from datetime import datetime, timedelta
 
-from tinydb import Query, TinyDB
-from tinydb.storages import MemoryStorage
+from tinydb import TinyDB
 
 import bumper
-from bumper.models import BumperUser, EcoVacsHomeProducts, VacBotClient, VacBotDevice
 
 
 def test_db_path():

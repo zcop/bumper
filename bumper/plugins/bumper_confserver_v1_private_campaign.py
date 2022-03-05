@@ -1,5 +1,3 @@
-
-import asyncio
 import logging
 from datetime import datetime, timedelta
 
@@ -7,8 +5,7 @@ from aiohttp import web
 
 import bumper
 from bumper import plugins
-from bumper.models import *
-from bumper.util import get_current_time_as_millis
+from bumper.util import convert_to_millis, get_current_time_as_millis
 
 
 class v1_private_campaign(plugins.ConfServerApp):

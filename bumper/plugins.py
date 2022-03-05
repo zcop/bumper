@@ -1,9 +1,3 @@
-
-import asyncio
-
-from aiohttp import web
-
-
 class ConfServerApp:
     name = None
     plugin_type = None

@@ -1,14 +1,6 @@
 import asyncio
-import json
-import os
-import socket
-import ssl
-import xml.etree.ElementTree as ET
 from unittest import mock
 
-import pytest
-import pytest_asyncio
-import tinydb
 from testfixtures import LogCapture
 
 import bumper

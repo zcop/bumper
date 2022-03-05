@@ -1,14 +1,7 @@
 import asyncio
-import json
 import os
-import platform
-from unittest import mock
-from unittest.mock import patch
 
-import pytest
 from testfixtures import LogCapture
-from tinydb import Query, TinyDB
-from tinydb.storages import MemoryStorage
 
 import bumper
 

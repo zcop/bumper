@@ -1,4 +1,3 @@
-
 """Mqtt module."""
 
 import asyncio

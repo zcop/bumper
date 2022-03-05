@@ -6,11 +6,11 @@ from aiohttp import web
 
 import bumper
 from bumper import (
-    get_logger,
-    EcoVacsHome_Login,
-    EcoVacs_Login,
     API_ERRORS,
     RETURN_API_SUCCESS,
+    EcoVacs_Login,
+    EcoVacsHome_Login,
+    get_logger,
 )
 from bumper.util import get_current_time_as_millis
 

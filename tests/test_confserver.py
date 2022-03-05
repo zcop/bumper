@@ -5,12 +5,10 @@ import os
 from unittest import mock
 
 import pytest
-from aiohttp import web
-from testfixtures import LogCapture
 
 import bumper
 from bumper import WebServerBinding
-from tests import HOST, MQTT_PORT, CONF_SERVER_PORT
+from tests import CONF_SERVER_PORT, HOST, MQTT_PORT
 
 
 def create_confserver():

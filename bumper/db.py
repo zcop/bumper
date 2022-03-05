@@ -1,19 +1,10 @@
-
-import json
-import logging
 import os
 from datetime import datetime, timedelta
 
 from tinydb import Query, TinyDB
 
 import bumper
-from bumper.models import (
-    BumperUser,
-    EcoVacsHomeProducts,
-    OAuth,
-    VacBotClient,
-    VacBotDevice,
-)
+from bumper.models import BumperUser, OAuth, VacBotClient, VacBotDevice
 
 from .util import get_logger
 

@@ -1,13 +1,6 @@
-
-import asyncio
-import logging
-from datetime import datetime, timedelta
-
 from aiohttp import web
 
-import bumper
 from bumper import plugins
-from bumper.models import *
 from bumper.rest import auth_util
 
 

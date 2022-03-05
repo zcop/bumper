@@ -1,14 +1,10 @@
-
-import asyncio
 import logging
 import os
-from datetime import datetime, timedelta
 
 from aiohttp import web
 
 import bumper
 from bumper import plugins
-from bumper.models import *
 
 
 class upload_global(plugins.ConfServerApp):

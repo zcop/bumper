@@ -1,10 +1,9 @@
-
 import asyncio
 import importlib
+import logging
 import pkgutil
 import socket
 import sys
-from typing import Optional
 
 from bumper.confserver import ConfServer, WebServerBinding
 from bumper.db import *

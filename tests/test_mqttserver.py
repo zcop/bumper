@@ -2,7 +2,6 @@ import asyncio
 import os
 import time
 
-import amqtt
 import pytest
 from amqtt.client import MQTTClient
 from amqtt.mqtt.constants import QOS_0

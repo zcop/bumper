@@ -1,10 +1,8 @@
-
 import logging
 
 from aiohttp import web
 
 from bumper import plugins
-from bumper.models import *
 
 
 class portal_api_ecms(plugins.ConfServerApp):

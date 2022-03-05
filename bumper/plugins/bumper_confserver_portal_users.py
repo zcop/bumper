@@ -1,13 +1,10 @@
-
-import asyncio
+import json
 import logging
-from datetime import datetime, timedelta
 
 from aiohttp import web
 
 import bumper
 from bumper import plugins
-from bumper.models import *
 
 
 class portal_api_users(plugins.ConfServerApp):

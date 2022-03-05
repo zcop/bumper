@@ -1,4 +1,3 @@
-
 from aiohttp import web
 
 from bumper import plugins

@@ -1,4 +1,4 @@
-
+import json
 import logging
 import random
 import string
@@ -6,8 +6,8 @@ import xml.etree.ElementTree as ET
 
 from aiohttp import web
 
+import bumper
 from bumper import plugins
-from bumper.models import *
 
 
 class portal_api_lg(plugins.ConfServerApp):

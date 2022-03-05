@@ -14,16 +14,16 @@ import jinja2
 from aiohttp import web
 from aiohttp.typedefs import Handler
 from aiohttp.web_exceptions import (
+    HTTPBadRequest,
     HTTPInternalServerError,
     HTTPNoContent,
-    HTTPBadRequest,
 )
 from aiohttp.web_request import Request
 from aiohttp.web_response import Response, StreamResponse
 
 import bumper
-from .plugins import ConfServerApp
 
+from .plugins import ConfServerApp
 from .util import get_logger
 
 
