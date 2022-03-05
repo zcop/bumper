@@ -70,10 +70,10 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    Status: {% if mqtt_server[0].state == "started" %}
-                    <span class="badge badge-success">{{ mqtt_server[0].state }}</span> {% else %}
-                    <span class="badge badge-danger">{{ mqtt_server[0].state }}</span> {% endif %}
-                    Sessions: {{ mqtt_server[1].sessions[0].count }}
+                    Status: {% if mqtt_server.state == "started" %}
+                    <span class="badge badge-success">{{ mqtt_server.state }}</span> {% else %}
+                    <span class="badge badge-danger">{{ mqtt_server.state }}</span> {% endif %}
+                    Sessions: {{ mqtt_server.sessions.count }}
 
                     <table class="table table-striped table-bordered table-responsive-lg">
                         <thead class="thead-dark">
@@ -83,12 +83,12 @@
                             <th>state</th>
                         </tr>
                         </thead>
-                        {% for sess in mqtt_server[1].sessions[1].clients %}
+                        {% for sess in mqtt_server.sessions.clients %}
                             <tr>
-                                <td>{{ sess[0].username }}</td>
-                                <td>{{ sess[0].client_id }}</td>
-                                <td {% if sess[0].state == "connected" %}
-                                    class="table-success" {% endif %}> {{ sess[0].state }} </td>
+                                <td>{{ sess.username }}</td>
+                                <td>{{ sess.client_id }}</td>
+                                <td {% if sess.state == "connected" %}
+                                    class="table-success" {% endif %}> {{ sess.state }} </td>
                             </tr>
                         {% endfor %}
                     </table>

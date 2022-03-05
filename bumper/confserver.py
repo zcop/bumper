@@ -117,23 +117,27 @@ class ConfServer:
         #    print(resource)
 
     async def start_site(self, app, address="localhost", port=8080, usessl=False):
-        runner = web.AppRunner(app)
-        self.runners.append(runner)
-        await runner.setup()
-        if usessl:
-            ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-            ssl_ctx.load_cert_chain(bumper.server_cert, bumper.server_key)
-            site = web.TCPSite(
-                runner,
-                host=address,
-                port=port,
-                ssl_context=ssl_ctx,
-            )
+        try:
+            runner = web.AppRunner(app)
+            self.runners.append(runner)
+            await runner.setup()
+            if usessl:
+                ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+                ssl_ctx.load_cert_chain(bumper.server_cert, bumper.server_key)
+                site = web.TCPSite(
+                    runner,
+                    host=address,
+                    port=port,
+                    ssl_context=ssl_ctx,
+                )
 
-        else:
-            site = web.TCPSite(runner, host=address, port=port)
+            else:
+                site = web.TCPSite(runner, host=address, port=port)
 
-        await site.start()
+            await site.start()
+        except Exception as e:
+            confserverlog.exception(f"{e}")
+            raise e
 
     async def start_server(self):
         try:
@@ -172,41 +176,31 @@ class ConfServer:
 
     async def handle_base(self, request):
         try:
-
             bots = bumper.db_get().table("bots").all()
             clients = bumper.db_get().table("clients").all()
-            helperbot_connected = bumper.mqtt_helperbot.is_connected
-            mqttserver = bumper.mqtt_server.broker
-            xmppserver = bumper.xmpp_server
             mq_sessions = []
-            for sess in mqttserver._sessions:
-                tmpsess = []
-                tmpsess.append(
+            for (session, _) in bumper.mqtt_server.broker._sessions.values():
+                mq_sessions.append(
                     {
-                        "username": mqttserver._sessions[sess][0].username,
-                        "client_id": mqttserver._sessions[sess][0].client_id,
-                        "state": mqttserver._sessions[sess][0].transitions.state,
+                        "username": session.username,
+                        "client_id": session.client_id,
+                        "state": session.transitions.state,
                     }
                 )
-
-                mq_sessions.append(tmpsess)
             all = {
                 "bots": bots,
                 "clients": clients,
-                "helperbot": {"connected": helperbot_connected},
-                "mqtt_server": [
-                    {"state": bumper.mqtt_server.state},
-                    {
-                        "sessions": [
-                            {"count": len(mqttserver._sessions)},
-                            {"clients": mq_sessions},
-                        ]
-                    },
-                ],
-                "xmpp_server": xmppserver,
+                "helperbot": {"connected": bumper.mqtt_helperbot.is_connected},
+                "mqtt_server": {
+                    "state": bumper.mqtt_server.state,
+                    "sessions": {
+                        "count": len(mq_sessions),
+                        "clients": mq_sessions,
+                    }
+                },
+                "xmpp_server": bumper.xmpp_server,
             }
             resp = aiohttp_jinja2.render_template("home.jinja2", request, context=all)
-            # return web.json_response(all)
             return resp
 
         except Exception as e:
