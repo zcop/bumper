@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 from aiohttp import web
 
 from bumper import plugins

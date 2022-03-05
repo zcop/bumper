@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 """Mqtt module."""
 
 import asyncio
