@@ -8,6 +8,8 @@ from aiohttp import web
 import bumper
 from bumper import plugins
 from bumper.models import *
+from bumper.rest import auth_util
+from bumper.util import get_current_time_as_millis
 
 
 class v1_private_user(plugins.ConfServerApp):
@@ -17,30 +19,29 @@ class v1_private_user(plugins.ConfServerApp):
         self.plugin_type = "sub_api"
         self.sub_api = "api_v1"
 
-        authhandler = bumper.ConfServer.ConfServer_AuthHandler()
         self.routes = [
             web.route(
                 "*",
                 "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/login",
-                authhandler.login,
+                auth_util.login,
                 name="v1_user_login",
             ),
             web.route(
                 "*",
                 "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/checkLogin",
-                authhandler.login,
+                auth_util.login,
                 name="v1_user_checkLogin",
             ),
             web.route(
                 "*",
                 "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/getAuthCode",
-                authhandler.get_AuthCode,
+                auth_util.get_authcode,
                 name="v1_user_getAuthCode",
             ),
             web.route(
                 "*",
                 "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/logout",
-                authhandler.logout,
+                auth_util.logout,
                 name="v1_user_logout",
             ),
             web.route(
@@ -58,7 +59,7 @@ class v1_private_user(plugins.ConfServerApp):
             web.route(
                 "*",
                 "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/getUserAccountInfo",
-                authhandler.getUserAccountInfo,
+                auth_util.get_user_account_info,
                 name="v1_user_getUserAccountInfo",
             ),
             web.route(
@@ -91,10 +92,6 @@ class v1_private_user(plugins.ConfServerApp):
             # /registerByEmail
         ]
 
-        self.get_milli_time = (
-            bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
-        )
-
     async def handle_checkAgreement(self, request):
         try:
             apptype = request.match_info.get("apptype", "")
@@ -119,14 +116,14 @@ class v1_private_user(plugins.ConfServerApp):
                     ],
                     "msg": "操作成功",
                     "success": True,
-                    "time": self.get_milli_time(datetime.utcnow().timestamp()),
+                    "time": get_current_time_as_millis(),
                 }
             else:
                 body = {
                     "code": bumper.RETURN_API_SUCCESS,
                     "data": [],
                     "msg": "操作成功",
-                    "time": self.get_milli_time(datetime.utcnow().timestamp()),
+                    "time": get_current_time_as_millis(),
                 }
 
             return web.json_response(body)
@@ -195,7 +192,7 @@ class v1_private_user(plugins.ConfServerApp):
                 ],
                 "msg": "操作成功",
                 "success": True,
-                "time": self.get_milli_time(datetime.utcnow().timestamp()),
+                "time": get_current_time_as_millis(),
             }
 
             return web.json_response(body)
@@ -210,7 +207,7 @@ class v1_private_user(plugins.ConfServerApp):
                 "data": {"isNeedReLogin": "N"},
                 "msg": "操作成功",
                 "success": True,
-                "time": self.get_milli_time(datetime.utcnow().timestamp()),
+                "time": get_current_time_as_millis(),
             }
 
             return web.json_response(body)
@@ -225,13 +222,10 @@ class v1_private_user(plugins.ConfServerApp):
                 "data": None,
                 "msg": "操作成功",
                 "success": True,
-                "time": self.get_milli_time(datetime.utcnow().timestamp()),
+                "time": get_current_time_as_millis(),
             }
 
             return web.json_response(body)
 
         except Exception as e:
             logging.exception(f"{e}")
-
-
-plugin = v1_private_user()

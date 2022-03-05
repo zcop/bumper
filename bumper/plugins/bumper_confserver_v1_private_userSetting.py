@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import logging
-from datetime import datetime
 
 from aiohttp import web
 
 import bumper
 from bumper import plugins
+from bumper.util import get_current_time_as_millis
 
 
 class v1_private_userSetting(plugins.ConfServerApp):
@@ -23,10 +23,6 @@ class v1_private_userSetting(plugins.ConfServerApp):
                 name="v1_userSetting_getSuggestionSetting",
             ),
         ]
-
-        self.get_milli_time = (
-            bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
-        )
 
     async def handle_getSuggestionSetting(self, request):
         try:
@@ -54,13 +50,10 @@ class v1_private_userSetting(plugins.ConfServerApp):
                     ],
                 },
                 "msg": "操作成功",
-                "time": self.get_milli_time(datetime.utcnow().timestamp()),
+                "time": get_current_time_as_millis(),
             }
 
             return web.json_response(body)
 
         except Exception as e:
             logging.exception(f"{e}")
-
-
-plugin = v1_private_userSetting()

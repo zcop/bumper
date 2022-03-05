@@ -8,6 +8,7 @@ from aiohttp import web
 import bumper
 from bumper import plugins
 from bumper.models import *
+from bumper.util import get_current_time_as_millis
 
 
 class v1_private_campaign(plugins.ConfServerApp):
@@ -25,13 +26,9 @@ class v1_private_campaign(plugins.ConfServerApp):
             ),
         ]
 
-        self.get_milli_time = (
-            bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
-        )
-
     async def handle_homePageAlert(self, request):
         try:
-            nextAlert = self.get_milli_time(
+            nextAlert = convert_to_millis(
                 (datetime.now() + timedelta(hours=12)).timestamp()
             )
 
@@ -43,16 +40,13 @@ class v1_private_campaign(plugins.ConfServerApp):
                     "hasCampaign": "N",
                     "imageUrl": None,
                     "nextAlertTime": nextAlert,
-                    "serverTime": self.get_milli_time(datetime.utcnow().timestamp()),
+                    "serverTime": get_current_time_as_millis(),
                 },
                 "msg": "操作成功",
-                "time": self.get_milli_time(datetime.utcnow().timestamp()),
+                "time": get_current_time_as_millis(),
             }
 
             return web.json_response(body)
 
         except Exception as e:
             logging.exception(f"{e}")
-
-
-plugin = v1_private_campaign()

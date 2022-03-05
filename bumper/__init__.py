@@ -6,7 +6,7 @@ import socket
 import sys
 from typing import Optional
 
-from bumper.confserver import ConfServer
+from bumper.confserver import ConfServer, WebServerBinding
 from bumper.db import *
 from bumper.models import *
 from bumper.mqttserver import MQTTHelperBot, MQTTServer
@@ -53,11 +53,10 @@ token_validity_seconds = 3600  # 1 hour
 oauth_validity_days = 15
 db = None
 
-mqtt_server: Optional[MQTTServer] = None
-mqtt_helperbot: Optional[MQTTHelperBot] = None
-conf_server: Optional[ConfServer] = None
-conf_server_2: Optional[ConfServer] = None
-xmpp_server: Optional[XMPPServer] = None
+mqtt_server: MQTTServer
+mqtt_helperbot: MQTTHelperBot
+conf_server: ConfServer
+xmpp_server: XMPPServer
 
 # Plugins
 sys.path.append(os.path.join(bumper_dir, "bumper", "plugins"))
@@ -75,9 +74,11 @@ bumperlog = get_logger("bumper")
 logging.getLogger("asyncio").setLevel(logging.CRITICAL + 1)  # Ignore this logger
 
 mqtt_listen_port = 8883
-conf1_listen_port = 443
-conf2_listen_port = 8007
 xmpp_listen_port = 5223
+conf_server_bindings = [
+    WebServerBinding(bumper_listen, 8443, True),
+    WebServerBinding(bumper_listen, 8007, False),
+]
 
 
 async def start():
@@ -117,9 +118,7 @@ async def start():
     global mqtt_helperbot
     mqtt_helperbot = MQTTHelperBot(bumper_listen, mqtt_listen_port)
     global conf_server
-    conf_server = ConfServer((bumper_listen, conf1_listen_port), usessl=True)
-    global conf_server_2
-    conf_server_2 = ConfServer((bumper_listen, conf2_listen_port), usessl=False)
+    conf_server = ConfServer(conf_server_bindings)
     global xmpp_server
     xmpp_server = XMPPServer((bumper_listen, xmpp_listen_port))
 
@@ -138,17 +137,7 @@ async def start():
         await asyncio.sleep(0.1)
 
     # Start web servers
-    conf_server.confserver_app()
-    asyncio.create_task(
-        conf_server.start_site(
-            conf_server.app, address=bumper_listen, port=conf1_listen_port, usessl=True
-        )
-    )
-    asyncio.create_task(
-        conf_server.start_site(
-            conf_server.app, address=bumper_listen, port=conf2_listen_port, usessl=False
-        )
-    )
+    await conf_server.start()
 
     # Start maintenance
     while not shutting_down:
@@ -165,8 +154,7 @@ async def shutdown():
     try:
         bumperlog.info("Shutting down")
 
-        await conf_server.stop_server()
-        await conf_server_2.stop_server()
+        await conf_server.shutdown()
         if mqtt_server.state == "started":
             await mqtt_server.shutdown()
         elif mqtt_server.state == "starting":

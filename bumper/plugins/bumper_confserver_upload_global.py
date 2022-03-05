@@ -26,10 +26,6 @@ class upload_global(plugins.ConfServerApp):
             ),
         ]
 
-        self.get_milli_time = (
-            bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
-        )
-
     async def handle_upload_global_file(self, request):
         try:
             fileID = request.match_info.get("id", "")
@@ -42,6 +38,3 @@ class upload_global(plugins.ConfServerApp):
 
         except Exception as e:
             logging.exception(f"{e}")
-
-
-plugin = upload_global()

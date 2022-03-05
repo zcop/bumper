@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
+import json
 import logging
 
 from aiohttp import web
 
-from bumper import plugins
-from bumper.models import *
+import bumper
+from bumper.plugins import ConfServerApp
 
 
-class portal_api_appsvr(plugins.ConfServerApp):
+class portal_api_appsvr(ConfServerApp):
     def __init__(self):
         self.name = "portal_api_appsvr"
         self.plugin_type = "sub_api"
@@ -33,10 +34,6 @@ class portal_api_appsvr(plugins.ConfServerApp):
                 name="portal_api_appsvr_oauth_callback",
             ),
         ]
-
-        self.get_milli_time = (
-            bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
-        )
 
     async def handle_appsvr_app(self, request):
         if not request.method == "GET":  # Skip GET for now
@@ -211,6 +208,3 @@ class portal_api_appsvr(plugins.ConfServerApp):
 
         except Exception as e:
             logging.exception(f"{e}")
-
-
-plugin = portal_api_appsvr()

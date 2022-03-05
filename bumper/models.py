@@ -8,6 +8,7 @@ from typing import Any
 from amqtt.session import Session
 
 import bumper
+from bumper.util import convert_to_millis
 
 
 class VacBotDevice:
@@ -116,9 +117,7 @@ class OAuth:
 
     def toResponse(self):
         data = self.__dict__
-        data[
-            "expire_at"
-        ] = bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time(
+        data["expire_at"] = convert_to_millis(
             datetime.fromisoformat(self.expire_at).timestamp()
         )
         return data

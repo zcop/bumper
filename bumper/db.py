@@ -31,7 +31,7 @@ def os_db_path():  # createdir=True):
     return os.path.join(bumper.data_dir, "bumper.db")
 
 
-def db_get():
+def db_get() -> TinyDB:
     # Will create the database if it doesn't exist
     db = TinyDB(db_file())
 
@@ -340,7 +340,7 @@ def bot_add(sn: str, did: str, devclass: str, resource: str, company: str) -> No
             bot_full_upsert(newbot.asdict())
 
 
-def bot_remove(did):
+def bot_remove(did: str):
     bots = db_get().table("bots")
     bot = bot_get(did)
     if bot:
@@ -392,7 +392,7 @@ def client_add(userid: str, realm: str, resource: str) -> None:
         client_full_upsert(newclient.asdict())
 
 
-def client_remove(resource):
+def client_remove(resource: str):
     clients = db_get().table("clients")
     client = client_get(resource)
     if client:

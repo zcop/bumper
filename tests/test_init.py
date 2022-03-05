@@ -26,15 +26,12 @@ async def test_start_stop():
 
         b = bumper
         b.db = "tests/tmp.db"  # Set db location for testing
-        b.conf1_listen_address = "127.0.0.1"
-        b.conf1_listen_port = 444
         asyncio.create_task(b.start())
         await asyncio.sleep(0.1)
         l.check_present(("bumper", "INFO", "Starting Bumper"))
         l.clear()
 
-        asyncio.create_task(b.shutdown())
-        await asyncio.sleep(0.1)
+        await b.shutdown()
         l.check_present(
             ("bumper", "INFO", "Shutting down"), ("bumper", "INFO", "Shutdown complete")
         )

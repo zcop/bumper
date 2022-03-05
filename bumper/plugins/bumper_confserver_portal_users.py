@@ -25,10 +25,6 @@ class portal_api_users(plugins.ConfServerApp):
             ),
         ]
 
-        self.get_milli_time = (
-            bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
-        )
-
     async def handle_usersapi(self, request):
         if not request.method == "GET":  # Skip GET for now
             try:
@@ -120,6 +116,3 @@ class portal_api_users(plugins.ConfServerApp):
         # Return fail for GET
         body = {"result": "fail", "todo": "result"}
         return web.json_response(body)
-
-
-plugin = portal_api_users()

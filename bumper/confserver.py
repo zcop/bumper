@@ -1,25 +1,36 @@
-#!/usr/bin/env python3
+"""Web server module."""
 
 import asyncio
+import dataclasses
+import inspect
+import json
 import logging
 import os
 import ssl
+from typing import Union
 
 import aiohttp_jinja2
 import jinja2
 from aiohttp import web
+from aiohttp.typedefs import Handler
+from aiohttp.web_exceptions import (
+    HTTPInternalServerError,
+    HTTPNoContent,
+    HTTPBadRequest,
+)
+from aiohttp.web_request import Request
+from aiohttp.web_response import Response, StreamResponse
 
-from bumper import plugins
-from bumper.models import *
+import bumper
+from .plugins import ConfServerApp
 
 from .util import get_logger
 
 
-class aiohttp_filter(logging.Filter):
-    def filter(self, record):
-        if (
-            record.name == "aiohttp.access" and record.levelno == 20
-        ):  # Filters aiohttp.access log to switch it from INFO to DEBUG
+class _aiohttp_filter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        if record.name == "aiohttp.access" and record.levelno == 20:
+            # Filters aiohttp.access log to switch it from INFO to DEBUG
             record.levelno = 10
             record.levelname = "DEBUG"
 
@@ -30,53 +41,64 @@ class aiohttp_filter(logging.Filter):
 
 
 confserverlog = get_logger("confserver")
-logging.getLogger("aiohttp.access").addFilter(
-    aiohttp_filter()
-)  # Add logging filter above to aiohttp.access
+# Add logging filter above to aiohttp.access
+logging.getLogger("aiohttp.access").addFilter(_aiohttp_filter())
+
+
+@dataclasses.dataclass(frozen=True)
+class WebServerBinding:
+    """Web server binding."""
+
+    host: str
+    port: int
+    use_ssl: bool
 
 
 class ConfServer:
-    def __init__(self, address, usessl=False):
-        self.usessl = usessl
-        self.address = address
-        self.app = None
-        self.site = None
-        self.runner = None
-        self.runners = []
-        self.excludelogging = ["base", "remove-bot", "remove-client", "restart-service"]
+    """Web server."""
 
-    def get_milli_time(self, timetoconvert):
-        return int(round(timetoconvert * 1000))
+    _EXCLUDE_FROM_LOGGING = ["base", "remove-bot", "remove-client", "restart-service"]
 
-    def confserver_app(self):
-        self.app = web.Application(
+    def __init__(self, bindings: Union[list[WebServerBinding], WebServerBinding]):
+        self._runners: list[web.AppRunner] = []
+
+        if isinstance(bindings, WebServerBinding):
+            bindings = [bindings]
+        self._bindings = bindings
+
+        self._app = web.Application(
             middlewares=[
-                self.log_all_requests,
+                self._log_all_requests,
             ],
         )
         aiohttp_jinja2.setup(
-            self.app,
+            self._app,
             loader=jinja2.FileSystemLoader(
                 os.path.join(bumper.bumper_dir, "bumper", "web", "templates")
             ),
         )
+        self._add_routes()
+        self._app.freeze()  # no modification allowed anymore
 
-        self.app.add_routes(
+    def _add_routes(self) -> None:
+        self._app.add_routes(
             [
-                web.get("", self.handle_base, name="base"),
-                web.get("/bot/remove/{did}", self.handle_RemoveBot, name="remove-bot"),
+                web.get("", self._handle_base, name="base"),
+                web.get(
+                    "/bot/remove/{did}", self._handle_remove_bot, name="remove-bot"
+                ),
                 web.get(
                     "/client/remove/{resource}",
-                    self.handle_RemoveClient,
+                    self._handle_remove_client,
                     name="remove-client",
                 ),
                 web.get(
                     "/restart_{service}",
-                    self.handle_RestartService,
+                    self._handle_restart_service,
                     name="restart-service",
                 ),
-                web.post("/lookup.do", self.handle_lookup),
-                web.post("/newauth.do", self.handle_newauth),
+                web.post("/lookup.do", self._handle_lookup),
+                web.post("/newauth.do", self._handle_newauth),
             ]
         )
 
@@ -94,11 +116,17 @@ class ConfServer:
         }
 
         # Load plugins
-        for plug in bumper.discovered_plugins:
-            if isinstance(
-                bumper.discovered_plugins[plug].plugin, bumper.plugins.ConfServerApp
-            ):
-                plugin = bumper.discovered_plugins[plug].plugin
+        for module in bumper.discovered_plugins.values():
+            plugins = [
+                m[1]
+                for m in inspect.getmembers(module, inspect.isclass)
+                if m[1].__module__ == module.__name__
+            ]
+            for plugin_type in plugins:
+                if not issubclass(plugin_type, ConfServerApp):
+                    continue
+
+                plugin = plugin_type()
                 if plugin.plugin_type == "sub_api":  # app or sub_api
                     if plugin.sub_api in apis:
                         if plugin.routes:
@@ -108,73 +136,51 @@ class ConfServer:
                 elif plugin.plugin_type == "app":
                     if plugin.path_prefix and plugin.app:
                         logging.debug(f"Adding confserver plugin ({plugin.name})")
-                        self.app.add_subapp(plugin.path_prefix, plugin.app)
+                        self._app.add_subapp(plugin.path_prefix, plugin.app)
 
         for api in apis:
-            self.app.add_subapp(apis[api]["prefix"], apis[api]["app"])
+            self._app.add_subapp(apis[api]["prefix"], apis[api]["app"])
 
-        # for resource in self.app.router.resources():
-        #    print(resource)
-
-    async def start_site(self, app, address="localhost", port=8080, usessl=False):
+    async def start(self) -> None:
+        """Start server."""
         try:
-            runner = web.AppRunner(app)
-            self.runners.append(runner)
-            await runner.setup()
-            if usessl:
-                ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-                ssl_ctx.load_cert_chain(bumper.server_cert, bumper.server_key)
+            confserverlog.info("Starting ConfServer")
+            for binding in self._bindings:
+                runner = web.AppRunner(self._app)
+                self._runners.append(runner)
+                await runner.setup()
+
+                ssl_ctx = None
+                if binding.use_ssl:
+                    ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+                    ssl_ctx.load_cert_chain(bumper.server_cert, bumper.server_key)
+
                 site = web.TCPSite(
                     runner,
-                    host=address,
-                    port=port,
+                    host=binding.host,
+                    port=binding.port,
                     ssl_context=ssl_ctx,
                 )
 
-            else:
-                site = web.TCPSite(runner, host=address, port=port)
-
-            await site.start()
+                await site.start()
         except Exception as e:
             confserverlog.exception(f"{e}")
             raise e
 
-    async def start_server(self):
+    async def shutdown(self) -> None:
+        """Shutdown server."""
         try:
-            confserverlog.info(
-                f"Starting ConfServer at {self.address[0]}:{self.address[1]}"
-            )
-            self.runner = web.AppRunner(self.app)
-            await self.runner.setup()
+            confserverlog.info("Shutting down")
+            for runner in self._runners:
+                await runner.shutdown()
 
-            if self.usessl:
-                ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-                ssl_ctx.load_cert_chain(bumper.server_cert, bumper.server_key)
-                self.site = web.TCPSite(
-                    self.runner,
-                    host=self.address[0],
-                    port=self.address[1],
-                    ssl_context=ssl_ctx,
-                )
-
-            else:
-                self.site = web.TCPSite(
-                    self.runner, host=self.address[0], port=self.address[1]
-                )
-
-            await self.site.start()
-        except Exception as e:
-            confserverlog.exception(f"{e}")
-            raise e
-
-    async def stop_server(self):
-        try:
-            await self.runner.shutdown()
+            self._runners.clear()
+            await self._app.shutdown()
 
         except Exception as e:
             confserverlog.exception(f"{e}")
 
-    async def handle_base(self, request):
+    async def _handle_base(self, request: Request) -> Response:
         try:
             bots = bumper.db_get().table("bots").all()
             clients = bumper.db_get().table("clients").all()
@@ -196,20 +202,21 @@ class ConfServer:
                     "sessions": {
                         "count": len(mq_sessions),
                         "clients": mq_sessions,
-                    }
+                    },
                 },
                 "xmpp_server": bumper.xmpp_server,
             }
-            resp = aiohttp_jinja2.render_template("home.jinja2", request, context=all)
-            return resp
-
+            return aiohttp_jinja2.render_template("home.jinja2", request, context=all)
         except Exception as e:
             confserverlog.exception(f"{e}")
 
-    @web.middleware
-    async def log_all_requests(self, request, handler):
+        raise HTTPInternalServerError
 
-        if request._match_info.route.name not in self.excludelogging:
+    @web.middleware
+    async def _log_all_requests(
+        self, request: Request, handler: Handler
+    ) -> StreamResponse:
+        if request._match_info.route.name not in self._EXCLUDE_FROM_LOGGING:
             to_log = {
                 "request": {
                     "route_name": f"{request.match_info.route.name}",
@@ -230,8 +237,8 @@ class ConfServer:
                         try:
                             postbody = json.loads(await request.text())
                         except Exception as e:
-                            confserverlog.error(f"Request body not json: {e} - {e.doc}")
-                            postbody = e.doc
+                            confserverlog.error(f"Request body not json: {e}")
+                            raise HTTPBadRequest(reason="Body was not json")
 
                     else:
                         postbody = await request.post()
@@ -242,12 +249,15 @@ class ConfServer:
                 if response is None:
                     confserverlog.warning("Response was null!")
                     confserverlog.warning(json.dumps(to_log))
-                    return response
+                    raise HTTPNoContent
 
                 to_log["response"] = {
                     "status": f"{response.status}",
                 }
-                if not "application/octet-stream" in response.content_type:
+                if (
+                    "application/octet-stream" not in response.content_type
+                    and isinstance(response, Response)
+                ):
                     to_log["response"]["body"] = f"{json.loads(response.body)}"
 
                 confserverlog.debug(json.dumps(to_log))
@@ -262,16 +272,16 @@ class ConfServer:
             except Exception as e:
                 confserverlog.exception(f"{e}")
                 confserverlog.error(json.dumps(to_log))
-                return e
+                raise e
 
         else:
             return await handler(request)
 
-    async def restart_Helper(self):
+    async def _restart_helper_bot(self) -> None:
         await bumper.mqtt_helperbot.disconnect()
         asyncio.create_task(bumper.mqtt_helperbot.start())
 
-    async def restart_MQTT(self):
+    async def _restart_mqtt_server(self) -> None:
         loop = asyncio.get_event_loop()
 
         if bumper.mqtt_server.state not in ["stopped", "not_started"]:
@@ -287,35 +297,31 @@ class ConfServer:
 
         loop.call_later(1.5, lambda: asyncio.create_task(bumper.mqtt_server.start()))
 
-    async def restart_XMPP(self):
-        bumper.xmpp_server.disconnect()
-        await bumper.xmpp_server.start_async_server()
-
-    async def handle_RestartService(self, request):
+    async def _handle_restart_service(self, request: Request) -> Response:
         try:
             service = request.match_info.get("service", "")
             if service == "Helperbot":
-                await self.restart_Helper()
+                await self._restart_helper_bot()
                 return web.json_response({"status": "complete"})
-            elif service == "MQTTServer":
-                asyncio.create_task(self.restart_MQTT())
+            if service == "MQTTServer":
+                asyncio.create_task(self._restart_mqtt_server())
                 aloop = asyncio.get_event_loop()
                 aloop.call_later(
-                    5, lambda: asyncio.create_task(self.restart_Helper())
+                    5, lambda: asyncio.create_task(self._restart_helper_bot())
                 )  # In 5 seconds restart Helperbot
 
                 return web.json_response({"status": "complete"})
-            elif service == "XMPPServer":
-                await self.restart_XMPP()
+            if service == "XMPPServer":
+                bumper.xmpp_server.disconnect()
+                await bumper.xmpp_server.start_async_server()
                 return web.json_response({"status": "complete"})
-            else:
-                return web.json_response({"status": "invalid service"})
 
+            return web.json_response({"status": "invalid service"})
         except Exception as e:
             confserverlog.exception(f"{e}")
-            pass
+            raise
 
-    async def handle_RemoveBot(self, request):
+    async def _handle_remove_bot(self, request: Request) -> Response:
         try:
             did = request.match_info.get("did", "")
             bumper.bot_remove(did)
@@ -326,9 +332,10 @@ class ConfServer:
 
         except Exception as e:
             confserverlog.exception(f"{e}")
-            pass
 
-    async def handle_RemoveClient(self, request):
+        raise HTTPInternalServerError
+
+    async def _handle_remove_client(self, request: Request) -> Response:
         try:
             resource = request.match_info.get("resource", "")
             bumper.client_remove(resource)
@@ -339,93 +346,20 @@ class ConfServer:
 
         except Exception as e:
             confserverlog.exception(f"{e}")
-            pass
 
-    async def handle_login(self, request):
+        raise HTTPInternalServerError
+
+    async def _handle_lookup(self, request: Request) -> Response:
         try:
-            user_devid = request.match_info.get("devid", "")
-            countrycode = request.match_info.get("country", "us")
-            apptype = request.match_info.get("apptype", "")
-            confserverlog.info(f"client with devid {user_devid} attempting login")
-            if bumper.use_auth:
-                if (
-                    not user_devid == ""
-                ):  # Performing basic "auth" using devid, super insecure
-                    user = bumper.user_by_deviceid(user_devid)
-                    if "checkLogin" in request.path:
-                        self.check_token(
-                            apptype, countrycode, user, request.query["accessToken"]
-                        )
-                    else:
-                        if "global_" in apptype:  # EcoVacs Home
-                            login_details = EcoVacsHome_Login()
-                            login_details.ucUid = "fuid_{}".format(user["userid"])
-                            login_details.loginName = "fusername_{}".format(
-                                user["userid"]
-                            )
-                            login_details.mobile = None
-
-                        else:
-                            login_details = EcoVacs_Login()
-
-                        # Deactivate old tokens and authcodes
-                        bumper.user_revoke_expired_tokens(user["userid"])
-
-                        login_details.accessToken = self.generate_token(user)
-                        login_details.uid = "fuid_{}".format(user["userid"])
-                        login_details.username = "fusername_{}".format(user["userid"])
-                        login_details.country = countrycode
-                        login_details.email = "null@null.com"
-
-                        body = {
-                            "code": API_ERRORS[RETURN_API_SUCCESS],
-                            "data": json.loads(login_details.toJSON()),
-                            # {
-                            #    "accessToken": self.generate_token(tmpuser),  # Generate a token
-                            #    "country": countrycode,
-                            #    "email": "null@null.com",
-                            #    "uid": "fuid_{}".format(tmpuser["userid"]),
-                            #    "username": "fusername_{}".format(tmpuser["userid"]),
-                            # },
-                            "msg": "操作成功",
-                            "time": self.get_milli_time(datetime.utcnow().timestamp()),
-                        }
-
-                        return web.json_response(body)
-
-                body = {
-                    "code": bumper.ERR_USER_NOT_ACTIVATED,
-                    "data": None,
-                    "msg": "当前密码错误",
-                    "time": self.get_milli_time(datetime.utcnow().timestamp()),
-                }
-
-                return web.json_response(body)
-
-            else:
-                return web.json_response(
-                    self._auth_any(user_devid, apptype, countrycode, request)
-                )
-
-        except Exception as e:
-            confserverlog.exception(f"{e}")
-
-    async def handle_lookup(self, request):
-        try:
-
-            body = {}
-            postbody = {}
             if request.content_type == "application/x-www-form-urlencoded":
-                postbody = await request.post()
-
+                body = await request.post()
             else:
-                postbody = json.loads(await request.text())
+                body = json.loads(await request.text())
 
-            confserverlog.debug(postbody)
+            confserverlog.debug(body)
 
-            todo = postbody["todo"]
-            if todo == "FindBest":
-                service = postbody["service"]
+            if body["todo"] == "FindBest":
+                service = body["service"]
                 if service == "EcoMsgNew":
                     srvip = bumper.bumper_announce_ip
                     srvport = 5223
@@ -434,13 +368,10 @@ class ConfServer:
                             srvip, srvport
                         )
                     )
-                    msgserver = {"ip": srvip, "port": srvport, "result": "ok"}
-                    msgserver = json.dumps(msgserver)
-                    msgserver = msgserver.replace(
-                        " ", ""
-                    )  # bot seems to be very picky about having no spaces, only way was with text
-
-                    return web.json_response(text=msgserver)
+                    server = json.dumps({"ip": srvip, "port": srvport, "result": "ok"})
+                    # bot seems to be very picky about having no spaces, only way was with text
+                    server = server.replace(" ", "")
+                    return web.json_response(text=server)
 
                 elif service == "EcoUpdate":
                     srvip = "47.88.66.164"  # EcoVacs Server
@@ -450,14 +381,18 @@ class ConfServer:
                             srvip, srvport
                         )
                     )
-                    body = {"result": "ok", "ip": srvip, "port": srvport}
+                    return web.json_response(
+                        {"result": "ok", "ip": srvip, "port": srvport}
+                    )
 
-            return web.json_response(body)
+            return web.json_response({})
 
         except Exception as e:
             confserverlog.exception(f"{e}")
 
-    async def handle_newauth(self, request):
+        raise HTTPInternalServerError
+
+    async def _handle_newauth(self, request: Request) -> Response:
         # Bumper is only returning the submitted token. No reason yet to create another new token
         try:
             if request.content_type == "application/x-www-form-urlencoded":
@@ -474,401 +409,4 @@ class ConfServer:
         except Exception as e:
             confserverlog.exception(f"{e}")
 
-    async def disconnect(self):
-        try:
-            confserverlog.info("shutting down")
-            await self.app.shutdown()
-
-        except Exception as e:
-            confserverlog.exception(f"{e}")
-
-    class ConfServer_GeneralFunctions:
-        def __init__(self):
-            pass
-
-        def get_milli_time(self, timetoconvert):
-            return int(round(timetoconvert * 1000))
-
-    class ConfServer_AuthHandler:
-        def __init__(self):
-            self.get_milli_time = (
-                bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
-            )
-            pass
-
-        def generate_token(self, user):
-            try:
-                tmpaccesstoken = uuid.uuid4().hex
-                bumper.user_add_token(user["userid"], tmpaccesstoken)
-                return tmpaccesstoken
-
-            except Exception as e:
-                confserverlog.exception(f"{e}")
-
-        def generate_authcode(self, user, countrycode, token):
-            try:
-                tmpauthcode = f"{countrycode}_{uuid.uuid4().hex}"
-                bumper.user_add_authcode(user["userid"], token, tmpauthcode)
-                return tmpauthcode
-
-            except Exception as e:
-                confserverlog.exception(f"{e}")
-
-        async def login(self, request):
-            try:
-                user_devid = request.match_info.get("devid", "")
-                countrycode = request.match_info.get("country", "us")
-                apptype = request.match_info.get("apptype", "")
-                confserverlog.info(f"client with devid {user_devid} attempting login")
-                if bumper.use_auth:
-                    if (
-                        not user_devid == ""
-                    ):  # Performing basic "auth" using devid, super insecure
-                        user = bumper.user_by_deviceid(user_devid)
-                        if "checkLogin" in request.path:
-                            self.check_token(
-                                apptype, countrycode, user, request.query["accessToken"]
-                            )
-                        else:
-                            if "global_" in apptype:  # EcoVacs Home
-                                login_details = EcoVacsHome_Login()
-                                login_details.ucUid = "fuid_{}".format(user["userid"])
-                                login_details.loginName = "fusername_{}".format(
-                                    user["userid"]
-                                )
-                                login_details.mobile = None
-
-                            else:
-                                login_details = EcoVacs_Login()
-
-                            # Deactivate old tokens and authcodes
-                            bumper.user_revoke_expired_tokens(user["userid"])
-
-                            login_details.accessToken = self.generate_token(user)
-                            login_details.uid = "fuid_{}".format(user["userid"])
-                            login_details.username = "fusername_{}".format(
-                                user["userid"]
-                            )
-                            login_details.country = countrycode
-                            login_details.email = "null@null.com"
-
-                            body = {
-                                "code": API_ERRORS[RETURN_API_SUCCESS],
-                                "data": json.loads(login_details.toJSON()),
-                                # {
-                                #    "accessToken": self.generate_token(tmpuser),  # Generate a token
-                                #    "country": countrycode,
-                                #    "email": "null@null.com",
-                                #    "uid": "fuid_{}".format(tmpuser["userid"]),
-                                #    "username": "fusername_{}".format(tmpuser["userid"]),
-                                # },
-                                "msg": "操作成功",
-                                "time": self.get_milli_time(
-                                    datetime.utcnow().timestamp()
-                                ),
-                            }
-
-                            return web.json_response(body)
-
-                    body = {
-                        "code": bumper.ERR_USER_NOT_ACTIVATED,
-                        "data": None,
-                        "msg": "当前密码错误",
-                        "time": self.get_milli_time(datetime.utcnow().timestamp()),
-                    }
-
-                    return web.json_response(body)
-
-                else:
-                    return web.json_response(
-                        self._auth_any(user_devid, apptype, countrycode, request)
-                    )
-
-            except Exception as e:
-                confserverlog.exception(f"{e}")
-
-        async def get_AuthCode(self, request):
-            try:
-                apptype = request.match_info.get("apptype", "")
-                user_devid = request.match_info.get("devid", "")  # Ecovacs
-                if user_devid == "":
-                    user_devid = request.query["deviceId"]  # Ecovacs Home
-
-                if not user_devid == "":
-                    user = bumper.user_by_deviceid(user_devid)
-                    token = ""
-                    if user:
-                        if "accessToken" in request.query:
-                            token = bumper.user_get_token(
-                                user["userid"], request.query["accessToken"]
-                            )
-                        if token:
-                            authcode = ""
-                            if not "authcode" in token:
-                                authcode = self.generate_authcode(
-                                    user,
-                                    request.match_info.get("country", "us"),
-                                    request.query["accessToken"],
-                                )
-                            else:
-                                authcode = token["authcode"]
-                            if "global" in apptype:
-                                body = {
-                                    "code": bumper.RETURN_API_SUCCESS,
-                                    "data": {
-                                        "authCode": authcode,
-                                        "ecovacsUid": request.query["uid"],
-                                    },
-                                    "msg": "操作成功",
-                                    "success": True,
-                                    "time": self.get_milli_time(
-                                        datetime.utcnow().timestamp()
-                                    ),
-                                }
-                            else:
-                                body = {
-                                    "code": bumper.RETURN_API_SUCCESS,
-                                    "data": {
-                                        "authCode": authcode,
-                                        "ecovacsUid": request.query["uid"],
-                                    },
-                                    "msg": "操作成功",
-                                    "time": self.get_milli_time(
-                                        datetime.utcnow().timestamp()
-                                    ),
-                                }
-                            return web.json_response(body)
-
-                body = {
-                    "code": bumper.ERR_TOKEN_INVALID,
-                    "data": None,
-                    "msg": "当前密码错误",
-                    "time": self.get_milli_time(datetime.utcnow().timestamp()),
-                }
-
-                return web.json_response(body)
-
-            except Exception as e:
-                confserverlog.exception(f"{e}")
-
-        def check_token(self, apptype, countrycode, user, token):
-            try:
-                if bumper.check_token(user["userid"], token):
-
-                    if "global_" in apptype:  # EcoVacs Home
-                        login_details = EcoVacsHome_Login()
-                        login_details.ucUid = "fuid_{}".format(user["userid"])
-                        login_details.loginName = "fusername_{}".format(user["userid"])
-                        login_details.mobile = None
-                    else:
-                        login_details = EcoVacs_Login()
-
-                    login_details.accessToken = token
-                    login_details.uid = "fuid_{}".format(user["userid"])
-                    login_details.username = "fusername_{}".format(user["userid"])
-                    login_details.country = countrycode
-                    login_details.email = "null@null.com"
-
-                    body = {
-                        "code": bumper.RETURN_API_SUCCESS,
-                        "data": json.loads(login_details.toJSON()),
-                        # {
-                        #    "accessToken": self.generate_token(tmpuser),  # Generate a token
-                        #    "country": countrycode,
-                        #    "email": "null@null.com",
-                        #    "uid": "fuid_{}".format(tmpuser["userid"]),
-                        #    "username": "fusername_{}".format(tmpuser["userid"]),
-                        # },
-                        "msg": "操作成功",
-                        "time": self.get_milli_time(datetime.utcnow().timestamp()),
-                    }
-                    return web.json_response(body)
-
-                else:
-                    body = {
-                        "code": bumper.ERR_TOKEN_INVALID,
-                        "data": None,
-                        "msg": "当前密码错误",
-                        "time": self.get_milli_time(datetime.utcnow().timestamp()),
-                    }
-                    return web.json_response(body)
-
-            except Exception as e:
-                confserverlog.exception(f"{e}")
-
-        def _auth_any(self, devid, apptype, country, request):
-            try:
-                user_devid = devid
-                countrycode = country
-                user = bumper.user_by_deviceid(user_devid)
-                bots = bumper.db_get().table("bots").all()
-
-                if user:  # Default to user 0
-                    tmpuser = user
-                    if "global_" in apptype:  # EcoVacs Home
-                        login_details = EcoVacsHome_Login()
-                        login_details.ucUid = "fuid_{}".format(tmpuser["userid"])
-                        login_details.loginName = "fusername_{}".format(
-                            tmpuser["userid"]
-                        )
-                        login_details.mobile = None
-                    else:
-                        login_details = EcoVacs_Login()
-
-                    login_details.accessToken = self.generate_token(tmpuser)
-                    login_details.uid = "fuid_{}".format(tmpuser["userid"])
-                    login_details.username = "fusername_{}".format(tmpuser["userid"])
-                    login_details.country = countrycode
-                    login_details.email = "null@null.com"
-                    bumper.user_add_device(tmpuser["userid"], user_devid)
-                else:
-                    bumper.user_add("tmpuser")  # Add a new user
-                    tmpuser = bumper.user_get("tmpuser")
-                    if "global_" in apptype:  # EcoVacs Home
-                        login_details = EcoVacsHome_Login()
-                        login_details.ucUid = "fuid_{}".format(tmpuser["userid"])
-                        login_details.loginName = "fusername_{}".format(
-                            tmpuser["userid"]
-                        )
-                        login_details.mobile = None
-                    else:
-                        login_details = EcoVacs_Login()
-
-                    login_details.accessToken = self.generate_token(tmpuser)
-                    login_details.uid = "fuid_{}".format(tmpuser["userid"])
-                    login_details.username = "fusername_{}".format(tmpuser["userid"])
-                    login_details.country = countrycode
-                    login_details.email = "null@null.com"
-                    bumper.user_add_device(tmpuser["userid"], user_devid)
-
-                for bot in bots:  # Add all bots to the user
-                    if "did" in bot:
-                        bumper.user_add_bot(tmpuser["userid"], bot["did"])
-                    else:
-                        confserverlog.error(f"No DID for bot: {bot}")
-
-                if (
-                    "checkLogin" in request.path
-                ):  # If request was to check a token do so
-                    checkToken = self.check_token(
-                        apptype, countrycode, tmpuser, request.query["accessToken"]
-                    )
-                    isGood = json.loads(checkToken.text)
-                    if isGood["code"] == "0000":
-                        return isGood
-
-                # Deactivate old tokens and authcodes
-                bumper.user_revoke_expired_tokens(tmpuser["userid"])
-
-                body = {
-                    "code": bumper.RETURN_API_SUCCESS,
-                    "data": json.loads(login_details.toJSON()),
-                    # {
-                    #    "accessToken": self.generate_token(tmpuser),  # Generate a token
-                    #    "country": countrycode,
-                    #    "email": "null@null.com",
-                    #    "uid": "fuid_{}".format(tmpuser["userid"]),
-                    #    "username": "fusername_{}".format(tmpuser["userid"]),
-                    # },
-                    "msg": "操作成功",
-                    "time": self.get_milli_time(datetime.utcnow().timestamp()),
-                }
-
-                return body
-
-            except Exception as e:
-                confserverlog.exception(f"{e}")
-
-        def getUserAccountInfo(self, request):
-            try:
-                user_devid = request.match_info.get("devid", "")
-                countrycode = request.match_info.get("country", "us")
-                apptype = request.match_info.get("apptype", "")
-                user = bumper.user_by_deviceid(user_devid)
-
-                if "global_" in apptype:  # EcoVacs Home
-                    login_details = EcoVacsHome_Login()
-                    login_details.ucUid = "fuid_{}".format(user["userid"])
-                    login_details.loginName = "fusername_{}".format(user["userid"])
-                    login_details.mobile = None
-                else:
-                    login_details = EcoVacs_Login()
-
-                login_details.uid = "fuid_{}".format(user["userid"])
-                login_details.username = "fusername_{}".format(user["userid"])
-                login_details.country = countrycode
-                login_details.email = "null@null.com"
-
-                body = {
-                    "code": bumper.RETURN_API_SUCCESS,
-                    "data": {
-                        "email": login_details.email,
-                        "hasMobile": "N",
-                        "hasPassword": "Y",
-                        "uid": login_details.uid,
-                        "userName": login_details.username,
-                        "obfuscatedMobile": None,
-                        "mobile": None,
-                        "loginName": login_details.loginName,
-                    },
-                    "msg": "操作成功",
-                    "time": self.get_milli_time(datetime.utcnow().timestamp()),
-                }
-
-                # Example body
-                # {
-                # "code": "0000",
-                # "data": {
-                #     "email": "user@gmail.com",
-                #     "hasMobile": "N",
-                #     "hasPassword": "Y",
-                #     "headIco": "",
-                #     "loginName": "user@gmail.com",
-                #     "mobile": null,
-                #     "mobileAreaNo": null,
-                #     "nickname": "",
-                #     "obfuscatedMobile": null,
-                #     "thirdLoginInfoList": [
-                #     {
-                #         "accountType": "WeChat",
-                #         "hasBind": "N"
-                #     }
-                #     ],
-                #     "uid": "20180719212155_*****",
-                #     "userName": "EAY*****"
-                # },
-                # "msg": "操作成功",
-                # "success": true,
-                # "time": 1578203898343
-                # }
-
-                return web.json_response(body)
-
-            except Exception as e:
-                confserverlog.exception(f"{e}")
-
-        async def logout(self, request):
-            try:
-                user_devid = request.match_info.get("devid", "")
-                if not user_devid == "":
-                    user = bumper.user_by_deviceid(user_devid)
-                    if user:
-                        if bumper.check_token(
-                            user["userid"], request.query["accessToken"]
-                        ):
-                            # Deactivate old tokens and authcodes
-                            bumper.user_revoke_token(
-                                user["userid"], request.query["accessToken"]
-                            )
-
-                body = {
-                    "code": bumper.RETURN_API_SUCCESS,
-                    "data": None,
-                    "msg": "操作成功",
-                    "time": self.get_milli_time(datetime.utcnow().timestamp()),
-                }
-
-                return web.json_response(body)
-
-            except Exception as e:
-                confserverlog.exception(f"{e}")
+        raise HTTPInternalServerError

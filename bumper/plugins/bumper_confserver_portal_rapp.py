@@ -19,10 +19,6 @@ class api_rapp(plugins.ConfServerApp):
             ),
         ]
 
-        self.get_milli_time = (
-            bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
-        )
-
     async def handle_map_get(self, request):
         try:
             body = {
@@ -35,6 +31,3 @@ class api_rapp(plugins.ConfServerApp):
 
         except Exception as e:
             logging.exception(f"{e}")
-
-
-plugin = api_rapp()

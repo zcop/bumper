@@ -26,7 +26,7 @@ class XMPPServer:
         self.address = address
         self.xmpp_protocol = lambda: XMPPServer_Protocol()
 
-    async def start_async_server(self):
+    async def start_async_server(self) -> None:
         try:
             xmppserverlog.info(
                 f"Starting XMPP Server at {self.address[0]}:{self.address[1]}"
@@ -44,7 +44,7 @@ class XMPPServer:
             xmppserverlog.exception(f"{e}")
             raise e
 
-    def disconnect(self):
+    def disconnect(self) -> None:
 
         xmppserverlog.debug("waiting for all clients to disconnect")
         for client in self.clients:

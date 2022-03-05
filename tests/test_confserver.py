@@ -9,11 +9,12 @@ from aiohttp import web
 from testfixtures import LogCapture
 
 import bumper
-from tests import HOST, MQTT_PORT
+from bumper import WebServerBinding
+from tests import HOST, MQTT_PORT, CONF_SERVER_PORT
 
 
 def create_confserver():
-    return bumper.ConfServer("127.0.0.1:11111", False)
+    return bumper.ConfServer(WebServerBinding(HOST, CONF_SERVER_PORT, False))
 
 
 def async_return(result):
@@ -28,27 +29,13 @@ def remove_existing_db():
 
 
 async def test_confserver_ssl():
-    conf_server = bumper.ConfServer((HOST, 11111), usessl=True)
-    conf_server.confserver_app()
-    await conf_server.start_server()
+    conf_server = bumper.ConfServer(WebServerBinding(HOST, CONF_SERVER_PORT, True))
+    await conf_server.start()
 
 
 async def test_confserver_no_ssl():
-    conf_server = bumper.ConfServer((HOST, 11112), usessl=False)
-    conf_server.confserver_app()
-    await conf_server.start_server()
-
-
-def test_get_milli_time():
-    cserv = create_confserver()
-    assert (
-        cserv.get_milli_time(
-            datetime.datetime(
-                2018, 1, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc
-            ).timestamp()
-        )
-        == 1514768400000
-    )
+    conf_server = bumper.ConfServer(WebServerBinding(HOST, 11112, False))
+    await conf_server.start()
 
 
 @pytest.mark.usefixtures("mqtt_server")

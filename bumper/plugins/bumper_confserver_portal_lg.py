@@ -20,10 +20,6 @@ class portal_api_lg(plugins.ConfServerApp):
             web.route("*", "/lg/log.do", self.handle_lg_log, name="portal_api_lg_log"),
         ]
 
-        self.get_milli_time = (
-            bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
-        )
-
     async def handle_lg_log(self, request):  # EcoVacs Home
         randomid = "".join(random.sample(string.ascii_letters, 6))
 
@@ -101,6 +97,3 @@ class portal_api_lg(plugins.ConfServerApp):
 
         body = {"id": randomid, "errno": bumper.ERR_COMMON, "ret": "fail"}
         return web.json_response(body)
-
-
-plugin = portal_api_lg()

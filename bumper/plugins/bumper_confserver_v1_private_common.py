@@ -5,6 +5,7 @@ from aiohttp import web
 
 from bumper import plugins
 from bumper.models import *
+from bumper.util import get_current_time_as_millis
 
 
 class v1_private_common(plugins.ConfServerApp):
@@ -64,10 +65,6 @@ class v1_private_common(plugins.ConfServerApp):
             ),
         ]
 
-        self.get_milli_time = (
-            bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
-        )
-
     async def handle_checkVersion(self, request):
         try:
             body = {
@@ -82,7 +79,7 @@ class v1_private_common(plugins.ConfServerApp):
                     "v": None,
                 },
                 "msg": "操作成功",
-                "time": self.get_milli_time(datetime.utcnow().timestamp()),
+                "time": get_current_time_as_millis(),
             }
 
             return web.json_response(body)
@@ -107,7 +104,7 @@ class v1_private_common(plugins.ConfServerApp):
                 },
                 "msg": "操作成功",
                 "success": True,
-                "time": self.get_milli_time(datetime.utcnow().timestamp()),
+                "time": get_current_time_as_millis(),
             }
 
             return web.json_response(body)
@@ -122,7 +119,7 @@ class v1_private_common(plugins.ConfServerApp):
                 "data": None,
                 "msg": "操作成功",
                 "success": True,
-                "time": self.get_milli_time(datetime.utcnow().timestamp()),
+                "time": get_current_time_as_millis(),
             }
 
             return web.json_response(body)
@@ -144,7 +141,7 @@ class v1_private_common(plugins.ConfServerApp):
                 },
                 "msg": "操作成功",
                 "success": True,
-                "time": self.get_milli_time(datetime.utcnow().timestamp()),
+                "time": get_current_time_as_millis(),
             }
 
             return web.json_response(body)
@@ -163,7 +160,7 @@ class v1_private_common(plugins.ConfServerApp):
                 "data": data,
                 "msg": "操作成功",
                 "success": True,
-                "time": self.get_milli_time(datetime.utcnow().timestamp()),
+                "time": get_current_time_as_millis(),
             }
 
             return web.json_response(body)
@@ -178,7 +175,7 @@ class v1_private_common(plugins.ConfServerApp):
                 "data": AREA_LIST,
                 "msg": "操作成功",
                 "success": True,
-                "time": self.get_milli_time(datetime.utcnow().timestamp()),
+                "time": get_current_time_as_millis(),
             }
 
             return web.json_response(body)
@@ -210,7 +207,7 @@ class v1_private_common(plugins.ConfServerApp):
                 ],
                 "msg": "操作成功",
                 "success": True,
-                "time": self.get_milli_time(datetime.utcnow().timestamp()),
+                "time": get_current_time_as_millis(),
             }
 
             return web.json_response(body)
@@ -220,7 +217,7 @@ class v1_private_common(plugins.ConfServerApp):
 
     async def handle_getTimestamp(self, request):  # EcoVacs Home
         try:
-            time = self.get_milli_time(datetime.utcnow().timestamp())
+            time = get_current_time_as_millis()
             body = {
                 "code": bumper.RETURN_API_SUCCESS,
                 "data": {"timestamp": time},
@@ -234,8 +231,6 @@ class v1_private_common(plugins.ConfServerApp):
         except Exception as e:
             logging.exception(f"{e}")
 
-
-plugin = v1_private_common()
 
 AREA_LIST = {
     "currentVersion": 231,

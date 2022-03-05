@@ -53,10 +53,6 @@ class portal_api_pim(plugins.ConfServerApp):
             ),
         ]
 
-        self.get_milli_time = (
-            bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
-        )
-
     async def handle_getProductIotMap(self, request):
         try:
             body = {
@@ -129,8 +125,6 @@ class portal_api_pim(plugins.ConfServerApp):
         except Exception as e:
             logging.exception(f"{e}")
 
-
-plugin = portal_api_pim()
 
 confignetAllResponse = {
     "code": 0,

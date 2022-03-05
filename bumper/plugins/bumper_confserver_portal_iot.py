@@ -27,10 +27,6 @@ class portal_api_iot(plugins.ConfServerApp):
             ),
         ]
 
-        self.get_milli_time = (
-            bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
-        )
-
     async def handle_devmanager_botcommand(self, request):
         try:
             json_body = json.loads(await request.text())
@@ -81,6 +77,3 @@ class portal_api_iot(plugins.ConfServerApp):
 
         except Exception as e:
             logging.exception(f"{e}")
-
-
-plugin = portal_api_iot()

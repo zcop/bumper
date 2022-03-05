@@ -22,10 +22,6 @@ class portal_api_ecms(plugins.ConfServerApp):
             ),
         ]
 
-        self.get_milli_time = (
-            bumper.ConfServer.ConfServer_GeneralFunctions().get_milli_time
-        )
-
     async def handle_ad_res(self, request):
         try:
             body = {"code": 0, "data": [], "message": "success", "success": True}
@@ -34,6 +30,3 @@ class portal_api_ecms(plugins.ConfServerApp):
 
         except Exception as e:
             logging.exception(f"{e}")
-
-
-plugin = portal_api_ecms()

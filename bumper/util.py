@@ -1,8 +1,9 @@
 import logging
 import os
 import sys
+from datetime import datetime
 from logging.handlers import RotatingFileHandler
-from typing import MutableMapping
+from typing import MutableMapping, Union
 
 logformat = logging.Formatter(
     "[%(asctime)s] :: %(levelname)s :: %(name)s :: %(module)s :: %(funcName)s :: %(lineno)d :: %(message)s"
@@ -43,3 +44,12 @@ def get_logger(name: str, rotate: RotatingFileHandler = None) -> logging.Logger:
         get_logger("amqtt.client", rotate)
 
     return logger
+
+
+def convert_to_millis(seconds: Union[int, float]) -> int:
+    """Convert seconds to milliseconds."""
+    return int(round(seconds * 1000))
+
+
+def get_current_time_as_millis() -> int:
+    return convert_to_millis(datetime.utcnow().timestamp())
