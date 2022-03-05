@@ -72,10 +72,11 @@ shutting_down = False
 bumperlog = get_logger("bumper")
 logging.getLogger("asyncio").setLevel(logging.CRITICAL + 1)  # Ignore this logger
 
+conf_server_https_port = os.environ.get("WEB_SERVER_HTTPS_PORT") or 443
 mqtt_listen_port = 8883
 xmpp_listen_port = 5223
 conf_server_bindings = [
-    WebServerBinding(bumper_listen, 8443, True),
+    WebServerBinding(bumper_listen, conf_server_https_port, True),
     WebServerBinding(bumper_listen, 8007, False),
 ]
 
