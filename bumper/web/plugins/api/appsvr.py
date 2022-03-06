@@ -1,4 +1,4 @@
-"""Api appsvr plugin module."""
+"""Appsvr plugin module."""
 import json
 import logging
 from typing import Iterable
@@ -11,14 +11,13 @@ from aiohttp.web_routedef import AbstractRouteDef
 
 from bumper.db import db_get, token_by_authcode, user_add_oauth
 from bumper.models import include_EcoVacsHomeProducts_info
-from bumper.plugins import WebserverPlugin, WebserverSubApi
+
+from .. import WebserverPlugin
 
 
 # pylint: disable=no-self-use
-class ApiAppsvrPlugin(WebserverPlugin):
-    """Api appsvr plugin."""
-
-    sub_api = WebserverSubApi.API
+class AppsvrPlugin(WebserverPlugin):
+    """Appsvr plugin."""
 
     @property
     def routes(self) -> Iterable[AbstractRouteDef]:

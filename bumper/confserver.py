@@ -106,11 +106,9 @@ class ConfServer:
 
         # common api paths
         api_v1 = {"prefix": "/v1/", "app": web.Application()}  # for /v1/
-        portal_api = {"prefix": "/api/", "app": web.Application()}  # for /api/
 
         apis = {
             WebserverSubApi.V1: api_v1,
-            WebserverSubApi.API: portal_api,
         }
 
         add_plugins(self._app)

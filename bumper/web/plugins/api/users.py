@@ -1,28 +1,32 @@
+"""Users plugin module."""
 import json
 import logging
+from typing import Iterable
 
 from aiohttp import web
+from aiohttp.web_routedef import AbstractRouteDef
 
-from bumper import bumper_announce_ip, plugins
+from bumper import bumper_announce_ip
 from bumper.db import bot_remove, bot_set_nick, check_authcode, db_get, loginByItToken
 
+from .. import WebserverPlugin
 
-class portal_api_users(plugins.ConfServerApp):
-    def __init__(self):
-        self.name = "portal_api_users"
-        self.plugin_type = "sub_api"
-        self.sub_api = "portal_api"
 
-        self.routes = [
+class UsersPlugin(WebserverPlugin):
+    """Users plugin."""
+
+    @property
+    def routes(self) -> Iterable[AbstractRouteDef]:
+        """Plugin routes."""
+        return [
             web.route(
                 "*",
                 "/users/user.do",
-                self.handle_usersapi,
-                name="portal_api_users_user",
+                self._handle_usersapi,
             ),
         ]
 
-    async def handle_usersapi(self, request):
+    async def _handle_usersapi(self, request):
         if not request.method == "GET":  # Skip GET for now
             try:
 

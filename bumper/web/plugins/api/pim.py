@@ -1,55 +1,54 @@
+"""Pim plugin module."""
 import json
 import logging
 import os
+from typing import Iterable
 
 from aiohttp import web
+from aiohttp.web_routedef import AbstractRouteDef
 
-from bumper import bumper_dir, plugins
+from bumper import bumper_dir
 from bumper.models import RETURN_API_SUCCESS, EcoVacsHomeProducts
 
+from .. import WebserverPlugin
 
-class portal_api_pim(plugins.ConfServerApp):
-    def __init__(self):
-        self.name = "portal_api_pim"
-        self.plugin_type = "sub_api"
-        self.sub_api = "portal_api"
 
-        self.routes = [
+class PimPlugin(WebserverPlugin):
+    """Pim plugin."""
+
+    @property
+    def routes(self) -> Iterable[AbstractRouteDef]:
+        """Plugin routes."""
+        return [
             web.route(
                 "*",
                 "/pim/product/getProductIotMap",
                 self.handle_getProductIotMap,
-                name="portal_api_pim_getProductIotMap",
             ),
             web.route(
                 "*",
                 "/pim/file/get/{id}",
                 self.handle_pimFile,
-                name="portal_api_pim_file",
             ),
             web.route(
                 "*",
                 "/pim/product/getConfignetAll",
                 self.handle_getConfignetAll,
-                name="portal_api_pim_getConfignetAll",
             ),
             web.route(
                 "*",
                 "/pim/product/getConfigGroups",
                 self.handle_getConfigGroups,
-                name="portal_api_pim_getConfigGroups",
             ),
             web.route(
                 "*",
                 "/pim/dictionary/getErrDetail",
                 self.handle_getErrDetail,
-                name="portal_api_pim_getErrDetail",
             ),
             web.route(
                 "*",
                 "/pim/product/software/config/batch",
                 self.handle_product_config_batch,
-                name="portal_api_pim_product_config_batch",
             ),
         ]
 
