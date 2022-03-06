@@ -7,12 +7,12 @@ from unittest import mock
 import pytest
 
 import bumper
-from bumper import WebServerBinding
+from bumper import WebserverBinding
 from tests import CONF_SERVER_PORT, HOST, MQTT_PORT
 
 
 def create_confserver():
-    return bumper.ConfServer(WebServerBinding(HOST, CONF_SERVER_PORT, False))
+    return bumper.ConfServer(WebserverBinding(HOST, CONF_SERVER_PORT, False))
 
 
 def async_return(result):
@@ -27,12 +27,12 @@ def remove_existing_db():
 
 
 async def test_confserver_ssl():
-    conf_server = bumper.ConfServer(WebServerBinding(HOST, CONF_SERVER_PORT, True))
+    conf_server = bumper.ConfServer(WebserverBinding(HOST, CONF_SERVER_PORT, True))
     await conf_server.start()
 
 
 async def test_confserver_no_ssl():
-    conf_server = bumper.ConfServer(WebServerBinding(HOST, 11112, False))
+    conf_server = bumper.ConfServer(WebserverBinding(HOST, 11112, False))
     await conf_server.start()
 
 

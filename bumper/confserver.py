@@ -23,7 +23,7 @@ from aiohttp.web_response import Response, StreamResponse
 
 import bumper
 
-from .plugins import ConfServerApp
+from .plugins import ConfServerApp, WebserverPlugin, WebserverSubApi
 from .util import get_logger
 
 
@@ -46,8 +46,8 @@ logging.getLogger("aiohttp.access").addFilter(_aiohttp_filter())
 
 
 @dataclasses.dataclass(frozen=True)
-class WebServerBinding:
-    """Web server binding."""
+class WebserverBinding:
+    """Webserver binding."""
 
     host: str
     port: int
@@ -59,10 +59,10 @@ class ConfServer:
 
     _EXCLUDE_FROM_LOGGING = ["base", "remove-bot", "remove-client", "restart-service"]
 
-    def __init__(self, bindings: Union[list[WebServerBinding], WebServerBinding]):
+    def __init__(self, bindings: Union[list[WebserverBinding], WebserverBinding]):
         self._runners: list[web.AppRunner] = []
 
-        if isinstance(bindings, WebServerBinding):
+        if isinstance(bindings, WebserverBinding):
             bindings = [bindings]
         self._bindings = bindings
 
@@ -109,10 +109,10 @@ class ConfServer:
         upload_api = {"prefix": "/upload/", "app": web.Application()}  # for /upload/
 
         apis = {
-            "api_v1": api_v1,
-            "api_v2": api_v2,
-            "portal_api": portal_api,
-            "upload_api": upload_api,
+            WebserverSubApi.V1: api_v1,
+            WebserverSubApi.V2: api_v2,
+            WebserverSubApi.API: portal_api,
+            WebserverSubApi.UPLOAD: upload_api,
         }
 
         # Load plugins
@@ -122,22 +122,31 @@ class ConfServer:
                 for m in inspect.getmembers(module, inspect.isclass)
                 if m[1].__module__ == module.__name__
             ]
-            for plugin_type in plugins:
-                if not issubclass(plugin_type, ConfServerApp):
-                    continue
-
-                plugin = plugin_type()
-                if plugin.plugin_type == "sub_api":  # app or sub_api
-                    if plugin.sub_api in apis:
-                        if plugin.routes:
+            for plugin_class in plugins:
+                if issubclass(plugin_class, WebserverPlugin):
+                    plugin = plugin_class()
+                    logging.debug(
+                        f"Adding confserver sub_api ({plugin.__class__.__name__})"
+                    )
+                    apis[plugin.sub_api]["app"].add_routes(plugin.routes)
+                elif issubclass(plugin_class, ConfServerApp):
+                    plugin = plugin_class()
+                    if plugin.plugin_type == "sub_api":  # app or sub_api
+                        convert_api = {
+                            "api_v1": WebserverSubApi.V1,
+                            "api_v2": WebserverSubApi.V2,
+                            "portal_api": WebserverSubApi.API,
+                            "upload_api": WebserverSubApi.UPLOAD,
+                        }
+                        api = convert_api.get(plugin.sub_api, None)
+                        if api and plugin.routes:
                             logging.debug(f"Adding confserver sub_api ({plugin.name})")
-                            apis[plugin.sub_api]["app"].add_routes(plugin.routes)
+                            apis[api]["app"].add_routes(plugin.routes)
 
-                elif plugin.plugin_type == "app":
-                    if plugin.path_prefix and plugin.app:
-                        logging.debug(f"Adding confserver plugin ({plugin.name})")
-                        self._app.add_subapp(plugin.path_prefix, plugin.app)
-
+                    elif plugin.plugin_type == "app":
+                        if plugin.path_prefix and plugin.app:
+                            logging.debug(f"Adding confserver plugin ({plugin.name})")
+                            self._app.add_subapp(plugin.path_prefix, plugin.app)
         for api in apis:
             self._app.add_subapp(apis[api]["prefix"], apis[api]["app"])
 

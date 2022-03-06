@@ -5,7 +5,7 @@ import pkgutil
 import socket
 import sys
 
-from bumper.confserver import ConfServer, WebServerBinding
+from bumper.confserver import ConfServer, WebserverBinding
 from bumper.db import *
 from bumper.models import *
 from bumper.mqttserver import MQTTHelperBot, MQTTServer
@@ -76,8 +76,8 @@ conf_server_https_port = os.environ.get("WEB_SERVER_HTTPS_PORT") or 443
 mqtt_listen_port = 8883
 xmpp_listen_port = 5223
 conf_server_bindings = [
-    WebServerBinding(bumper_listen, conf_server_https_port, True),
-    WebServerBinding(bumper_listen, 8007, False),
+    WebserverBinding(bumper_listen, conf_server_https_port, True),
+    WebserverBinding(bumper_listen, 8007, False),
 ]
 
 

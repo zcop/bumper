@@ -246,7 +246,7 @@ def user_add_oauth(userid) -> OAuth:
             return oauth
 
 
-def token_by_authcode(authcode):
+def token_by_authcode(authcode: str):
     tokens = db_get().table("tokens")
     return tokens.get(Query().authcode == authcode)
 

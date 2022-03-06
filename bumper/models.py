@@ -114,7 +114,7 @@ class OAuth:
     def toDB(self):
         return self.__dict__
 
-    def toResponse(self):
+    def toResponse(self) -> dict:
         data = self.__dict__
         data["expire_at"] = convert_to_millis(
             datetime.fromisoformat(self.expire_at).timestamp()
