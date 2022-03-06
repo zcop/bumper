@@ -4,6 +4,8 @@ from unittest import mock
 from testfixtures import LogCapture
 
 import bumper
+from bumper import XMPPServer
+from bumper.xmppserver import XMPPAsyncClient
 
 
 def return_send_data(data):
@@ -16,7 +18,7 @@ def mock_transport_extra_info():
 
 async def test_xmpp_server():
     xmpp_address = ("127.0.0.1", 5223)
-    xmpp_server = bumper.XMPPServer(xmpp_address)
+    xmpp_server = XMPPServer(xmpp_address)
     await xmpp_server.start_async_server()
 
     with LogCapture("xmppserver") as l:
@@ -55,7 +57,7 @@ async def test_client_connect_no_starttls():
     test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
-    xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
+    xmppclient = XMPPAsyncClient(test_transport)
     xmppclient.state = xmppclient.CONNECT  # Set client state to CONNECT
     mock_send = xmppclient.send = mock.Mock(side_effect=return_send_data)
 
@@ -94,7 +96,7 @@ async def test_client_end_stream():
     test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
-    xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
+    xmppclient = XMPPAsyncClient(test_transport)
     xmppclient.state = xmppclient.CONNECT  # Set client state to CONNECT
     mock_send = xmppclient.send = mock.Mock(side_effect=return_send_data)
 
@@ -126,7 +128,7 @@ async def test_client_connect_starttls_called():
     test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
-    xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
+    xmppclient = XMPPAsyncClient(test_transport)
     xmppclient.state = xmppclient.CONNECT  # Set client state to CONNECT
     mock_send = xmppclient.send = mock.Mock(side_effect=return_send_data)
 
@@ -195,7 +197,7 @@ async def test_client_init():
     test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
-    xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
+    xmppclient = XMPPAsyncClient(test_transport)
     xmppclient.state = xmppclient.INIT  # Set client state to INIT
     xmppclient.uid = "fuid_tmpuser"
     xmppclient.resource = "IOSF53D07BA"
@@ -263,7 +265,7 @@ async def test_bot_connect():
     test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
-    xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
+    xmppclient = XMPPAsyncClient(test_transport)
     xmppclient.state = xmppclient.CONNECT  # Set client state to CONNECT
     mock_send = xmppclient.send = mock.Mock(side_effect=return_send_data)
 
@@ -303,7 +305,7 @@ async def test_bot_init():
     test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
-    xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
+    xmppclient = XMPPAsyncClient(test_transport)
     xmppclient.state = xmppclient.INIT  # Set client state to INIT
     xmppclient.uid = "E0000000000000001234"
     xmppclient.devclass = "159"
@@ -369,7 +371,7 @@ async def test_ping_server():
     test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
-    xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
+    xmppclient = XMPPAsyncClient(test_transport)
     xmppclient.state = xmppclient.READY  # Set client state to READY
     xmppclient.uid = "E0000000000000001234"
     xmppclient.devclass = "159"
@@ -389,14 +391,14 @@ async def test_ping_client_to_client():
     test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
-    xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
+    xmppclient = XMPPAsyncClient(test_transport)
     xmppclient.state = xmppclient.READY  # Set client state to READY
     xmppclient.uid = "E0000000000000001234"
     xmppclient.devclass = "159"
     xmppclient.bumper_jid = "E0000000000000001234@159.ecorobot.net/atom"
     mock_send = xmppclient.send = mock.Mock(side_effect=return_send_data)
 
-    xmppclient2 = bumper.xmppserver.XMPPAsyncClient(test_transport)
+    xmppclient2 = XMPPAsyncClient(test_transport)
     xmppclient2.state = xmppclient.READY  # Set client state to READY
     xmppclient2.uid = "fuid_tmpuser"
     xmppclient2.resource = "IOSF53D07BA"
@@ -429,7 +431,7 @@ async def test_client_send_iq():
     test_transport = mock.Mock()
     test_transport.get_extra_info = mock.Mock(return_value=mock_transport_extra_info())
     test_transport.write = mock.Mock(return_value=return_send_data)
-    xmppclient = bumper.xmppserver.XMPPAsyncClient(test_transport)
+    xmppclient = XMPPAsyncClient(test_transport)
     xmppclient.state = xmppclient.READY  # Set client state to READY
     xmppclient.uid = "fuid_tmpuser"
     xmppclient.resource = "IOSF53D07BA"
@@ -438,7 +440,7 @@ async def test_client_send_iq():
     mock_send = xmppclient.send = mock.Mock(side_effect=return_send_data)
     bumper.xmppserver.XMPPServer.clients.append(xmppclient)
 
-    xmppclient2 = bumper.xmppserver.XMPPAsyncClient(test_transport)
+    xmppclient2 = XMPPAsyncClient(test_transport)
     xmppclient2.state = xmppclient.READY  # Set client state to READY
     xmppclient2.uid = "E0000000000000001234"
     xmppclient2.devclass = "159"

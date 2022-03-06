@@ -12,10 +12,7 @@ bumperlog = get_logger("bumper")
 
 
 def db_file():
-    if bumper.db:
-        return bumper.db
-
-    return os_db_path()
+    return os.environ.get("DB_FILE") or os_db_path()
 
 
 def os_db_path():  # createdir=True):

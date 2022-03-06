@@ -4,12 +4,13 @@ import os
 from testfixtures import LogCapture
 
 import bumper
+from bumper import strtobool
 
 
 def test_strtobool():
-    assert bumper.strtobool("t") == True
-    assert bumper.strtobool("f") == False
-    assert bumper.strtobool(0) == False
+    assert strtobool("t") == True
+    assert strtobool("f") == False
+    assert strtobool(0) == False
 
 
 async def test_start_stop():
@@ -17,18 +18,16 @@ async def test_start_stop():
         if os.path.exists("tests/tmp.db"):
             os.remove("tests/tmp.db")  # Remove existing db
 
-        b = bumper
-        b.db = "tests/tmp.db"  # Set db location for testing
-        asyncio.create_task(b.start())
+        asyncio.create_task(bumper.start())
         await asyncio.sleep(0.1)
         l.check_present(("bumper", "INFO", "Starting Bumper"))
         l.clear()
 
-        await b.shutdown()
+        await bumper.shutdown()
         l.check_present(
             ("bumper", "INFO", "Shutting down"), ("bumper", "INFO", "Shutdown complete")
         )
-        assert b.shutting_down == True
+        assert bumper.shutting_down == True
 
 
 async def test_start_stop_debug():
@@ -36,21 +35,19 @@ async def test_start_stop_debug():
         if os.path.exists("tests/tmp.db"):
             os.remove("tests/tmp.db")  # Remove existing db
 
-        b = bumper
-        b.db = "tests/tmp.db"  # Set db location for testing
-        b.bumper_listen = "0.0.0.0"
-        b.bumper_debug = True
-        asyncio.create_task(b.start())
+        bumper.bumper_listen = "0.0.0.0"
+        bumper.bumper_debug = True
+        asyncio.create_task(bumper.start())
 
         await asyncio.sleep(0.1)
-        while b.mqtt_server.state == "starting":
+        while bumper.mqtt_server.state == "starting":
             await asyncio.sleep(0.1)
         l.check_present(("bumper", "INFO", "Starting Bumper"))
         l.clear()
 
-        asyncio.create_task(b.shutdown())
+        asyncio.create_task(bumper.shutdown())
         await asyncio.sleep(0.1)
         l.check_present(
             ("bumper", "INFO", "Shutting down"), ("bumper", "INFO", "Shutdown complete")
         )
-        assert b.shutting_down == True
+        assert bumper.shutting_down == True

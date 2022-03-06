@@ -4,8 +4,8 @@ import os
 
 from aiohttp import web
 
-import bumper
-from bumper import EcoVacsHomeProducts, plugins
+from bumper import bumper_dir, plugins
+from bumper.models import RETURN_API_SUCCESS, EcoVacsHomeProducts
 
 
 class portal_api_pim(plugins.ConfServerApp):
@@ -56,7 +56,7 @@ class portal_api_pim(plugins.ConfServerApp):
     async def handle_getProductIotMap(self, request):
         try:
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": EcoVacsHomeProducts,
             }
             return web.json_response(body)
@@ -70,7 +70,7 @@ class portal_api_pim(plugins.ConfServerApp):
 
             return web.FileResponse(
                 os.path.join(
-                    bumper.bumper_dir, "bumper", "web", "images", "robotvac_image.jpg"
+                    bumper_dir, "bumper", "web", "images", "robotvac_image.jpg"
                 )
             )
 

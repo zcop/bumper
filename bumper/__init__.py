@@ -1,13 +1,13 @@
 import asyncio
 import importlib
 import logging
+import os
 import pkgutil
 import socket
 import sys
 
 from bumper.confserver import ConfServer, WebserverBinding
-from bumper.db import *
-from bumper.models import *
+from bumper.db import revoke_expired_oauths, revoke_expired_tokens
 from bumper.mqttserver import MQTTHelperBot, MQTTServer
 from bumper.util import get_logger, log_to_stdout
 from bumper.xmppserver import XMPPServer
@@ -50,7 +50,6 @@ bumper_debug = strtobool(os.environ.get("BUMPER_DEBUG")) or False
 use_auth = False
 token_validity_seconds = 3600  # 1 hour
 oauth_validity_days = 15
-db = None
 
 mqtt_server: MQTTServer
 mqtt_helperbot: MQTTHelperBot

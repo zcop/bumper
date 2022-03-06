@@ -1,5 +1,4 @@
 import asyncio
-import datetime
 import json
 import os
 from unittest import mock
@@ -7,12 +6,13 @@ from unittest import mock
 import pytest
 
 import bumper
-from bumper import WebserverBinding
+from bumper import ConfServer, MQTTHelperBot, WebserverBinding, XMPPServer, db
+from bumper.models import ERR_TOKEN_INVALID, RETURN_API_SUCCESS
 from tests import CONF_SERVER_PORT, HOST, MQTT_PORT
 
 
 def create_confserver():
-    return bumper.ConfServer(WebserverBinding(HOST, CONF_SERVER_PORT, False))
+    return ConfServer(WebserverBinding(HOST, CONF_SERVER_PORT, False))
 
 
 def async_return(result):
@@ -27,28 +27,27 @@ def remove_existing_db():
 
 
 async def test_confserver_ssl():
-    conf_server = bumper.ConfServer(WebserverBinding(HOST, CONF_SERVER_PORT, True))
+    conf_server = ConfServer(WebserverBinding(HOST, CONF_SERVER_PORT, True))
     await conf_server.start()
 
 
 async def test_confserver_no_ssl():
-    conf_server = bumper.ConfServer(WebserverBinding(HOST, 11112, False))
+    conf_server = ConfServer(WebserverBinding(HOST, 11112, False))
     await conf_server.start()
 
 
 @pytest.mark.usefixtures("mqtt_server")
 async def test_base(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     # Start XMPP
     xmpp_address = (HOST, 5223)
-    xmpp_server = bumper.XMPPServer(xmpp_address)
+    xmpp_server = XMPPServer(xmpp_address)
     bumper.xmpp_server = xmpp_server
     await xmpp_server.start_async_server()
 
     # Start Helperbot
-    mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
+    mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
     bumper.mqtt_helperbot = mqtt_helperbot
     await mqtt_helperbot.start()
 
@@ -63,16 +62,15 @@ async def test_base(conf_server_client):
 @pytest.mark.usefixtures("mqtt_server")
 async def test_restartService(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     # Start XMPP
     xmpp_address = (HOST, 5223)
-    xmpp_server = bumper.XMPPServer(xmpp_address)
+    xmpp_server = XMPPServer(xmpp_address)
     bumper.xmpp_server = xmpp_server
     await xmpp_server.start_async_server()
 
     # Start Helperbot
-    mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
+    mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
     bumper.mqtt_helperbot = mqtt_helperbot
     await mqtt_helperbot.start()
 
@@ -102,7 +100,6 @@ async def test_RemoveClient(conf_server_client):
 
 async def test_login(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     # Test without user
     resp = await conf_server_client.get(
@@ -111,13 +108,12 @@ async def test_login(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
     assert "accessToken" in jsonresp["data"]
     assert "uid" in jsonresp["data"]
     assert "username" in jsonresp["data"]
 
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     # Test global_e without user
     resp = await conf_server_client.get(
@@ -126,33 +122,33 @@ async def test_login(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
     assert "accessToken" in jsonresp["data"]
     assert "uid" in jsonresp["data"]
     assert "username" in jsonresp["data"]
 
     # Add a user to db and test with existing users
-    bumper.user_add("testuser")
+    db.user_add("testuser")
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/user/login"
     )
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
     assert "accessToken" in jsonresp["data"]
     assert "uid" in jsonresp["data"]
     assert "username" in jsonresp["data"]
 
     # Add a bot to db that will be added to user
-    bumper.bot_add("sn_123", "did_123", "dev_123", "res_123", "com_123")
+    db.bot_add("sn_123", "did_123", "dev_123", "res_123", "com_123")
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/user/login"
     )
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
     assert "accessToken" in jsonresp["data"]
     assert "uid" in jsonresp["data"]
     assert "username" in jsonresp["data"]
@@ -165,7 +161,7 @@ async def test_login(conf_server_client):
         "name": "sn_1234",
         "resource": "res_1234",
     }
-    bumper.bot_full_upsert(newbot)
+    db.bot_full_upsert(newbot)
 
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/user/login"
@@ -173,7 +169,7 @@ async def test_login(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
     assert "accessToken" in jsonresp["data"]
     assert "uid" in jsonresp["data"]
     assert "username" in jsonresp["data"]
@@ -181,12 +177,11 @@ async def test_login(conf_server_client):
 
 async def test_logout(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     # Add a token to user and test
-    bumper.user_add("testuser")
-    bumper.user_add_device("testuser", "dev_1234")
-    bumper.user_add_token("testuser", "token_1234")
+    db.user_add("testuser")
+    db.user_add_device("testuser", "dev_1234")
+    db.user_add_token("testuser", "token_1234")
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/user/logout?accessToken={}".format(
             "token_1234"
@@ -196,12 +191,11 @@ async def test_logout(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
 async def test_checkLogin(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     # Test without token
     resp = await conf_server_client.get(
@@ -212,14 +206,14 @@ async def test_checkLogin(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
     assert "accessToken" in jsonresp["data"]
     assert jsonresp["data"]["accessToken"] != "token_1234"
     assert "uid" in jsonresp["data"]
     assert "username" in jsonresp["data"]
 
     # Add a user to db and test with existing users
-    bumper.user_add("testuser")
+    db.user_add("testuser")
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/user/checkLogin?accessToken={}".format(
             None
@@ -228,14 +222,14 @@ async def test_checkLogin(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
     assert "accessToken" in jsonresp["data"]
     assert jsonresp["data"]["accessToken"] != "token_1234"
     assert "uid" in jsonresp["data"]
     assert "username" in jsonresp["data"]
 
     # Test again using global_e app
-    bumper.user_add("testuser")
+    db.user_add("testuser")
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/user/checkLogin?accessToken={}".format(
             None
@@ -244,19 +238,19 @@ async def test_checkLogin(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
     assert "accessToken" in jsonresp["data"]
     assert jsonresp["data"]["accessToken"] != "token_1234"
     assert "uid" in jsonresp["data"]
     assert "username" in jsonresp["data"]
 
     # Remove dev from tmpuser
-    bumper.user_remove_device("tmpuser", "dev_1234")
+    db.user_remove_device("tmpuser", "dev_1234")
 
     # Add a token to user and test
-    bumper.user_add("testuser")
-    bumper.user_add_device("testuser", "dev_1234")
-    bumper.user_add_token("testuser", "token_1234")
+    db.user_add("testuser")
+    db.user_add_device("testuser", "dev_1234")
+    db.user_add_token("testuser", "token_1234")
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/user/checkLogin?accessToken={}".format(
             "token_1234"
@@ -265,14 +259,14 @@ async def test_checkLogin(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
     assert "accessToken" in jsonresp["data"]
     assert jsonresp["data"]["accessToken"] == "token_1234"
     assert "uid" in jsonresp["data"]
     assert "username" in jsonresp["data"]
 
     # Test again using global_e app
-    bumper.user_add("testuser")
+    db.user_add("testuser")
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/user/checkLogin?accessToken={}".format(
             "token_1234"
@@ -281,7 +275,7 @@ async def test_checkLogin(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
     assert "accessToken" in jsonresp["data"]
     assert jsonresp["data"]["accessToken"] == "token_1234"
     assert "uid" in jsonresp["data"]
@@ -290,7 +284,6 @@ async def test_checkLogin(conf_server_client):
 
 async def test_getAuthCode(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     # Test without user or token
     resp = await conf_server_client.get(
@@ -301,7 +294,7 @@ async def test_getAuthCode(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.ERR_TOKEN_INVALID
+    assert jsonresp["code"] == ERR_TOKEN_INVALID
 
     # Test as global_e
     resp = await conf_server_client.get(
@@ -310,12 +303,12 @@ async def test_getAuthCode(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.ERR_TOKEN_INVALID
+    assert jsonresp["code"] == ERR_TOKEN_INVALID
 
     # Add a token to user and test
-    bumper.user_add("testuser")
-    bumper.user_add_device("testuser", "dev_1234")
-    bumper.user_add_token("testuser", "token_1234")
+    db.user_add("testuser")
+    db.user_add_device("testuser", "dev_1234")
+    db.user_add_token("testuser", "token_1234")
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/user/getAuthCode?uid={}&accessToken={}".format(
             "testuser", "token_1234"
@@ -324,7 +317,7 @@ async def test_getAuthCode(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
     assert "authCode" in jsonresp["data"]
     assert "ecovacsUid" in jsonresp["data"]
 
@@ -337,14 +330,13 @@ async def test_getAuthCode(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
     assert "authCode" in jsonresp["data"]
     assert "ecovacsUid" in jsonresp["data"]
 
 
 async def test_checkAgreement(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/user/checkAgreement"
@@ -352,7 +344,7 @@ async def test_checkAgreement(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
 
     # Test as global_e
     resp = await conf_server_client.get(
@@ -361,12 +353,11 @@ async def test_checkAgreement(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
 async def test_homePageAlert(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/campaign/homePageAlert"
@@ -374,12 +365,11 @@ async def test_homePageAlert(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
 async def test_checkVersion(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/common/checkVersion"
@@ -387,12 +377,11 @@ async def test_checkVersion(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
 async def test_checkAppVersion(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/common/checkAPPVersion"
@@ -400,24 +389,22 @@ async def test_checkAppVersion(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
 async def test_uploadDeviceInfo(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/common/uploadDeviceInfo"
     )
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
 async def test_getAdByPositionType(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/ad/getAdByPositionType"
@@ -425,12 +412,11 @@ async def test_getAdByPositionType(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
 async def test_getBootScreen(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/ad/getBootScreen"
@@ -438,12 +424,11 @@ async def test_getBootScreen(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
 async def test_hasUnreadMsg(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/message/hasUnreadMsg"
@@ -451,12 +436,11 @@ async def test_hasUnreadMsg(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
 async def test_getMsgList(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/message/getMsgList"
@@ -464,12 +448,11 @@ async def test_getMsgList(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
 async def test_getSystemReminder(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/common/getSystemReminder"
@@ -477,12 +460,11 @@ async def test_getSystemReminder(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
 async def test_getCnWapShopConfig(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/shop/getCnWapShopConfig"
@@ -490,12 +472,11 @@ async def test_getCnWapShopConfig(conf_server_client):
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
 async def test_neng_hasUnreadMessage(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     postbody = {
         "auth": {
@@ -518,13 +499,12 @@ async def test_neng_hasUnreadMessage(conf_server_client):
 
 async def test_getProductIotMap(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     resp = await conf_server_client.post("/api/pim/product/getProductIotMap")
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
-    assert jsonresp["code"] == bumper.RETURN_API_SUCCESS
+    assert jsonresp["code"] == RETURN_API_SUCCESS
 
     # Test getPimFile
     resp = await conf_server_client.get("/api/pim/file/get/123")
@@ -533,7 +513,6 @@ async def test_getProductIotMap(conf_server_client):
 
 async def test_getUsersAPI(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     resp = await conf_server_client.get("/api/users/user.do")
     assert resp.status == 200
@@ -544,13 +523,12 @@ async def test_getUsersAPI(conf_server_client):
 
 async def test_getUserAccountInfo(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
-    bumper.user_add("testuser")
-    bumper.user_add_device("testuser", "dev_1234")
-    bumper.user_add_token("testuser", "token_1234")
-    bumper.user_add_authcode("testuser", "token_1234", "auth_1234")
-    bumper.user_add_bot("testuser", "did_1234")
-    bumper.bot_add("sn_1234", "did_1234", "class_1234", "res_1234", "com_1234")
+    db.user_add("testuser")
+    db.user_add_device("testuser", "dev_1234")
+    db.user_add_token("testuser", "token_1234")
+    db.user_add_authcode("testuser", "token_1234", "auth_1234")
+    db.user_add_bot("testuser", "did_1234")
+    db.bot_add("sn_1234", "did_1234", "class_1234", "res_1234", "com_1234")
 
     resp = await conf_server_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/user/getUserAccountInfo"
@@ -565,7 +543,6 @@ async def test_getUserAccountInfo(conf_server_client):
 
 async def test_postUsersAPI(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     # Test FindBest
     postbody = {"todo": "FindBest", "service": "EcoMsgNew"}
@@ -584,12 +561,12 @@ async def test_postUsersAPI(conf_server_client):
     assert jsonresp["result"] == "ok"
 
     # Test loginByItToken - Uses the authcode
-    bumper.user_add("testuser")
-    bumper.user_add_device("testuser", "dev_1234")
-    bumper.user_add_token("testuser", "token_1234")
-    bumper.user_add_authcode("testuser", "token_1234", "auth_1234")
-    bumper.user_add_bot("testuser", "did_1234")
-    bumper.bot_add("sn_1234", "did_1234", "class_1234", "res_1234", "com_1234")
+    db.user_add("testuser")
+    db.user_add_device("testuser", "dev_1234")
+    db.user_add_token("testuser", "token_1234")
+    db.user_add_authcode("testuser", "token_1234", "auth_1234")
+    db.user_add_bot("testuser", "did_1234")
+    db.bot_add("sn_1234", "did_1234", "class_1234", "res_1234", "com_1234")
     # Test
     postbody = {
         "country": "US",
@@ -715,7 +692,6 @@ async def test_postUsersAPI(conf_server_client):
 
 async def test_appsvr_api(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     # Test GetGlobalDeviceList
     postbody = {
@@ -741,7 +717,7 @@ async def test_appsvr_api(conf_server_client):
     jsonresp = json.loads(text)
     assert jsonresp["ret"] == "ok"
 
-    bumper.bot_add("sn_1234", "did_1234", "ls1ok3", "res_1234", "eco-ng")
+    db.bot_add("sn_1234", "did_1234", "ls1ok3", "res_1234", "eco-ng")
 
     # Test again with bot added
     resp = await conf_server_client.post("/api/appsvr/app.do", json=postbody)
@@ -753,11 +729,10 @@ async def test_appsvr_api(conf_server_client):
 
 async def test_lg_logs(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
-    bumper.bot_add("sn_1234", "did_1234", "ls1ok3", "res_1234", "eco-ng")
-    bumper.bot_set_mqtt("did_1234", True)
+    db.bot_add("sn_1234", "did_1234", "ls1ok3", "res_1234", "eco-ng")
+    db.bot_set_mqtt("did_1234", True)
     confserver = create_confserver()
-    bumper.mqtt_helperbot = bumper.mqttserver.MQTTHelperBot(HOST, MQTT_PORT)
+    bumper.mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
 
     # Test return get status
     command_getstatus_resp = {
@@ -791,7 +766,6 @@ async def test_lg_logs(conf_server_client):
 
 async def test_postLookup(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
 
     # Test FindBest
     postbody = {"todo": "FindBest", "service": "EcoMsgNew"}
@@ -812,9 +786,8 @@ async def test_postLookup(conf_server_client):
 
 async def test_devmgr(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
     confserver = create_confserver()
-    bumper.mqtt_helperbot = bumper.mqttserver.MQTTHelperBot(HOST, MQTT_PORT)
+    bumper.mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
 
     # Test PollSCResult
     postbody = {"td": "PollSCResult"}
@@ -834,8 +807,8 @@ async def test_devmgr(conf_server_client):
     assert test_resp["unRead"] == False
 
     # Test BotCommand
-    bumper.bot_add("sn_1234", "did_1234", "dev_1234", "res_1234", "eco-ng")
-    bumper.bot_set_mqtt("did_1234", True)
+    db.bot_add("sn_1234", "did_1234", "dev_1234", "res_1234", "eco-ng")
+    db.bot_set_mqtt("did_1234", True)
     postbody = {"toId": "did_1234"}
 
     # Test return get status
@@ -867,9 +840,8 @@ async def test_devmgr(conf_server_client):
 
 async def test_dim_devmanager(conf_server_client):
     remove_existing_db()
-    bumper.db = "tests/tmp.db"  # Set db location for testing
     confserver = create_confserver()
-    bumper.mqtt_helperbot = bumper.mqttserver.MQTTHelperBot(HOST, MQTT_PORT)
+    bumper.mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
 
     # Test PollSCResult
     postbody = {"td": "PollSCResult"}
@@ -889,8 +861,8 @@ async def test_dim_devmanager(conf_server_client):
     assert test_resp["unRead"] == False
 
     # Test BotCommand
-    bumper.bot_add("sn_1234", "did_1234", "dev_1234", "res_1234", "eco-ng")
-    bumper.bot_set_mqtt("did_1234", True)
+    db.bot_add("sn_1234", "did_1234", "dev_1234", "res_1234", "eco-ng")
+    db.bot_set_mqtt("did_1234", True)
     postbody = {"toId": "did_1234"}
 
     # Test return get status
@@ -921,7 +893,7 @@ async def test_dim_devmanager(conf_server_client):
     assert test_resp["errno"] == "timeout"
 
     # Set bot not on mqtt
-    bumper.bot_set_mqtt("did_1234", False)
+    db.bot_set_mqtt("did_1234", False)
     bumper.mqtt_helperbot.send_command = mock.MagicMock(
         return_value=async_return(command_getstatus_resp)
     )

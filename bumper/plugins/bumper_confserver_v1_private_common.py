@@ -2,8 +2,8 @@ import logging
 
 from aiohttp import web
 
-import bumper
 from bumper import plugins
+from bumper.models import RETURN_API_SUCCESS
 from bumper.util import get_current_time_as_millis
 
 
@@ -67,7 +67,7 @@ class v1_private_common(plugins.ConfServerApp):
     async def handle_checkVersion(self, request):
         try:
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": {
                     "c": None,
                     "img": None,
@@ -89,7 +89,7 @@ class v1_private_common(plugins.ConfServerApp):
     async def handle_checkAPPVersion(self, request):  # EcoVacs Home
         try:
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": {
                     "c": None,
                     "downPageUrl": None,
@@ -114,7 +114,7 @@ class v1_private_common(plugins.ConfServerApp):
     async def handle_uploadDeviceInfo(self, request):  # EcoVacs Home
         try:
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": None,
                 "msg": "操作成功",
                 "success": True,
@@ -129,7 +129,7 @@ class v1_private_common(plugins.ConfServerApp):
     async def handle_getSystemReminder(self, request):  # EcoVacs Home
         try:
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": {
                     "iosGradeTime": {"iodGradeFlag": "N"},
                     "openNotification": {
@@ -155,7 +155,7 @@ class v1_private_common(plugins.ConfServerApp):
                 data.append({"key": key, "value": "Y"})
 
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": data,
                 "msg": "操作成功",
                 "success": True,
@@ -170,7 +170,7 @@ class v1_private_common(plugins.ConfServerApp):
     async def handle_getAreas(self, request):
         try:
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": AREA_LIST,
                 "msg": "操作成功",
                 "success": True,
@@ -185,7 +185,7 @@ class v1_private_common(plugins.ConfServerApp):
     async def handle_getAgreementURLBatch(self, request):  # EcoVacs Home
         try:
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": [
                     {
                         "acceptTime": None,
@@ -218,7 +218,7 @@ class v1_private_common(plugins.ConfServerApp):
         try:
             time = get_current_time_as_millis()
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": {"timestamp": time},
                 "msg": "操作成功",
                 "success": True,

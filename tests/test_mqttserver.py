@@ -8,6 +8,7 @@ from amqtt.mqtt.constants import QOS_0
 from testfixtures import LogCapture
 
 import bumper
+from bumper import MQTTHelperBot, MQTTServer, ca_cert, db
 from tests import HOST, MQTT_PORT
 
 
@@ -16,7 +17,7 @@ async def test_helperbot_message(mqtt_client: MQTTClient):
     with LogCapture() as l:
 
         # Test broadcast message
-        mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
+        mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
         await mqtt_helperbot.start()
         assert mqtt_helperbot.is_connected
         msg_payload = "<ctl ts='1547822804960' td='DustCaseST' st='0'/>"
@@ -36,7 +37,7 @@ async def test_helperbot_message(mqtt_client: MQTTClient):
         await mqtt_helperbot.disconnect()
 
         # Send command to bot
-        mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
+        mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
         await mqtt_helperbot.start()
         assert mqtt_helperbot.is_connected
         msg_payload = "{}"
@@ -56,7 +57,7 @@ async def test_helperbot_message(mqtt_client: MQTTClient):
         await mqtt_helperbot.disconnect()
 
         # Received response to command
-        mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
+        mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
         await mqtt_helperbot.start()
         assert mqtt_helperbot.is_connected
         msg_payload = '{"ret":"ok","ver":"0.13.5"}'
@@ -76,7 +77,7 @@ async def test_helperbot_message(mqtt_client: MQTTClient):
         await mqtt_helperbot.disconnect()
 
         # Received unknown message
-        mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
+        mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
         await mqtt_helperbot.start()
         assert mqtt_helperbot.is_connected
         msg_payload = "test"
@@ -96,7 +97,7 @@ async def test_helperbot_message(mqtt_client: MQTTClient):
         await mqtt_helperbot.disconnect()
 
         # Received error message
-        mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
+        mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
         await mqtt_helperbot.start()
         assert mqtt_helperbot.is_connected
         msg_payload = "<ctl ts='1560904925396' td='errors' old='' new='110'/>"
@@ -120,7 +121,7 @@ async def test_helperbot_message(mqtt_client: MQTTClient):
 async def test_helperbot_expire_message(mqtt_client: MQTTClient):
     timeout = 0.1
     # Test broadcast message
-    mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT, timeout)
+    mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT, timeout)
     bumper.mqtt_helperbot = mqtt_helperbot
     await mqtt_helperbot.start()
     assert mqtt_helperbot.is_connected
@@ -156,7 +157,7 @@ async def test_helperbot_expire_message(mqtt_client: MQTTClient):
 @pytest.mark.usefixtures("mqtt_server")
 async def test_helperbot_sendcommand(mqtt_client: MQTTClient):
     timeout = 0.1
-    mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT, timeout)
+    mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT, timeout)
     bumper.mqtt_helperbot = mqtt_helperbot
     await mqtt_helperbot.start()
     assert mqtt_helperbot.is_connected
@@ -293,9 +294,7 @@ async def test_mqttserver():
     if os.path.exists("tests/tmp.db"):
         os.remove("tests/tmp.db")  # Remove existing db
 
-    bumper.db = "tests/tmp.db"  # Set db location for testing
-
-    mqtt_server = bumper.MQTTServer(
+    mqtt_server = MQTTServer(
         HOST, MQTT_PORT, password_file="tests/passwd", allow_anonymous=True
     )
 
@@ -303,14 +302,14 @@ async def test_mqttserver():
 
     try:
         # Test helperbot connect
-        mqtt_helperbot = bumper.MQTTHelperBot(HOST, MQTT_PORT)
+        mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
         await mqtt_helperbot.start()
         assert mqtt_helperbot.is_connected
         await mqtt_helperbot.disconnect()
 
         # Test client connect
-        bumper.user_add("user_123")  # Add user to db
-        bumper.client_add("user_123", "ecouser.net", "resource_123")  # Add client to db
+        db.user_add("user_123")  # Add user to db
+        db.client_add("user_123", "ecouser.net", "resource_123")  # Add client to db
 
         client = MQTTClient(
             client_id="user_123@ecouser.net/resource_123",
@@ -319,7 +318,7 @@ async def test_mqttserver():
 
         await client.connect(
             f"mqtts://{HOST}:{MQTT_PORT}/",
-            cafile=bumper.ca_cert,
+            cafile=ca_cert,
         )
         assert client._connected_state._value == True  # Check client is connected
         await client.disconnect()
@@ -332,7 +331,7 @@ async def test_mqttserver():
 
         await client.connect(
             f"mqtts://{HOST}:{MQTT_PORT}/",
-            cafile=bumper.ca_cert,
+            cafile=ca_cert,
         )
         assert client._connected_state._value == True  # Check fake_bot is connected
         await client.disconnect()
@@ -350,7 +349,7 @@ async def test_mqttserver():
         # good user/pass
         await client.connect(
             f"mqtts://test-client:abc123!@{HOST}:{MQTT_PORT}/",
-            cafile=bumper.ca_cert,
+            cafile=ca_cert,
             cleansession=True,
         )
 
@@ -363,7 +362,7 @@ async def test_mqttserver():
 
             await client.connect(
                 f"mqtts://test-client:notvalid!@{HOST}:{MQTT_PORT}/",
-                cafile=bumper.ca_cert,
+                cafile=ca_cert,
                 cleansession=True,
             )
 
@@ -380,7 +379,7 @@ async def test_mqttserver():
             # no username in file
             await client.connect(
                 f"mqtts://test-client-noexist:notvalid!@{HOST}:{MQTT_PORT}/",
-                cafile=bumper.ca_cert,
+                cafile=ca_cert,
                 cleansession=True,
             )
 
@@ -399,9 +398,7 @@ async def test_mqttserver():
 async def test_nofileauth_mqttserver():
     with LogCapture() as l:
 
-        mqtt_server = bumper.MQTTServer(
-            HOST, MQTT_PORT, password_file="tests/passwd-notfound"
-        )
+        mqtt_server = MQTTServer(HOST, MQTT_PORT, password_file="tests/passwd-notfound")
         await mqtt_server.start()
         await mqtt_server.shutdown()
 

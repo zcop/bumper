@@ -2,8 +2,8 @@ import logging
 
 from aiohttp import web
 
-import bumper
 from bumper import plugins
+from bumper.models import RETURN_API_SUCCESS
 from bumper.util import get_current_time_as_millis
 
 
@@ -31,7 +31,7 @@ class v1_private_ad(plugins.ConfServerApp):
     async def handle_getAdByPositionType(self, request):  # EcoVacs Home
         try:
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": None,
                 "msg": "操作成功",
                 "success": True,
@@ -46,7 +46,7 @@ class v1_private_ad(plugins.ConfServerApp):
     async def handle_getBootScreen(self, request):  # EcoVacs Home
         try:
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": None,
                 "msg": "操作成功",
                 "success": True,

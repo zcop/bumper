@@ -6,10 +6,11 @@ import string
 from aiohttp import web
 
 import bumper
-from bumper import plugins
+from bumper.db import bot_get
+from bumper.plugins import ConfServerApp
 
 
-class portal_api_iot(plugins.ConfServerApp):
+class portal_api_iot(ConfServerApp):
     def __init__(self):
         self.name = "portal_api_iot"
         self.plugin_type = "sub_api"
@@ -34,7 +35,7 @@ class portal_api_iot(plugins.ConfServerApp):
                 did = json_body["toId"]
 
             if did != "":
-                bot = bumper.bot_get(did)
+                bot = bot_get(did)
                 if bot["company"] == "eco-ng":
                     retcmd = await bumper.mqtt_helperbot.send_command(
                         json_body, randomid

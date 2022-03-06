@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 
 from aiohttp import web
 
-import bumper
 from bumper import plugins
+from bumper.models import RETURN_API_SUCCESS
 from bumper.util import convert_to_millis, get_current_time_as_millis
 
 
@@ -30,7 +30,7 @@ class v1_private_campaign(plugins.ConfServerApp):
             )
 
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": {
                     "clickSchemeUrl": None,
                     "clickWebUrl": None,

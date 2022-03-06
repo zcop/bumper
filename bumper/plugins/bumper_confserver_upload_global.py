@@ -3,8 +3,7 @@ import os
 
 from aiohttp import web
 
-import bumper
-from bumper import plugins
+from bumper import bumper_dir, plugins
 
 
 class upload_global(plugins.ConfServerApp):
@@ -28,7 +27,7 @@ class upload_global(plugins.ConfServerApp):
 
             return web.FileResponse(
                 os.path.join(
-                    bumper.bumper_dir, "bumper", "web", "images", "robotvac_image.jpg"
+                    bumper_dir, "bumper", "web", "images", "robotvac_image.jpg"
                 )
             )
 

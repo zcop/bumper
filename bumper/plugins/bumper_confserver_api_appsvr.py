@@ -9,7 +9,8 @@ from aiohttp.web_request import Request
 from aiohttp.web_response import Response
 from aiohttp.web_routedef import AbstractRouteDef
 
-import bumper
+from bumper.db import db_get, token_by_authcode, user_add_oauth
+from bumper.models import include_EcoVacsHomeProducts_info
 from bumper.plugins import WebserverPlugin, WebserverSubApi
 
 
@@ -54,11 +55,11 @@ class ApiAppsvrPlugin(WebserverPlugin):
             todo = postbody["todo"]
 
             if todo == "GetGlobalDeviceList":  # EcoVacs Home
-                bots = bumper.db_get().table("bots").all()
+                bots = db_get().table("bots").all()
                 devices = []
                 for bot in bots:
                     if bot["class"] != "":
-                        device = bumper.include_EcoVacsHomeProducts_info(bot)
+                        device = include_EcoVacsHomeProducts_info(bot)
                         # Happens if the bot isn't on the EcoVacs Home list
                         if device is not None:
                             devices.append(device)
@@ -110,8 +111,8 @@ class ApiAppsvrPlugin(WebserverPlugin):
 
     async def _handle_appsvr_oauth_callback(self, request: Request) -> Response:
         try:
-            token = bumper.token_by_authcode(request.query["code"])
-            oauth = bumper.user_add_oauth(token["userid"])
+            token = token_by_authcode(request.query["code"])
+            oauth = user_add_oauth(token["userid"])
             body = {
                 "code": 0,
                 "data": oauth.toResponse(),

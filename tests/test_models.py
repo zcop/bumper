@@ -1,4 +1,4 @@
-from bumper import OAuth
+from bumper.models import OAuth
 
 
 def test_oauth():

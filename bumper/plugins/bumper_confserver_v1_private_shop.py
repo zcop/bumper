@@ -2,8 +2,8 @@ import logging
 
 from aiohttp import web
 
-import bumper
 from bumper import plugins
+from bumper.models import RETURN_API_SUCCESS
 from bumper.util import get_current_time_as_millis
 
 
@@ -25,7 +25,7 @@ class v1_private_shop(plugins.ConfServerApp):
     async def handle_getCnWapShopConfig(self, request):  # EcoVacs Home
         try:
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": {
                     "myShopShowFlag": "N",
                     "myShopUrl": "",

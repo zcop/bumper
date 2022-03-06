@@ -3,8 +3,8 @@ import logging
 
 from aiohttp import web
 
-import bumper
-from bumper import plugins
+from bumper import bumper_announce_ip, plugins
+from bumper.db import bot_remove, bot_set_nick, check_authcode, db_get, loginByItToken
 
 
 class portal_api_users(plugins.ConfServerApp):
@@ -38,7 +38,7 @@ class portal_api_users(plugins.ConfServerApp):
                 if todo == "FindBest":
                     service = postbody["service"]
                     if service == "EcoMsgNew":
-                        srvip = bumper.bumper_announce_ip
+                        srvip = bumper_announce_ip
                         srvport = 5223
                         logging.info(
                             "Announcing EcoMsgNew Server to bot as: {}:{}".format(
@@ -65,7 +65,7 @@ class portal_api_users(plugins.ConfServerApp):
 
                 elif todo == "loginByItToken":
                     if "userId" in postbody:
-                        if bumper.check_authcode(postbody["userId"], postbody["token"]):
+                        if check_authcode(postbody["userId"], postbody["token"]):
                             body = {
                                 "resource": postbody["resource"],
                                 "result": "ok",
@@ -74,7 +74,7 @@ class portal_api_users(plugins.ConfServerApp):
                                 "userId": postbody["userId"],
                             }
                     else:  # EcoVacs Home LoginByITToken
-                        loginToken = bumper.loginByItToken(postbody["token"])
+                        loginToken = loginByItToken(postbody["token"])
                         if not loginToken == {}:
                             body = {
                                 "resource": postbody["resource"],
@@ -88,21 +88,21 @@ class portal_api_users(plugins.ConfServerApp):
 
                 elif todo == "GetDeviceList":
                     body = {
-                        "devices": bumper.db_get().table("bots").all(),
+                        "devices": db_get().table("bots").all(),
                         "result": "ok",
                         "todo": "result",
                     }
 
                 elif todo == "SetDeviceNick":
-                    bumper.bot_set_nick(postbody["did"], postbody["nick"])
+                    bot_set_nick(postbody["did"], postbody["nick"])
                     body = {"result": "ok", "todo": "result"}
 
                 elif todo == "AddOneDevice":
-                    bumper.bot_set_nick(postbody["did"], postbody["nick"])
+                    bot_set_nick(postbody["did"], postbody["nick"])
                     body = {"result": "ok", "todo": "result"}
 
                 elif todo == "DeleteOneDevice":
-                    bumper.bot_remove(postbody["did"])
+                    bot_remove(postbody["did"])
                     body = {"result": "ok", "todo": "result"}
 
                 return web.json_response(body)

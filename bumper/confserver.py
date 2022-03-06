@@ -23,6 +23,7 @@ from aiohttp.web_response import Response, StreamResponse
 
 import bumper
 
+from .db import bot_get, bot_remove, client_get, client_remove, db_get
 from .plugins import ConfServerApp, WebserverPlugin, WebserverSubApi
 from .util import get_logger
 
@@ -191,8 +192,8 @@ class ConfServer:
 
     async def _handle_base(self, request: Request) -> Response:
         try:
-            bots = bumper.db_get().table("bots").all()
-            clients = bumper.db_get().table("clients").all()
+            bots = db_get().table("bots").all()
+            clients = db_get().table("clients").all()
             mq_sessions = []
             for (session, _) in bumper.mqtt_server.broker._sessions.values():
                 mq_sessions.append(
@@ -333,8 +334,8 @@ class ConfServer:
     async def _handle_remove_bot(self, request: Request) -> Response:
         try:
             did = request.match_info.get("did", "")
-            bumper.bot_remove(did)
-            if bumper.bot_get(did):
+            bot_remove(did)
+            if bot_get(did):
                 return web.json_response({"status": "failed to remove bot"})
             else:
                 return web.json_response({"status": "successfully removed bot"})
@@ -347,8 +348,8 @@ class ConfServer:
     async def _handle_remove_client(self, request: Request) -> Response:
         try:
             resource = request.match_info.get("resource", "")
-            bumper.client_remove(resource)
-            if bumper.client_get(resource):
+            client_remove(resource)
+            if client_get(resource):
                 return web.json_response({"status": "failed to remove client"})
             else:
                 return web.json_response({"status": "successfully removed client"})

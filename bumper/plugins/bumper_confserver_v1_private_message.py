@@ -2,8 +2,8 @@ import logging
 
 from aiohttp import web
 
-import bumper
 from bumper import plugins
+from bumper.models import RETURN_API_SUCCESS
 from bumper.util import get_current_time_as_millis
 
 
@@ -31,7 +31,7 @@ class v1_private_message(plugins.ConfServerApp):
     async def handle_hasUnreadMessage(self, request):  # EcoVacs Home
         try:
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": "N",
                 "msg": "操作成功",
                 "success": True,
@@ -46,7 +46,7 @@ class v1_private_message(plugins.ConfServerApp):
     async def handle_getMsgList(self, request):  # EcoVacs Home
         try:
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": {"hasNextPage": 0, "items": []},
                 "msg": "操作成功",
                 "success": True,

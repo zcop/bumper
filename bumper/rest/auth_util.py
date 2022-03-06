@@ -4,15 +4,29 @@ import uuid
 
 from aiohttp import web
 
-import bumper
-from bumper import (
+from bumper import db, use_auth
+from bumper.db import (
+    db_get,
+    user_add,
+    user_add_authcode,
+    user_add_bot,
+    user_add_device,
+    user_add_token,
+    user_by_deviceid,
+    user_get,
+    user_get_token,
+    user_revoke_expired_tokens,
+    user_revoke_token,
+)
+from bumper.models import (
     API_ERRORS,
+    ERR_TOKEN_INVALID,
+    ERR_USER_NOT_ACTIVATED,
     RETURN_API_SUCCESS,
     EcoVacs_Login,
     EcoVacsHome_Login,
-    get_logger,
 )
-from bumper.util import get_current_time_as_millis
+from bumper.util import get_current_time_as_millis, get_logger
 
 _logger = get_logger("confserver")
 
@@ -20,7 +34,7 @@ _logger = get_logger("confserver")
 def generate_token(user):
     try:
         tmpaccesstoken = uuid.uuid4().hex
-        bumper.user_add_token(user["userid"], tmpaccesstoken)
+        user_add_token(user["userid"], tmpaccesstoken)
         return tmpaccesstoken
 
     except Exception as e:
@@ -30,7 +44,7 @@ def generate_token(user):
 def generate_authcode(user, countrycode, token):
     try:
         tmpauthcode = f"{countrycode}_{uuid.uuid4().hex}"
-        bumper.user_add_authcode(user["userid"], token, tmpauthcode)
+        user_add_authcode(user["userid"], token, tmpauthcode)
         return tmpauthcode
 
     except Exception as e:
@@ -43,11 +57,11 @@ async def login(request):
         countrycode = request.match_info.get("country", "us")
         apptype = request.match_info.get("apptype", "")
         _logger.info(f"client with devid {user_devid} attempting login")
-        if bumper.use_auth:
+        if use_auth:
             if (
                 not user_devid == ""
             ):  # Performing basic "auth" using devid, super insecure
-                user = bumper.user_by_deviceid(user_devid)
+                user = user_by_deviceid(user_devid)
                 if "checkLogin" in request.path:
                     check_token(
                         apptype, countrycode, user, request.query["accessToken"]
@@ -63,7 +77,7 @@ async def login(request):
                         login_details = EcoVacs_Login()
 
                     # Deactivate old tokens and authcodes
-                    bumper.user_revoke_expired_tokens(user["userid"])
+                    user_revoke_expired_tokens(user["userid"])
 
                     login_details.accessToken = generate_token(user)
                     login_details.uid = "fuid_{}".format(user["userid"])
@@ -88,7 +102,7 @@ async def login(request):
                     return web.json_response(body)
 
             body = {
-                "code": bumper.ERR_USER_NOT_ACTIVATED,
+                "code": ERR_USER_NOT_ACTIVATED,
                 "data": None,
                 "msg": "当前密码错误",
                 "time": get_current_time_as_millis(),
@@ -113,13 +127,11 @@ async def get_authcode(request):
             user_devid = request.query["deviceId"]  # Ecovacs Home
 
         if not user_devid == "":
-            user = bumper.user_by_deviceid(user_devid)
+            user = user_by_deviceid(user_devid)
             token = ""
             if user:
                 if "accessToken" in request.query:
-                    token = bumper.user_get_token(
-                        user["userid"], request.query["accessToken"]
-                    )
+                    token = user_get_token(user["userid"], request.query["accessToken"])
                 if token:
                     authcode = ""
                     if not "authcode" in token:
@@ -132,7 +144,7 @@ async def get_authcode(request):
                         authcode = token["authcode"]
                     if "global" in apptype:
                         body = {
-                            "code": bumper.RETURN_API_SUCCESS,
+                            "code": RETURN_API_SUCCESS,
                             "data": {
                                 "authCode": authcode,
                                 "ecovacsUid": request.query["uid"],
@@ -143,7 +155,7 @@ async def get_authcode(request):
                         }
                     else:
                         body = {
-                            "code": bumper.RETURN_API_SUCCESS,
+                            "code": RETURN_API_SUCCESS,
                             "data": {
                                 "authCode": authcode,
                                 "ecovacsUid": request.query["uid"],
@@ -154,7 +166,7 @@ async def get_authcode(request):
                     return web.json_response(body)
 
         body = {
-            "code": bumper.ERR_TOKEN_INVALID,
+            "code": ERR_TOKEN_INVALID,
             "data": None,
             "msg": "当前密码错误",
             "time": get_current_time_as_millis(),
@@ -168,7 +180,7 @@ async def get_authcode(request):
 
 def check_token(apptype, countrycode, user, token):
     try:
-        if bumper.check_token(user["userid"], token):
+        if db.check_token(user["userid"], token):
 
             if "global_" in apptype:  # EcoVacs Home
                 login_details = EcoVacsHome_Login()
@@ -185,7 +197,7 @@ def check_token(apptype, countrycode, user, token):
             login_details.email = "null@null.com"
 
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": json.loads(login_details.toJSON()),
                 # {
                 #    "accessToken": self.generate_token(tmpuser),  # Generate a token
@@ -201,7 +213,7 @@ def check_token(apptype, countrycode, user, token):
 
         else:
             body = {
-                "code": bumper.ERR_TOKEN_INVALID,
+                "code": ERR_TOKEN_INVALID,
                 "data": None,
                 "msg": "当前密码错误",
                 "time": get_current_time_as_millis(),
@@ -216,8 +228,8 @@ def _auth_any(devid, apptype, country, request):
     try:
         user_devid = devid
         countrycode = country
-        user = bumper.user_by_deviceid(user_devid)
-        bots = bumper.db_get().table("bots").all()
+        user = user_by_deviceid(user_devid)
+        bots = db_get().table("bots").all()
 
         if user:  # Default to user 0
             tmpuser = user
@@ -234,10 +246,10 @@ def _auth_any(devid, apptype, country, request):
             login_details.username = "fusername_{}".format(tmpuser["userid"])
             login_details.country = countrycode
             login_details.email = "null@null.com"
-            bumper.user_add_device(tmpuser["userid"], user_devid)
+            user_add_device(tmpuser["userid"], user_devid)
         else:
-            bumper.user_add("tmpuser")  # Add a new user
-            tmpuser = bumper.user_get("tmpuser")
+            user_add("tmpuser")  # Add a new user
+            tmpuser = user_get("tmpuser")
             if "global_" in apptype:  # EcoVacs Home
                 login_details = EcoVacsHome_Login()
                 login_details.ucUid = "fuid_{}".format(tmpuser["userid"])
@@ -251,11 +263,11 @@ def _auth_any(devid, apptype, country, request):
             login_details.username = "fusername_{}".format(tmpuser["userid"])
             login_details.country = countrycode
             login_details.email = "null@null.com"
-            bumper.user_add_device(tmpuser["userid"], user_devid)
+            user_add_device(tmpuser["userid"], user_devid)
 
         for bot in bots:  # Add all bots to the user
             if "did" in bot:
-                bumper.user_add_bot(tmpuser["userid"], bot["did"])
+                user_add_bot(tmpuser["userid"], bot["did"])
             else:
                 _logger.error(f"No DID for bot: {bot}")
 
@@ -268,10 +280,10 @@ def _auth_any(devid, apptype, country, request):
                 return isGood
 
         # Deactivate old tokens and authcodes
-        bumper.user_revoke_expired_tokens(tmpuser["userid"])
+        user_revoke_expired_tokens(tmpuser["userid"])
 
         body = {
-            "code": bumper.RETURN_API_SUCCESS,
+            "code": RETURN_API_SUCCESS,
             "data": json.loads(login_details.toJSON()),
             # {
             #    "accessToken": self.generate_token(tmpuser),  # Generate a token
@@ -295,7 +307,7 @@ def get_user_account_info(request):
         user_devid = request.match_info.get("devid", "")
         countrycode = request.match_info.get("country", "us")
         apptype = request.match_info.get("apptype", "")
-        user = bumper.user_by_deviceid(user_devid)
+        user = user_by_deviceid(user_devid)
 
         if "global_" in apptype:  # EcoVacs Home
             login_details = EcoVacsHome_Login()
@@ -311,7 +323,7 @@ def get_user_account_info(request):
         login_details.email = "null@null.com"
 
         body = {
-            "code": bumper.RETURN_API_SUCCESS,
+            "code": RETURN_API_SUCCESS,
             "data": {
                 "email": login_details.email,
                 "hasMobile": "N",
@@ -363,16 +375,14 @@ async def logout(request):
     try:
         user_devid = request.match_info.get("devid", "")
         if not user_devid == "":
-            user = bumper.user_by_deviceid(user_devid)
+            user = user_by_deviceid(user_devid)
             if user:
-                if bumper.check_token(user["userid"], request.query["accessToken"]):
+                if db.check_token(user["userid"], request.query["accessToken"]):
                     # Deactivate old tokens and authcodes
-                    bumper.user_revoke_token(
-                        user["userid"], request.query["accessToken"]
-                    )
+                    user_revoke_token(user["userid"], request.query["accessToken"])
 
         body = {
-            "code": bumper.RETURN_API_SUCCESS,
+            "code": RETURN_API_SUCCESS,
             "data": None,
             "msg": "操作成功",
             "time": get_current_time_as_millis(),

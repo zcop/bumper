@@ -6,10 +6,18 @@ import uuid
 import xml.etree.ElementTree as ET
 
 import bumper
-from bumper import get_logger
+from bumper.db import (
+    bot_add,
+    bot_get,
+    bot_set_xmpp,
+    check_authcode,
+    client_add,
+    client_get,
+    client_set_xmpp,
+)
 
-xmppserverlog = get_logger("xmppserver")
-boterrorlog = get_logger("boterror")
+xmppserverlog = bumper.get_logger("xmppserver")
+boterrorlog = bumper.get_logger("boterror")
 
 
 class XMPPServer:
@@ -125,13 +133,13 @@ class XMPPAsyncClient:
     def _disconnect(self):
         try:
 
-            bot = bumper.bot_get(self.uid)
+            bot = bot_get(self.uid)
             if bot:
-                bumper.bot_set_xmpp(bot["did"], False)
+                bot_set_xmpp(bot["did"], False)
 
-            client = bumper.client_get(self.clientresource)
+            client = client_get(self.clientresource)
             if client:
-                bumper.client_set_xmpp(client["resource"], False)
+                client_set_xmpp(client["resource"], False)
 
             self.transport.close()
 
@@ -508,7 +516,7 @@ class XMPPAsyncClient:
                 authcode = saslauth[2]
 
             if self.devclass:  # if there is a devclass it is a bot
-                bumper.bot_add(self.uid, self.uid, self.devclass, "atom", "eco-legacy")
+                bot_add(self.uid, self.uid, self.devclass, "atom", "eco-legacy")
                 self.type = self.BOT
                 xmppserverlog.info(f"bot authenticated SN: {self.uid}")
                 # Send response
@@ -521,14 +529,14 @@ class XMPPAsyncClient:
 
             else:
                 auth = False
-                if bumper.check_authcode(self.uid, authcode):
+                if check_authcode(self.uid, authcode):
                     auth = True
-                elif bumper.use_auth == False:
+                elif not bumper.use_auth:
                     auth = True
 
                 if auth:
                     self.type = self.CONTROLLER
-                    bumper.client_add(self.uid, "bumper", self.clientresource)
+                    client_add(self.uid, "bumper", self.clientresource)
                     xmppserverlog.info(f"client authenticated {self.uid}")
 
                     # Client authenticated, move to next state
@@ -551,13 +559,13 @@ class XMPPAsyncClient:
     def _handle_bind(self, xml):
         try:
 
-            bot = bumper.bot_get(self.uid)
+            bot = bot_get(self.uid)
             if bot:
-                bumper.bot_set_xmpp(bot["did"], True)
+                bot_set_xmpp(bot["did"], True)
 
-            client = bumper.client_get(self.clientresource)
+            client = client_get(self.clientresource)
             if client:
-                bumper.client_set_xmpp(client["resource"], True)
+                client_set_xmpp(client["resource"], True)
 
             clientbindxml = list(xml)
             clientresourcexml = list(clientbindxml[0])

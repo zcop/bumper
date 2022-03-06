@@ -2,8 +2,8 @@ import logging
 
 from aiohttp import web
 
-import bumper
 from bumper import plugins
+from bumper.models import RETURN_API_SUCCESS
 from bumper.rest import auth_util
 from bumper.util import get_current_time_as_millis
 
@@ -93,7 +93,7 @@ class v1_private_user(plugins.ConfServerApp):
             apptype = request.match_info.get("apptype", "")
             if "global_" in apptype:
                 body = {
-                    "code": bumper.RETURN_API_SUCCESS,
+                    "code": RETURN_API_SUCCESS,
                     "data": [
                         {
                             "force": "N",
@@ -116,7 +116,7 @@ class v1_private_user(plugins.ConfServerApp):
                 }
             else:
                 body = {
-                    "code": bumper.RETURN_API_SUCCESS,
+                    "code": RETURN_API_SUCCESS,
                     "data": [],
                     "msg": "操作成功",
                     "time": get_current_time_as_millis(),
@@ -199,7 +199,7 @@ class v1_private_user(plugins.ConfServerApp):
     async def handle_changeArea(self, request):
         try:
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": {"isNeedReLogin": "N"},
                 "msg": "操作成功",
                 "success": True,
@@ -214,7 +214,7 @@ class v1_private_user(plugins.ConfServerApp):
     async def handle_acceptAgreementBatch(self, request):
         try:
             body = {
-                "code": bumper.RETURN_API_SUCCESS,
+                "code": RETURN_API_SUCCESS,
                 "data": None,
                 "msg": "操作成功",
                 "success": True,

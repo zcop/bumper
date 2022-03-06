@@ -4,13 +4,13 @@ import pytest
 from amqtt.client import MQTTClient
 
 import bumper
-from bumper import WebserverBinding
+from bumper import MQTTServer, WebserverBinding
 from tests import CONF_SERVER_PORT, HOST, MQTT_PORT
 
 
 @pytest.fixture
 async def mqtt_server():
-    mqtt_server = bumper.MQTTServer(HOST, MQTT_PORT, password_file="tests/passwd")
+    mqtt_server = MQTTServer(HOST, MQTT_PORT, password_file="tests/passwd")
     await mqtt_server.start()
     bumper.mqtt_server = mqtt_server
     while not mqtt_server.state == "started":

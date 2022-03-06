@@ -7,10 +7,12 @@ import xml.etree.ElementTree as ET
 from aiohttp import web
 
 import bumper
-from bumper import plugins
+from bumper.db import bot_get
+from bumper.models import ERR_COMMON
+from bumper.plugins import ConfServerApp
 
 
-class portal_api_lg(plugins.ConfServerApp):
+class portal_api_lg(ConfServerApp):
     def __init__(self):
         self.name = "portal_api_lg"
         self.plugin_type = "sub_api"
@@ -28,7 +30,7 @@ class portal_api_lg(plugins.ConfServerApp):
 
             did = json_body["did"]
 
-            botdetails = bumper.bot_get(did)
+            botdetails = bot_get(did)
             if botdetails:
                 if not "cmdName" in json_body:
                     if "td" in json_body:
@@ -53,7 +55,7 @@ class portal_api_lg(plugins.ConfServerApp):
                         json_body["payload"] = '<ctl count="30"/>'
 
             if did != "":
-                bot = bumper.bot_get(did)
+                bot = bot_get(did)
                 if bot["company"] == "eco-ng":
                     retcmd = await bumper.mqtt_helperbot.send_command(
                         json_body, randomid
@@ -95,5 +97,5 @@ class portal_api_lg(plugins.ConfServerApp):
         except Exception as e:
             logging.exception(f"{e}")
 
-        body = {"id": randomid, "errno": bumper.ERR_COMMON, "ret": "fail"}
+        body = {"id": randomid, "errno": ERR_COMMON, "ret": "fail"}
         return web.json_response(body)
