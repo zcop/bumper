@@ -5,7 +5,7 @@ from amqtt.client import MQTTClient
 
 import bumper
 from bumper import MQTTServer, WebserverBinding
-from tests import CONF_SERVER_PORT, HOST, MQTT_PORT
+from tests import HOST, MQTT_PORT, WEBSERVER_PORT
 
 
 @pytest.fixture
@@ -37,9 +37,9 @@ async def mqtt_client():
 
 
 @pytest.fixture
-async def conf_server_client(aiohttp_client):
-    confserver = bumper.ConfServer(WebserverBinding(HOST, CONF_SERVER_PORT, False))
-    client = await aiohttp_client(confserver._app)
+async def webserver_client(aiohttp_client):
+    webserver = bumper.WebServer(WebserverBinding(HOST, WEBSERVER_PORT, False))
+    client = await aiohttp_client(webserver._app)
 
     yield client
 

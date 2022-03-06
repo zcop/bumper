@@ -2,7 +2,6 @@
 
 import asyncio
 import dataclasses
-import inspect
 import json
 import logging
 import os
@@ -22,10 +21,9 @@ from aiohttp.web_request import Request
 from aiohttp.web_response import Response, StreamResponse
 
 import bumper
-
-from .db import bot_get, bot_remove, client_get, client_remove, db_get
-from .util import get_logger
-from .web.plugins import add_plugins
+from bumper.db import bot_get, bot_remove, client_get, client_remove, db_get
+from bumper.util import get_logger
+from bumper.web.plugins import add_plugins
 
 
 class _aiohttp_filter(logging.Filter):
@@ -55,7 +53,7 @@ class WebserverBinding:
     use_ssl: bool
 
 
-class ConfServer:
+class WebServer:
     """Web server."""
 
     _EXCLUDE_FROM_LOGGING = ["base", "remove-bot", "remove-client", "restart-service"]

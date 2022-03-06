@@ -16,7 +16,15 @@ from cachetools import TTLCache
 from passlib.apps import custom_app_context as pwd_context
 
 import bumper
-import bumper.db
+from bumper.db import (
+    bot_add,
+    bot_get,
+    bot_set_mqtt,
+    check_authcode,
+    client_add,
+    client_get,
+    client_set_mqtt,
+)
 from bumper.util import get_logger
 
 mqttserverlog = get_logger("mqttserver")
@@ -297,7 +305,7 @@ class BumperMQTTServerPlugin:
                     "ecouser" in didsplit[1] or "bumper" in didsplit[1]
                 ):
                     tmpbotdetail = str(didsplit[1]).split("/")
-                    db.bot_add(
+                    bot_add(
                         username,
                         didsplit[0],
                         tmpbotdetail[0],
@@ -322,8 +330,8 @@ class BumperMQTTServerPlugin:
                         "Bumper Authentication Success - Helperbot: %s", client_id
                     )
                     return True
-                if db.check_authcode(didsplit[0], password) or not bumper.use_auth:
-                    db.client_add(userid, realm, resource)
+                if check_authcode(didsplit[0], password) or not bumper.use_auth:
+                    client_add(userid, realm, resource)
                     mqttserverlog.info(
                         "Bumper Authentication Success - Client - Username: %s - ClientID: %s",
                         username,
@@ -398,15 +406,15 @@ class BumperMQTTServerPlugin:
     ) -> None:
         didsplit = str(client_id).split("@")
 
-        bot = db.bot_get(didsplit[0])
+        bot = bot_get(didsplit[0])
         if bot:
-            db.bot_set_mqtt(bot["did"], connected)
+            bot_set_mqtt(bot["did"], connected)
             return
 
         clientresource = didsplit[1].split("/")[1]
-        client = db.client_get(clientresource)
+        client = client_get(clientresource)
         if client:
-            db.client_set_mqtt(client["resource"], connected)
+            client_set_mqtt(client["resource"], connected)
 
     async def on_broker_message_received(  # pylint: disable=no-self-use
         self, message: IncomingApplicationMessage, **_: dict[str, Any]

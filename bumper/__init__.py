@@ -4,10 +4,10 @@ import os
 import socket
 import sys
 
-from bumper.confserver import ConfServer, WebserverBinding
 from bumper.db import revoke_expired_oauths, revoke_expired_tokens
 from bumper.mqttserver import MQTTHelperBot, MQTTServer
 from bumper.util import get_logger, log_to_stdout
+from bumper.web.server import WebServer, WebserverBinding
 from bumper.xmppserver import XMPPServer
 
 
@@ -51,7 +51,7 @@ oauth_validity_days = 15
 
 mqtt_server: MQTTServer
 mqtt_helperbot: MQTTHelperBot
-conf_server: ConfServer
+web_server: WebServer
 xmpp_server: XMPPServer
 
 shutting_down = False
@@ -59,11 +59,11 @@ shutting_down = False
 bumperlog = get_logger("bumper")
 logging.getLogger("asyncio").setLevel(logging.CRITICAL + 1)  # Ignore this logger
 
-conf_server_https_port = os.environ.get("WEB_SERVER_HTTPS_PORT") or 443
+web_server_https_port = os.environ.get("WEB_SERVER_HTTPS_PORT") or 443
 mqtt_listen_port = 8883
 xmpp_listen_port = 5223
-conf_server_bindings = [
-    WebserverBinding(bumper_listen, conf_server_https_port, True),
+web_server_bindings = [
+    WebserverBinding(bumper_listen, web_server_https_port, True),
     WebserverBinding(bumper_listen, 8007, False),
 ]
 
@@ -104,8 +104,8 @@ async def start():
     mqtt_server = MQTTServer(bumper_listen, mqtt_listen_port)
     global mqtt_helperbot
     mqtt_helperbot = MQTTHelperBot(bumper_listen, mqtt_listen_port)
-    global conf_server
-    conf_server = ConfServer(conf_server_bindings)
+    global web_server
+    web_server = WebServer(web_server_bindings)
     global xmpp_server
     xmpp_server = XMPPServer((bumper_listen, xmpp_listen_port))
 
@@ -124,7 +124,7 @@ async def start():
         await asyncio.sleep(0.1)
 
     # Start web servers
-    await conf_server.start()
+    await web_server.start()
 
     # Start maintenance
     while not shutting_down:
@@ -141,7 +141,7 @@ async def shutdown():
     try:
         bumperlog.info("Shutting down")
 
-        await conf_server.shutdown()
+        await web_server.shutdown()
         if mqtt_server.state == "started":
             await mqtt_server.shutdown()
         elif mqtt_server.state == "starting":

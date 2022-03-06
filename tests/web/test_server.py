@@ -6,13 +6,13 @@ from unittest import mock
 import pytest
 
 import bumper
-from bumper import ConfServer, MQTTHelperBot, WebserverBinding, XMPPServer, db
+from bumper import MQTTHelperBot, WebServer, WebserverBinding, XMPPServer, db
 from bumper.models import ERR_TOKEN_INVALID, RETURN_API_SUCCESS
-from tests import CONF_SERVER_PORT, HOST, MQTT_PORT
+from tests import HOST, MQTT_PORT, WEBSERVER_PORT
 
 
-def create_confserver():
-    return ConfServer(WebserverBinding(HOST, CONF_SERVER_PORT, False))
+def create_webserver():
+    return WebServer(WebserverBinding(HOST, WEBSERVER_PORT, False))
 
 
 def async_return(result):
@@ -26,18 +26,18 @@ def remove_existing_db():
         os.remove("tests/tmp.db")  # Remove existing db
 
 
-async def test_confserver_ssl():
-    conf_server = ConfServer(WebserverBinding(HOST, CONF_SERVER_PORT, True))
-    await conf_server.start()
+async def test_webserver_ssl():
+    webserver = WebServer(WebserverBinding(HOST, WEBSERVER_PORT, True))
+    await webserver.start()
 
 
-async def test_confserver_no_ssl():
-    conf_server = ConfServer(WebserverBinding(HOST, 11112, False))
-    await conf_server.start()
+async def test_webserver_no_ssl():
+    webserver = WebServer(WebserverBinding(HOST, 11112, False))
+    await webserver.start()
 
 
 @pytest.mark.usefixtures("mqtt_server")
-async def test_base(conf_server_client):
+async def test_base(webserver_client):
     remove_existing_db()
 
     # Start XMPP
@@ -51,7 +51,7 @@ async def test_base(conf_server_client):
     bumper.mqtt_helperbot = mqtt_helperbot
     await mqtt_helperbot.start()
 
-    resp = await conf_server_client.get("/")
+    resp = await webserver_client.get("/")
     assert resp.status == 200
 
     await mqtt_helperbot.disconnect()
@@ -60,7 +60,7 @@ async def test_base(conf_server_client):
 
 
 @pytest.mark.usefixtures("mqtt_server")
-async def test_restartService(conf_server_client):
+async def test_restartService(webserver_client):
     remove_existing_db()
 
     # Start XMPP
@@ -74,13 +74,13 @@ async def test_restartService(conf_server_client):
     bumper.mqtt_helperbot = mqtt_helperbot
     await mqtt_helperbot.start()
 
-    resp = await conf_server_client.get("/restart_Helperbot")
+    resp = await webserver_client.get("/restart_Helperbot")
     assert resp.status == 200
 
-    resp = await conf_server_client.get("/restart_MQTTServer")
+    resp = await webserver_client.get("/restart_MQTTServer")
     assert resp.status == 200
 
-    resp = await conf_server_client.get("/restart_XMPPServer")
+    resp = await webserver_client.get("/restart_XMPPServer")
     assert resp.status == 200
 
     await mqtt_helperbot.disconnect()
@@ -88,23 +88,21 @@ async def test_restartService(conf_server_client):
     xmpp_server.disconnect()
 
 
-async def test_RemoveBot(conf_server_client):
-    resp = await conf_server_client.get("/bot/remove/test_did")
+async def test_RemoveBot(webserver_client):
+    resp = await webserver_client.get("/bot/remove/test_did")
     assert resp.status == 200
 
 
-async def test_RemoveClient(conf_server_client):
-    resp = await conf_server_client.get("/client/remove/test_resource")
+async def test_RemoveClient(webserver_client):
+    resp = await webserver_client.get("/client/remove/test_resource")
     assert resp.status == 200
 
 
-async def test_login(conf_server_client):
+async def test_login(webserver_client):
     remove_existing_db()
 
     # Test without user
-    resp = await conf_server_client.get(
-        "/v1/private/us/en/dev_1234/ios/1/0/0/user/login"
-    )
+    resp = await webserver_client.get("/v1/private/us/en/dev_1234/ios/1/0/0/user/login")
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -116,7 +114,7 @@ async def test_login(conf_server_client):
     remove_existing_db()
 
     # Test global_e without user
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/user/login"
     )
     assert resp.status == 200
@@ -129,9 +127,7 @@ async def test_login(conf_server_client):
 
     # Add a user to db and test with existing users
     db.user_add("testuser")
-    resp = await conf_server_client.get(
-        "/v1/private/us/en/dev_1234/ios/1/0/0/user/login"
-    )
+    resp = await webserver_client.get("/v1/private/us/en/dev_1234/ios/1/0/0/user/login")
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -142,9 +138,7 @@ async def test_login(conf_server_client):
 
     # Add a bot to db that will be added to user
     db.bot_add("sn_123", "did_123", "dev_123", "res_123", "com_123")
-    resp = await conf_server_client.get(
-        "/v1/private/us/en/dev_1234/ios/1/0/0/user/login"
-    )
+    resp = await webserver_client.get("/v1/private/us/en/dev_1234/ios/1/0/0/user/login")
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -163,9 +157,7 @@ async def test_login(conf_server_client):
     }
     db.bot_full_upsert(newbot)
 
-    resp = await conf_server_client.get(
-        "/v1/private/us/en/dev_1234/ios/1/0/0/user/login"
-    )
+    resp = await webserver_client.get("/v1/private/us/en/dev_1234/ios/1/0/0/user/login")
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -175,14 +167,14 @@ async def test_login(conf_server_client):
     assert "username" in jsonresp["data"]
 
 
-async def test_logout(conf_server_client):
+async def test_logout(webserver_client):
     remove_existing_db()
 
     # Add a token to user and test
     db.user_add("testuser")
     db.user_add_device("testuser", "dev_1234")
     db.user_add_token("testuser", "token_1234")
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/user/logout?accessToken={}".format(
             "token_1234"
         )
@@ -194,11 +186,11 @@ async def test_logout(conf_server_client):
     assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
-async def test_checkLogin(conf_server_client):
+async def test_checkLogin(webserver_client):
     remove_existing_db()
 
     # Test without token
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/user/checkLogin?accessToken={}".format(
             None
         )
@@ -214,7 +206,7 @@ async def test_checkLogin(conf_server_client):
 
     # Add a user to db and test with existing users
     db.user_add("testuser")
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/user/checkLogin?accessToken={}".format(
             None
         )
@@ -230,7 +222,7 @@ async def test_checkLogin(conf_server_client):
 
     # Test again using global_e app
     db.user_add("testuser")
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/user/checkLogin?accessToken={}".format(
             None
         )
@@ -251,7 +243,7 @@ async def test_checkLogin(conf_server_client):
     db.user_add("testuser")
     db.user_add_device("testuser", "dev_1234")
     db.user_add_token("testuser", "token_1234")
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/user/checkLogin?accessToken={}".format(
             "token_1234"
         )
@@ -267,7 +259,7 @@ async def test_checkLogin(conf_server_client):
 
     # Test again using global_e app
     db.user_add("testuser")
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/user/checkLogin?accessToken={}".format(
             "token_1234"
         )
@@ -282,11 +274,11 @@ async def test_checkLogin(conf_server_client):
     assert "username" in jsonresp["data"]
 
 
-async def test_getAuthCode(conf_server_client):
+async def test_getAuthCode(webserver_client):
     remove_existing_db()
 
     # Test without user or token
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/user/getAuthCode?uid={}&accessToken={}".format(
             None, None
         )
@@ -297,7 +289,7 @@ async def test_getAuthCode(conf_server_client):
     assert jsonresp["code"] == ERR_TOKEN_INVALID
 
     # Test as global_e
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/global/auth/getAuthCode?uid={}&deviceId={}".format(None, "dev_1234")
     )
     assert resp.status == 200
@@ -309,7 +301,7 @@ async def test_getAuthCode(conf_server_client):
     db.user_add("testuser")
     db.user_add_device("testuser", "dev_1234")
     db.user_add_token("testuser", "token_1234")
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/user/getAuthCode?uid={}&accessToken={}".format(
             "testuser", "token_1234"
         )
@@ -322,7 +314,7 @@ async def test_getAuthCode(conf_server_client):
     assert "ecovacsUid" in jsonresp["data"]
 
     # The above should have added an authcode to token, try again to test with existing authcode
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/user/getAuthCode?uid={}&accessToken={}".format(
             "testuser", "token_1234"
         )
@@ -335,10 +327,10 @@ async def test_getAuthCode(conf_server_client):
     assert "ecovacsUid" in jsonresp["data"]
 
 
-async def test_checkAgreement(conf_server_client):
+async def test_checkAgreement(webserver_client):
     remove_existing_db()
 
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/user/checkAgreement"
     )
     assert resp.status == 200
@@ -347,7 +339,7 @@ async def test_checkAgreement(conf_server_client):
     assert jsonresp["code"] == RETURN_API_SUCCESS
 
     # Test as global_e
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/user/checkAgreement"
     )
     assert resp.status == 200
@@ -356,10 +348,10 @@ async def test_checkAgreement(conf_server_client):
     assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
-async def test_homePageAlert(conf_server_client):
+async def test_homePageAlert(webserver_client):
     remove_existing_db()
 
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/campaign/homePageAlert"
     )
     assert resp.status == 200
@@ -368,10 +360,10 @@ async def test_homePageAlert(conf_server_client):
     assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
-async def test_checkVersion(conf_server_client):
+async def test_checkVersion(webserver_client):
     remove_existing_db()
 
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/ios/1/0/0/common/checkVersion"
     )
     assert resp.status == 200
@@ -380,10 +372,10 @@ async def test_checkVersion(conf_server_client):
     assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
-async def test_checkAppVersion(conf_server_client):
+async def test_checkAppVersion(webserver_client):
     remove_existing_db()
 
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/common/checkAPPVersion"
     )
     assert resp.status == 200
@@ -392,9 +384,9 @@ async def test_checkAppVersion(conf_server_client):
     assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
-async def test_uploadDeviceInfo(conf_server_client):
+async def test_uploadDeviceInfo(webserver_client):
     remove_existing_db()
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/common/uploadDeviceInfo"
     )
     assert resp.status == 200
@@ -403,10 +395,10 @@ async def test_uploadDeviceInfo(conf_server_client):
     assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
-async def test_getAdByPositionType(conf_server_client):
+async def test_getAdByPositionType(webserver_client):
     remove_existing_db()
 
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/ad/getAdByPositionType"
     )
     assert resp.status == 200
@@ -415,10 +407,10 @@ async def test_getAdByPositionType(conf_server_client):
     assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
-async def test_getBootScreen(conf_server_client):
+async def test_getBootScreen(webserver_client):
     remove_existing_db()
 
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/ad/getBootScreen"
     )
     assert resp.status == 200
@@ -427,10 +419,10 @@ async def test_getBootScreen(conf_server_client):
     assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
-async def test_hasUnreadMsg(conf_server_client):
+async def test_hasUnreadMsg(webserver_client):
     remove_existing_db()
 
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/message/hasUnreadMsg"
     )
     assert resp.status == 200
@@ -439,10 +431,10 @@ async def test_hasUnreadMsg(conf_server_client):
     assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
-async def test_getMsgList(conf_server_client):
+async def test_getMsgList(webserver_client):
     remove_existing_db()
 
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/message/getMsgList"
     )
     assert resp.status == 200
@@ -451,10 +443,10 @@ async def test_getMsgList(conf_server_client):
     assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
-async def test_getSystemReminder(conf_server_client):
+async def test_getSystemReminder(webserver_client):
     remove_existing_db()
 
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/common/getSystemReminder"
     )
     assert resp.status == 200
@@ -463,10 +455,10 @@ async def test_getSystemReminder(conf_server_client):
     assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
-async def test_getCnWapShopConfig(conf_server_client):
+async def test_getCnWapShopConfig(webserver_client):
     remove_existing_db()
 
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/shop/getCnWapShopConfig"
     )
     assert resp.status == 200
@@ -475,7 +467,7 @@ async def test_getCnWapShopConfig(conf_server_client):
     assert jsonresp["code"] == RETURN_API_SUCCESS
 
 
-async def test_neng_hasUnreadMessage(conf_server_client):
+async def test_neng_hasUnreadMessage(webserver_client):
     remove_existing_db()
 
     postbody = {
@@ -488,40 +480,38 @@ async def test_neng_hasUnreadMessage(conf_server_client):
         },
         "count": 20,
     }
-    resp = await conf_server_client.post(
-        "/api/neng/message/hasUnreadMsg", json=postbody
-    )
+    resp = await webserver_client.post("/api/neng/message/hasUnreadMsg", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
     assert jsonresp["code"] == 0
 
 
-async def test_getProductIotMap(conf_server_client):
+async def test_getProductIotMap(webserver_client):
     remove_existing_db()
 
-    resp = await conf_server_client.post("/api/pim/product/getProductIotMap")
+    resp = await webserver_client.post("/api/pim/product/getProductIotMap")
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
     assert jsonresp["code"] == RETURN_API_SUCCESS
 
     # Test getPimFile
-    resp = await conf_server_client.get("/api/pim/file/get/123")
+    resp = await webserver_client.get("/api/pim/file/get/123")
     assert resp.status == 200
 
 
-async def test_getUsersAPI(conf_server_client):
+async def test_getUsersAPI(webserver_client):
     remove_existing_db()
 
-    resp = await conf_server_client.get("/api/users/user.do")
+    resp = await webserver_client.get("/api/users/user.do")
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
     assert jsonresp["result"] == "fail"
 
 
-async def test_getUserAccountInfo(conf_server_client):
+async def test_getUserAccountInfo(webserver_client):
     remove_existing_db()
     db.user_add("testuser")
     db.user_add_device("testuser", "dev_1234")
@@ -530,7 +520,7 @@ async def test_getUserAccountInfo(conf_server_client):
     db.user_add_bot("testuser", "did_1234")
     db.bot_add("sn_1234", "did_1234", "class_1234", "res_1234", "com_1234")
 
-    resp = await conf_server_client.get(
+    resp = await webserver_client.get(
         "/v1/private/us/en/dev_1234/global_e/1/0/0/user/getUserAccountInfo"
     )
     assert resp.status == 200
@@ -541,12 +531,12 @@ async def test_getUserAccountInfo(conf_server_client):
     assert jsonresp["data"]["userName"] == "fusername_testuser"
 
 
-async def test_postUsersAPI(conf_server_client):
+async def test_postUsersAPI(webserver_client):
     remove_existing_db()
 
     # Test FindBest
     postbody = {"todo": "FindBest", "service": "EcoMsgNew"}
-    resp = await conf_server_client.post("/api/users/user.do", json=postbody)
+    resp = await webserver_client.post("/api/users/user.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -554,7 +544,7 @@ async def test_postUsersAPI(conf_server_client):
 
     # Test EcoUpdate
     postbody = {"todo": "FindBest", "service": "EcoUpdate"}
-    resp = await conf_server_client.post("/api/users/user.do", json=postbody)
+    resp = await webserver_client.post("/api/users/user.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -577,7 +567,7 @@ async def test_postUsersAPI(conf_server_client):
         "token": "auth_1234",
         "userId": "testuser",
     }
-    resp = await conf_server_client.post("/api/users/user.do", json=postbody)
+    resp = await webserver_client.post("/api/users/user.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -593,7 +583,7 @@ async def test_postUsersAPI(conf_server_client):
         "todo": "loginByItToken",
         "token": "auth_1234",
     }
-    resp = await conf_server_client.post("/api/users/user.do", json=postbody)
+    resp = await webserver_client.post("/api/users/user.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -609,7 +599,7 @@ async def test_postUsersAPI(conf_server_client):
         "todo": "loginByItToken",
         "token": "auth_1234",
     }
-    resp = await conf_server_client.post("/api/users/user.do", data=postbody)
+    resp = await webserver_client.post("/api/users/user.do", data=postbody)
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -627,7 +617,7 @@ async def test_postUsersAPI(conf_server_client):
         "todo": "GetDeviceList",
         "userid": "testuser",
     }
-    resp = await conf_server_client.post("/api/users/user.do", json=postbody)
+    resp = await webserver_client.post("/api/users/user.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -646,7 +636,7 @@ async def test_postUsersAPI(conf_server_client):
         "nick": "botnick",
         "did": "did_1234",
     }
-    resp = await conf_server_client.post("/api/users/user.do", json=postbody)
+    resp = await webserver_client.post("/api/users/user.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -665,7 +655,7 @@ async def test_postUsersAPI(conf_server_client):
         "nick": "botnick",
         "did": "did_1234",
     }
-    resp = await conf_server_client.post("/api/users/user.do", json=postbody)
+    resp = await webserver_client.post("/api/users/user.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -683,14 +673,14 @@ async def test_postUsersAPI(conf_server_client):
         "todo": "DeleteOneDevice",
         "did": "did_1234",
     }
-    resp = await conf_server_client.post("/api/users/user.do", json=postbody)
+    resp = await webserver_client.post("/api/users/user.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
     assert jsonresp["result"] == "ok"
 
 
-async def test_appsvr_api(conf_server_client):
+async def test_appsvr_api(webserver_client):
     remove_existing_db()
 
     # Test GetGlobalDeviceList
@@ -711,7 +701,7 @@ async def test_appsvr_api(conf_server_client):
         "todo": "GetGlobalDeviceList",
         "userid": "testuser",
     }
-    resp = await conf_server_client.post("/api/appsvr/app.do", json=postbody)
+    resp = await webserver_client.post("/api/appsvr/app.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
@@ -720,18 +710,18 @@ async def test_appsvr_api(conf_server_client):
     db.bot_add("sn_1234", "did_1234", "ls1ok3", "res_1234", "eco-ng")
 
     # Test again with bot added
-    resp = await conf_server_client.post("/api/appsvr/app.do", json=postbody)
+    resp = await webserver_client.post("/api/appsvr/app.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
     assert jsonresp["ret"] == "ok"
 
 
-async def test_lg_logs(conf_server_client):
+async def test_lg_logs(webserver_client):
     remove_existing_db()
     db.bot_add("sn_1234", "did_1234", "ls1ok3", "res_1234", "eco-ng")
     db.bot_set_mqtt("did_1234", True)
-    confserver = create_confserver()
+    confserver = create_webserver()
     bumper.mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
 
     # Test return get status
@@ -757,19 +747,19 @@ async def test_lg_logs(conf_server_client):
         "resource": "res_1234",
         "td": "GetCleanLogs",
     }
-    resp = await conf_server_client.post("/api/lg/log.do", json=postbody)
+    resp = await webserver_client.post("/api/lg/log.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     jsonresp = json.loads(text)
     assert jsonresp["ret"] == "ok"
 
 
-async def test_postLookup(conf_server_client):
+async def test_postLookup(webserver_client):
     remove_existing_db()
 
     # Test FindBest
     postbody = {"todo": "FindBest", "service": "EcoMsgNew"}
-    resp = await conf_server_client.post("/lookup.do", json=postbody)
+    resp = await webserver_client.post("/lookup.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     test_resp = json.loads(text)
@@ -777,21 +767,21 @@ async def test_postLookup(conf_server_client):
 
     # Test EcoUpdate
     postbody = {"todo": "FindBest", "service": "EcoUpdate"}
-    resp = await conf_server_client.post("/lookup.do", json=postbody)
+    resp = await webserver_client.post("/lookup.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     test_resp = json.loads(text)
     assert test_resp["result"] == "ok"
 
 
-async def test_devmgr(conf_server_client):
+async def test_devmgr(webserver_client):
     remove_existing_db()
-    confserver = create_confserver()
+    confserver = create_webserver()
     bumper.mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
 
     # Test PollSCResult
     postbody = {"td": "PollSCResult"}
-    resp = await conf_server_client.post("/api/iot/devmanager.do", json=postbody)
+    resp = await webserver_client.post("/api/iot/devmanager.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     test_resp = json.loads(text)
@@ -799,7 +789,7 @@ async def test_devmgr(conf_server_client):
 
     # Test HasUnreadMsg
     postbody = {"td": "HasUnreadMsg"}
-    resp = await conf_server_client.post("/api/iot/devmanager.do", json=postbody)
+    resp = await webserver_client.post("/api/iot/devmanager.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     test_resp = json.loads(text)
@@ -820,7 +810,7 @@ async def test_devmgr(conf_server_client):
     bumper.mqtt_helperbot.send_command = mock.MagicMock(
         return_value=async_return(command_getstatus_resp)
     )
-    resp = await conf_server_client.post("/api/iot/devmanager.do", json=postbody)
+    resp = await webserver_client.post("/api/iot/devmanager.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     test_resp = json.loads(text)
@@ -831,21 +821,21 @@ async def test_devmgr(conf_server_client):
     bumper.mqtt_helperbot.send_command = mock.MagicMock(
         return_value=async_return(command_timeout_resp)
     )
-    resp = await conf_server_client.post("/api/iot/devmanager.do", json=postbody)
+    resp = await webserver_client.post("/api/iot/devmanager.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     test_resp = json.loads(text)
     assert test_resp["ret"] == "fail"
 
 
-async def test_dim_devmanager(conf_server_client):
+async def test_dim_devmanager(webserver_client):
     remove_existing_db()
-    confserver = create_confserver()
+    confserver = create_webserver()
     bumper.mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
 
     # Test PollSCResult
     postbody = {"td": "PollSCResult"}
-    resp = await conf_server_client.post("/api/dim/devmanager.do", json=postbody)
+    resp = await webserver_client.post("/api/dim/devmanager.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     test_resp = json.loads(text)
@@ -853,7 +843,7 @@ async def test_dim_devmanager(conf_server_client):
 
     # Test HasUnreadMsg
     postbody = {"td": "HasUnreadMsg"}
-    resp = await conf_server_client.post("/api/dim/devmanager.do", json=postbody)
+    resp = await webserver_client.post("/api/dim/devmanager.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     test_resp = json.loads(text)
@@ -874,7 +864,7 @@ async def test_dim_devmanager(conf_server_client):
     bumper.mqtt_helperbot.send_command = mock.MagicMock(
         return_value=async_return(command_getstatus_resp)
     )
-    resp = await conf_server_client.post("/api/dim/devmanager.do", json=postbody)
+    resp = await webserver_client.post("/api/dim/devmanager.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     test_resp = json.loads(text)
@@ -885,7 +875,7 @@ async def test_dim_devmanager(conf_server_client):
     bumper.mqtt_helperbot.send_command = mock.MagicMock(
         return_value=async_return(command_timeout_resp)
     )
-    resp = await conf_server_client.post("/api/dim/devmanager.do", json=postbody)
+    resp = await webserver_client.post("/api/dim/devmanager.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     test_resp = json.loads(text)
@@ -897,7 +887,7 @@ async def test_dim_devmanager(conf_server_client):
     bumper.mqtt_helperbot.send_command = mock.MagicMock(
         return_value=async_return(command_getstatus_resp)
     )
-    resp = await conf_server_client.post("/api/dim/devmanager.do", json=postbody)
+    resp = await webserver_client.post("/api/dim/devmanager.do", json=postbody)
     assert resp.status == 200
     text = await resp.text()
     test_resp = json.loads(text)
