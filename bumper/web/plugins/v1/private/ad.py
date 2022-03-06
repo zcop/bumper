@@ -1,14 +1,13 @@
 """Ad plugin module."""
-import logging
 from typing import Iterable
 
 from aiohttp import web
+from aiohttp.web_request import Request
+from aiohttp.web_response import Response
 from aiohttp.web_routedef import AbstractRouteDef
 
-from bumper.models import RETURN_API_SUCCESS
-from bumper.util import get_current_time_as_millis
-
-from ... import WebserverPlugin
+from ... import WebserverPlugin, get_success_response
+from . import BASE_URL
 
 
 class AdPlugin(WebserverPlugin):
@@ -20,42 +19,16 @@ class AdPlugin(WebserverPlugin):
         return [
             web.route(
                 "*",
-                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/ad/getAdByPositionType",
-                self.handle_getAdByPositionType,
+                f"{BASE_URL}ad/getAdByPositionType",
+                _handle,
             ),
             web.route(
                 "*",
-                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/ad/getBootScreen",
-                self.handle_getBootScreen,
+                f"{BASE_URL}ad/getBootScreen",
+                _handle,
             ),
         ]
 
-    async def handle_getAdByPositionType(self, request):  # EcoVacs Home
-        try:
-            body = {
-                "code": RETURN_API_SUCCESS,
-                "data": None,
-                "msg": "操作成功",
-                "success": True,
-                "time": get_current_time_as_millis(),
-            }
 
-            return web.json_response(body)
-
-        except Exception as e:
-            logging.exception(f"{e}")
-
-    async def handle_getBootScreen(self, request):  # EcoVacs Home
-        try:
-            body = {
-                "code": RETURN_API_SUCCESS,
-                "data": None,
-                "msg": "操作成功",
-                "success": True,
-                "time": get_current_time_as_millis(),
-            }
-
-            return web.json_response(body)
-
-        except Exception as e:
-            logging.exception(f"{e}")
+async def _handle(_: Request) -> Response:
+    return get_success_response(None)

@@ -10,10 +10,10 @@ from aiohttp.web_request import Request
 from aiohttp.web_response import Response
 from aiohttp.web_routedef import AbstractRouteDef
 
-from bumper.models import RETURN_API_SUCCESS
 from bumper.util import get_current_time_as_millis
 
-from ... import WebserverPlugin
+from ... import WebserverPlugin, get_success_response
+from . import BASE_URL
 
 
 class CommonPlugin(WebserverPlugin):
@@ -22,55 +22,53 @@ class CommonPlugin(WebserverPlugin):
     @property
     def routes(self) -> Iterable[AbstractRouteDef]:
         """Plugin routes."""
-        base_url = "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/common/"
         return [
             web.route(
                 "*",
-                f"{base_url}checkAPPVersion",
+                f"{BASE_URL}common/checkAPPVersion",
                 _handle_check_app_version,
             ),
             web.route(
                 "*",
-                f"{base_url}checkVersion",
+                f"{BASE_URL}common/checkVersion",
                 _handle_check_version,
             ),
             web.route(
                 "*",
-                f"{base_url}uploadDeviceInfo",
+                f"{BASE_URL}common/uploadDeviceInfo",
                 _handle_upload_device_info,
             ),
             web.route(
                 "*",
-                f"{base_url}getSystemReminder",
+                f"{BASE_URL}common/getSystemReminder",
                 _handle_get_system_reminder,
             ),
             web.route(
                 "*",
-                f"{base_url}getConfig",
+                f"{BASE_URL}common/getConfig",
                 _handle_get_config,
             ),
             web.route(
                 "*",
-                f"{base_url}getAreas",
+                f"{BASE_URL}common/getAreas",
                 _handle_get_areas,
             ),
             web.route(
                 "*",
-                f"{base_url}getAgreementURLBatch",
+                f"{BASE_URL}common/getAgreementURLBatch",
                 _handle_get_agreement_url_batch,
             ),
             web.route(
                 "*",
-                f"{base_url}getTimestamp",
+                f"{BASE_URL}common/getTimestamp",
                 _handle_get_timestamp,
             ),
         ]
 
 
 async def _handle_check_version(_: Request) -> Response:
-    body = {
-        "code": RETURN_API_SUCCESS,
-        "data": {
+    return get_success_response(
+        {
             "c": None,
             "img": None,
             "r": 0,
@@ -78,18 +76,13 @@ async def _handle_check_version(_: Request) -> Response:
             "u": None,
             "ut": 0,
             "v": None,
-        },
-        "msg": "操作成功",
-        "time": get_current_time_as_millis(),
-    }
-
-    return web.json_response(body)
+        }
+    )
 
 
 async def _handle_check_app_version(_: Request) -> Response:
-    body = {
-        "code": RETURN_API_SUCCESS,
-        "data": {
+    return get_success_response(
+        {
             "c": None,
             "downPageUrl": None,
             "img": None,
@@ -99,44 +92,25 @@ async def _handle_check_app_version(_: Request) -> Response:
             "u": None,
             "ut": 0,
             "v": None,
-        },
-        "msg": "操作成功",
-        "success": True,
-        "time": get_current_time_as_millis(),
-    }
-
-    return web.json_response(body)
+        }
+    )
 
 
 async def _handle_upload_device_info(_: Request) -> Response:
-    body = {
-        "code": RETURN_API_SUCCESS,
-        "data": None,
-        "msg": "操作成功",
-        "success": True,
-        "time": get_current_time_as_millis(),
-    }
-
-    return web.json_response(body)
+    return get_success_response(None)
 
 
 async def _handle_get_system_reminder(_: Request) -> Response:
-    body = {
-        "code": RETURN_API_SUCCESS,
-        "data": {
+    return get_success_response(
+        {
             "iosGradeTime": {"iodGradeFlag": "N"},
             "openNotification": {
                 "openNotificationContent": None,
                 "openNotificationFlag": "N",
                 "openNotificationTitle": None,
             },
-        },
-        "msg": "操作成功",
-        "success": True,
-        "time": get_current_time_as_millis(),
-    }
-
-    return web.json_response(body)
+        }
+    )
 
 
 async def _handle_get_config(request: Request) -> Response:
@@ -145,15 +119,7 @@ async def _handle_get_config(request: Request) -> Response:
         for key in request.query["keys"].split(","):
             data.append({"key": key, "value": "Y"})
 
-        body = {
-            "code": RETURN_API_SUCCESS,
-            "data": data,
-            "msg": "操作成功",
-            "success": True,
-            "time": get_current_time_as_millis(),
-        }
-
-        return web.json_response(body)
+        return get_success_response(data)
     except Exception:  # pylint: disable=broad-except
         logging.error("Unexpected exception occurred", exc_info=True)
 
@@ -162,16 +128,11 @@ async def _handle_get_config(request: Request) -> Response:
 
 async def _handle_get_areas(_: Request) -> Response:
     try:
-        with open(os.path.join(os.path.dirname(__file__), "area.json")) as file:
-            body = {
-                "code": RETURN_API_SUCCESS,
-                "data": json.load(file),
-                "msg": "操作成功",
-                "success": True,
-                "time": get_current_time_as_millis(),
-            }
-
-            return web.json_response(body)
+        with open(
+            os.path.join(os.path.dirname(__file__), "common_area.json"),
+            encoding="utf-8",
+        ) as file:
+            return get_success_response(json.load(file))
     except Exception:  # pylint: disable=broad-except
         logging.error("Unexpected exception occurred", exc_info=True)
 
@@ -179,9 +140,8 @@ async def _handle_get_areas(_: Request) -> Response:
 
 
 async def _handle_get_agreement_url_batch(_: Request) -> Response:
-    body = {
-        "code": RETURN_API_SUCCESS,
-        "data": [
+    return get_success_response(
+        [
             {
                 "acceptTime": None,
                 "force": None,
@@ -198,23 +158,9 @@ async def _handle_get_agreement_url_batch(_: Request) -> Response:
                 "url": "https://gl-eu-wap.ecovacs.com/content/agreement?id=20180804040245_4e7c56dfb7ebd3b81b1f2747d0859fac&language=EN",
                 "version": "1.03",
             },
-        ],
-        "msg": "操作成功",
-        "success": True,
-        "time": get_current_time_as_millis(),
-    }
-
-    return web.json_response(body)
+        ]
+    )
 
 
 async def _handle_get_timestamp(_: Request) -> Response:
-    time = get_current_time_as_millis()
-    body = {
-        "code": RETURN_API_SUCCESS,
-        "data": {"timestamp": time},
-        "msg": "操作成功",
-        "success": True,
-        "time": time,
-    }
-
-    return web.json_response(body)
+    return get_success_response({"timestamp": get_current_time_as_millis()})

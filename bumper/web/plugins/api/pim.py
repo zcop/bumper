@@ -1,15 +1,14 @@
 """Pim plugin module."""
 import json
 import logging
-import os
 from typing import Iterable
 
 from aiohttp import web
 from aiohttp.web_routedef import AbstractRouteDef
 
-from bumper import bumper_dir
 from bumper.models import RETURN_API_SUCCESS, EcoVacsHomeProducts
 
+from ...images import get_bot_image
 from .. import WebserverPlugin
 
 
@@ -28,7 +27,7 @@ class PimPlugin(WebserverPlugin):
             web.route(
                 "*",
                 "/pim/file/get/{id}",
-                self.handle_pimFile,
+                get_bot_image,
             ),
             web.route(
                 "*",
@@ -59,19 +58,6 @@ class PimPlugin(WebserverPlugin):
                 "data": EcoVacsHomeProducts,
             }
             return web.json_response(body)
-
-        except Exception as e:
-            logging.exception(f"{e}")
-
-    async def handle_pimFile(self, request):
-        try:
-            fileID = request.match_info.get("id", "")
-
-            return web.FileResponse(
-                os.path.join(
-                    bumper_dir, "bumper", "web", "images", "robotvac_image.jpg"
-                )
-            )
 
         except Exception as e:
             logging.exception(f"{e}")

@@ -1,14 +1,13 @@
 """Shop plugin module."""
-import logging
 from typing import Iterable
 
 from aiohttp import web
+from aiohttp.web_request import Request
+from aiohttp.web_response import Response
 from aiohttp.web_routedef import AbstractRouteDef
 
-from bumper.models import RETURN_API_SUCCESS
-from bumper.util import get_current_time_as_millis
-
-from ... import WebserverPlugin
+from ... import WebserverPlugin, get_success_response
+from . import BASE_URL
 
 
 class ShopPlugin(WebserverPlugin):
@@ -20,27 +19,18 @@ class ShopPlugin(WebserverPlugin):
         return [
             web.route(
                 "*",
-                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/shop/getCnWapShopConfig",
-                self.handle_getCnWapShopConfig,
+                f"{BASE_URL}shop/getCnWapShopConfig",
+                _handle_get_cn_wap_shop_config,
             ),
         ]
 
-    async def handle_getCnWapShopConfig(self, request):  # EcoVacs Home
-        try:
-            body = {
-                "code": RETURN_API_SUCCESS,
-                "data": {
-                    "myShopShowFlag": "N",
-                    "myShopUrl": "",
-                    "shopIndexShowFlag": "N",
-                    "shopIndexUrl": "",
-                },
-                "msg": "操作成功",
-                "success": True,
-                "time": get_current_time_as_millis(),
-            }
 
-            return web.json_response(body)
-
-        except Exception as e:
-            logging.exception(f"{e}")
+async def _handle_get_cn_wap_shop_config(_: Request) -> Response:
+    return get_success_response(
+        {
+            "myShopShowFlag": "N",
+            "myShopUrl": "",
+            "shopIndexShowFlag": "N",
+            "shopIndexUrl": "",
+        }
+    )

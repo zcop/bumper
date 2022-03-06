@@ -152,7 +152,10 @@ class MQTTHelperBot:
             assert self._client is not None
 
         try:
-            topic = f"iot/p2p/{cmdjson['cmdName']}/helperbot/bumper/helperbot/{cmdjson['toId']}/{cmdjson['toType']}/{cmdjson['toRes']}/q/{request_id}/{cmdjson['payloadType']}"
+            topic = (
+                f"iot/p2p/{cmdjson['cmdName']}/helperbot/bumper/helperbot/{cmdjson['toId']}/"
+                f"{cmdjson['toType']}/{cmdjson['toRes']}/q/{request_id}/{cmdjson['payloadType']}"
+            )
             command_dto = CommandDto(cmdjson["payloadType"])
             self._commands[request_id] = command_dto
 

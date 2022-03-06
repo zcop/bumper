@@ -5,10 +5,14 @@ from abc import abstractmethod
 from glob import glob
 from os.path import dirname, isfile, join
 from types import ModuleType
-from typing import Iterable
+from typing import Any, Iterable
 
 from aiohttp import web
+from aiohttp.web_response import Response
 from aiohttp.web_routedef import AbstractRouteDef
+
+from bumper.models import RETURN_API_SUCCESS
+from bumper.util import get_current_time_as_millis
 
 
 class WebserverPlugin:
@@ -70,3 +74,15 @@ def add_plugins(app: web.Application) -> None:
             continue
 
         _add_routes(app, obj, plugin_module_name)
+
+
+def get_success_response(data: Any) -> Response:
+    body = {
+        "code": RETURN_API_SUCCESS,
+        "data": data,
+        "msg": "操作成功",
+        "success": True,
+        "time": get_current_time_as_millis(),
+    }
+
+    return web.json_response(body)

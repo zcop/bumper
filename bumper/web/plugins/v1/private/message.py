@@ -1,13 +1,12 @@
-import logging
 from typing import Iterable
 
 from aiohttp import web
+from aiohttp.web_request import Request
+from aiohttp.web_response import Response
 from aiohttp.web_routedef import AbstractRouteDef
 
-from bumper.models import RETURN_API_SUCCESS
-from bumper.util import get_current_time_as_millis
-
-from ... import WebserverPlugin
+from ... import WebserverPlugin, get_success_response
+from . import BASE_URL
 
 
 class MessagePlugin(WebserverPlugin):
@@ -19,42 +18,20 @@ class MessagePlugin(WebserverPlugin):
         return [
             web.route(
                 "*",
-                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/message/hasUnreadMsg",
-                self.handle_hasUnreadMessage,
+                f"{BASE_URL}message/hasUnreadMsg",
+                _handle_has_unread_message,
             ),
             web.route(
                 "*",
-                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/message/getMsgList",
-                self.handle_getMsgList,
+                f"{BASE_URL}message/getMsgList",
+                _handle_get_msg_list,
             ),
         ]
 
-    async def handle_hasUnreadMessage(self, request):  # EcoVacs Home
-        try:
-            body = {
-                "code": RETURN_API_SUCCESS,
-                "data": "N",
-                "msg": "操作成功",
-                "success": True,
-                "time": get_current_time_as_millis(),
-            }
 
-            return web.json_response(body)
+async def _handle_has_unread_message(_: Request) -> Response:
+    return get_success_response("N")
 
-        except Exception as e:
-            logging.exception(f"{e}")
 
-    async def handle_getMsgList(self, request):  # EcoVacs Home
-        try:
-            body = {
-                "code": RETURN_API_SUCCESS,
-                "data": {"hasNextPage": 0, "items": []},
-                "msg": "操作成功",
-                "success": True,
-                "time": get_current_time_as_millis(),
-            }
-
-            return web.json_response(body)
-
-        except Exception as e:
-            logging.exception(f"{e}")
+async def _handle_get_msg_list(_: Request) -> Response:
+    return get_success_response({"hasNextPage": 0, "items": []})
