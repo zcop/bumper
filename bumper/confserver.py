@@ -26,6 +26,7 @@ import bumper
 from .db import bot_get, bot_remove, client_get, client_remove, db_get
 from .plugins import ConfServerApp, WebserverPlugin, WebserverSubApi
 from .util import get_logger
+from .web.plugins import add_plugins
 
 
 class _aiohttp_filter(logging.Filter):
@@ -105,16 +106,14 @@ class ConfServer:
 
         # common api paths
         api_v1 = {"prefix": "/v1/", "app": web.Application()}  # for /v1/
-        api_v2 = {"prefix": "/v2/", "app": web.Application()}  # for /v2/
         portal_api = {"prefix": "/api/", "app": web.Application()}  # for /api/
-        upload_api = {"prefix": "/upload/", "app": web.Application()}  # for /upload/
 
         apis = {
             WebserverSubApi.V1: api_v1,
-            WebserverSubApi.V2: api_v2,
             WebserverSubApi.API: portal_api,
-            WebserverSubApi.UPLOAD: upload_api,
         }
+
+        add_plugins(self._app)
 
         # Load plugins
         for module in bumper.discovered_plugins.values():

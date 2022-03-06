@@ -1,7 +1,7 @@
 from aiohttp import web
 
 from bumper import plugins
-from bumper.rest import auth_util
+from bumper.web import auth_util
 
 
 class v1_global_auth(plugins.ConfServerApp):

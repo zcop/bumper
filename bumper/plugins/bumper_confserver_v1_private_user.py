@@ -4,8 +4,8 @@ from aiohttp import web
 
 from bumper import plugins
 from bumper.models import RETURN_API_SUCCESS
-from bumper.rest import auth_util
 from bumper.util import get_current_time_as_millis
+from bumper.web import auth_util
 
 
 class v1_private_user(plugins.ConfServerApp):
