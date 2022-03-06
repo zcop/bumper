@@ -1,24 +1,27 @@
+"""Shop plugin module."""
 import logging
+from typing import Iterable
 
 from aiohttp import web
+from aiohttp.web_routedef import AbstractRouteDef
 
-from bumper import plugins
 from bumper.models import RETURN_API_SUCCESS
 from bumper.util import get_current_time_as_millis
 
+from ... import WebserverPlugin
 
-class v1_private_shop(plugins.ConfServerApp):
-    def __init__(self):
-        self.name = "v1_private_shop"
-        self.plugin_type = "sub_api"
-        self.sub_api = "api_v1"
 
-        self.routes = [
+class ShopPlugin(WebserverPlugin):
+    """Shop plugin."""
+
+    @property
+    def routes(self) -> Iterable[AbstractRouteDef]:
+        """Plugin routes."""
+        return [
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/shop/getCnWapShopConfig",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/shop/getCnWapShopConfig",
                 self.handle_getCnWapShopConfig,
-                name="v1_shop_getCnWapShopConfig",
             ),
         ]
 

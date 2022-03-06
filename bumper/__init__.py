@@ -1,8 +1,6 @@
 import asyncio
-import importlib
 import logging
 import os
-import pkgutil
 import socket
 import sys
 
@@ -55,16 +53,6 @@ mqtt_server: MQTTServer
 mqtt_helperbot: MQTTHelperBot
 conf_server: ConfServer
 xmpp_server: XMPPServer
-
-# Plugins
-sys.path.append(os.path.join(bumper_dir, "bumper", "plugins"))
-sys.path.append(os.path.join(data_dir, "plugins"))
-
-discovered_plugins = {
-    name: importlib.import_module(name)
-    for finder, name, ispkg in pkgutil.iter_modules()
-    if name.startswith("bumper_")
-}
 
 shutting_down = False
 

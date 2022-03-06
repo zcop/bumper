@@ -24,7 +24,6 @@ from aiohttp.web_response import Response, StreamResponse
 import bumper
 
 from .db import bot_get, bot_remove, client_get, client_remove, db_get
-from .plugins import ConfServerApp, WebserverPlugin, WebserverSubApi
 from .util import get_logger
 from .web.plugins import add_plugins
 
@@ -104,49 +103,7 @@ class ConfServer:
             ]
         )
 
-        # common api paths
-        api_v1 = {"prefix": "/v1/", "app": web.Application()}  # for /v1/
-
-        apis = {
-            WebserverSubApi.V1: api_v1,
-        }
-
         add_plugins(self._app)
-
-        # Load plugins
-        for module in bumper.discovered_plugins.values():
-            plugins = [
-                m[1]
-                for m in inspect.getmembers(module, inspect.isclass)
-                if m[1].__module__ == module.__name__
-            ]
-            for plugin_class in plugins:
-                if issubclass(plugin_class, WebserverPlugin):
-                    plugin = plugin_class()
-                    logging.debug(
-                        f"Adding confserver sub_api ({plugin.__class__.__name__})"
-                    )
-                    apis[plugin.sub_api]["app"].add_routes(plugin.routes)
-                elif issubclass(plugin_class, ConfServerApp):
-                    plugin = plugin_class()
-                    if plugin.plugin_type == "sub_api":  # app or sub_api
-                        convert_api = {
-                            "api_v1": WebserverSubApi.V1,
-                            "api_v2": WebserverSubApi.V2,
-                            "portal_api": WebserverSubApi.API,
-                            "upload_api": WebserverSubApi.UPLOAD,
-                        }
-                        api = convert_api.get(plugin.sub_api, None)
-                        if api and plugin.routes:
-                            logging.debug(f"Adding confserver sub_api ({plugin.name})")
-                            apis[api]["app"].add_routes(plugin.routes)
-
-                    elif plugin.plugin_type == "app":
-                        if plugin.path_prefix and plugin.app:
-                            logging.debug(f"Adding confserver plugin ({plugin.name})")
-                            self._app.add_subapp(plugin.path_prefix, plugin.app)
-        for api in apis:
-            self._app.add_subapp(apis[api]["prefix"], apis[api]["app"])
 
     async def start(self) -> None:
         """Start server."""

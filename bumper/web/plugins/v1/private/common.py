@@ -1,66 +1,63 @@
+"""Common plugin module."""
 import logging
+from typing import Iterable
 
 from aiohttp import web
+from aiohttp.web_routedef import AbstractRouteDef
 
-from bumper import plugins
 from bumper.models import RETURN_API_SUCCESS
 from bumper.util import get_current_time_as_millis
 
+from ... import WebserverPlugin
 
-class v1_private_common(plugins.ConfServerApp):
-    def __init__(self):
-        self.name = "v1_private_common"
-        self.plugin_type = "sub_api"
-        self.sub_api = "api_v1"
 
-        self.routes = [
+class CommonPlugin(WebserverPlugin):
+    """Common plugin."""
+
+    @property
+    def routes(self) -> Iterable[AbstractRouteDef]:
+        """Plugin routes."""
+        return [
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/common/checkAPPVersion",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/common/checkAPPVersion",
                 self.handle_checkAPPVersion,
                 name="v1_common_checkAppVersion",
             ),
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/common/checkVersion",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/common/checkVersion",
                 self.handle_checkVersion,
-                name="v1_common_checkVersion",
             ),
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/common/uploadDeviceInfo",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/common/uploadDeviceInfo",
                 self.handle_uploadDeviceInfo,
-                name="v1_common_uploadDeviceInfo",
             ),
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/common/getSystemReminder",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/common/getSystemReminder",
                 self.handle_getSystemReminder,
-                name="v1_common_getSystemReminder",
             ),
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/common/getConfig",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/common/getConfig",
                 self.handle_getConfig,
-                name="v1_common_getConfig",
             ),
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/common/getAreas",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/common/getAreas",
                 self.handle_getAreas,
-                name="v1_common_getAreas",
             ),
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/common/getAgreementURLBatch",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/common/getAgreementURLBatch",
                 self.handle_getAgreementURLBatch,
-                name="v1_common_getAgreementURLBatch",
             ),
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/common/getTimestamp",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/common/getTimestamp",
                 self.handle_getTimestamp,
-                name="v1_common_getTimestamp",
             ),
         ]
 

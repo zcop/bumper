@@ -18,7 +18,7 @@ from bumper.models import ERR_COMMON
 from .. import WebserverPlugin
 
 
-async def _handle_lg_log(request: Request)->Response:
+async def _handle_lg_log(request: Request) -> Response:
     # EcoVacs Home
     randomid = "".join(random.sample(string.ascii_letters, 6))
 

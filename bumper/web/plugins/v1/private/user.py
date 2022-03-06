@@ -1,89 +1,80 @@
 import logging
+from typing import Iterable
 
 from aiohttp import web
+from aiohttp.web_routedef import AbstractRouteDef
 
-from bumper import plugins
 from bumper.models import RETURN_API_SUCCESS
 from bumper.util import get_current_time_as_millis
 from bumper.web import auth_util
 
+from ... import WebserverPlugin
 
-class v1_private_user(plugins.ConfServerApp):
-    def __init__(self):
 
-        self.name = "v1_private_user"
-        self.plugin_type = "sub_api"
-        self.sub_api = "api_v1"
+class UserPlugin(WebserverPlugin):
+    """User plugin."""
 
-        self.routes = [
+    @property
+    def routes(self) -> Iterable[AbstractRouteDef]:
+        """Plugin routes."""
+        return [
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/login",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/login",
                 auth_util.login,
-                name="v1_user_login",
             ),
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/checkLogin",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/checkLogin",
                 auth_util.login,
-                name="v1_user_checkLogin",
             ),
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/getAuthCode",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/getAuthCode",
                 auth_util.get_authcode,
-                name="v1_user_getAuthCode",
             ),
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/logout",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/logout",
                 auth_util.logout,
-                name="v1_user_logout",
             ),
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/checkAgreement",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/checkAgreement",
                 self.handle_checkAgreement,
-                name="v1_user_checkAgreement",
             ),
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/checkAgreementBatch",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/checkAgreementBatch",
                 self.handle_checkAgreement,
-                name="v1_user_checkAgreementBatch",
             ),
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/getUserAccountInfo",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/getUserAccountInfo",
                 auth_util.get_user_account_info,
-                name="v1_user_getUserAccountInfo",
             ),
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/getUserMenuInfo",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/getUserMenuInfo",
                 self.handle_getUserMenuInfo,
-                name="v1_user_getUserMenuInfo",
             ),
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/changeArea",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/changeArea",
                 self.handle_changeArea,
-                name="v1_user_changeArea",
             ),
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/queryChangeArea",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/queryChangeArea",
                 self.handle_changeArea,
-                name="v1_user_queryChangeArea",
             ),
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/acceptAgreementBatch",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/acceptAgreementBatch",
                 self.handle_acceptAgreementBatch,
-                name="v1_user_acceptAgreementBatch",
             ),
             # Direct register from app:
-            # /{apiversion}/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/directRegister
+            # /{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/directRegister
             # Register by email
             # /registerByEmail
         ]

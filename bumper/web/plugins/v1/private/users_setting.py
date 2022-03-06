@@ -1,25 +1,28 @@
+"""user setting plugin module."""
+
 import logging
+from typing import Iterable
 
 from aiohttp import web
+from aiohttp.web_routedef import AbstractRouteDef
 
-from bumper import plugins
 from bumper.models import RETURN_API_SUCCESS
 from bumper.util import get_current_time_as_millis
 
+from ... import WebserverPlugin
 
-class v1_private_userSetting(plugins.ConfServerApp):
-    def __init__(self):
 
-        self.name = "v1_private_userSetting"
-        self.plugin_type = "sub_api"
-        self.sub_api = "api_v1"
+class UserSettingPlugin(WebserverPlugin):
+    """User setting plugin."""
 
-        self.routes = [
+    @property
+    def routes(self) -> Iterable[AbstractRouteDef]:
+        """Plugin routes."""
+        return [
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/userSetting/getSuggestionSetting",
+                "/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/userSetting/getSuggestionSetting",
                 self.handle_getSuggestionSetting,
-                name="v1_userSetting_getSuggestionSetting",
             ),
         ]
 
