@@ -110,19 +110,17 @@ async def start():
     global xmpp_server
     xmpp_server = XMPPServer((bumper_listen, xmpp_listen_port))
 
-    # Start MQTT Server
-    # await start otherwise we get an error connecting the helper bot
-    await asyncio.create_task(mqtt_server.start())
-
-    # Start MQTT Helperbot
-    asyncio.create_task(mqtt_helperbot.start())
-
     # Start XMPP Server
     asyncio.create_task(xmpp_server.start_async_server())
 
-    # Wait for helperbot to connect first
-    while not mqtt_helperbot.is_connected:
+    # Start MQTT Server
+    # await start otherwise we get an error connecting the helper bot
+    await mqtt_server.start()
+    while not mqtt_server.state == "started":
         await asyncio.sleep(0.1)
+
+    # Start MQTT Helperbot
+    await mqtt_helperbot.start()
 
     # Start web servers
     await web_server.start()
