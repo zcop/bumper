@@ -1,10 +1,12 @@
 import asyncio
+import ssl
 
 import pytest
-from amqtt.client import MQTTClient
+from gmqtt import Client
+from gmqtt.mqtt.constants import MQTTv311
 
 import bumper
-from bumper import MQTTServer, WebserverBinding
+from bumper import HelperBot, MQTTServer, WebserverBinding
 from tests import HOST, MQTT_PORT, WEBSERVER_PORT
 
 
@@ -16,24 +18,38 @@ async def mqtt_server():
     while not mqtt_server.state == "started":
         await asyncio.sleep(0.1)
 
-    yield
+    yield mqtt_server
 
     await mqtt_server.shutdown()
 
 
-@pytest.mark.usefixtures("mqtt_server")
 @pytest.fixture
-async def mqtt_client():
-    client = MQTTClient(
-        client_id="helperbot@bumper/test",
-        config={"check_hostname": False, "auto_reconnect": False},
-    )
+async def mqtt_client(mqtt_server: MQTTServer):
+    assert mqtt_server.state == "started"
 
-    await client.connect(f"mqtts://{HOST}:{MQTT_PORT}/", cafile=bumper.ca_cert)
+    client = Client("helperbot@bumper/test")
+    ssl_ctx = ssl.create_default_context()
+    ssl_ctx.check_hostname = False
+    ssl_ctx.verify_mode = ssl.CERT_NONE
+    await client.connect(HOST, MQTT_PORT, ssl=ssl_ctx, version=MQTTv311)
 
     yield client
 
     await client.disconnect()
+
+
+@pytest.fixture
+async def helper_bot(mqtt_server: MQTTServer):
+    assert mqtt_server.state == "started"
+
+    helper_bot = HelperBot(HOST, MQTT_PORT, 0.1)
+    bumper.mqtt_helperbot = helper_bot
+    await helper_bot.start()
+    assert helper_bot.is_connected
+
+    yield helper_bot
+
+    await helper_bot.disconnect()
 
 
 @pytest.fixture

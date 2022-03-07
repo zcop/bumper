@@ -6,7 +6,7 @@ from unittest import mock
 import pytest
 
 import bumper
-from bumper import MQTTHelperBot, WebServer, WebserverBinding, XMPPServer, db
+from bumper import HelperBot, WebServer, WebserverBinding, XMPPServer, db
 from bumper.models import ERR_TOKEN_INVALID, RETURN_API_SUCCESS
 from tests import HOST, MQTT_PORT, WEBSERVER_PORT
 
@@ -36,7 +36,7 @@ async def test_webserver_no_ssl():
     await webserver.start()
 
 
-@pytest.mark.usefixtures("mqtt_server")
+@pytest.mark.usefixtures("helper_bot")
 async def test_base(webserver_client):
     remove_existing_db()
 
@@ -46,20 +46,13 @@ async def test_base(webserver_client):
     bumper.xmpp_server = xmpp_server
     await xmpp_server.start_async_server()
 
-    # Start Helperbot
-    mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
-    bumper.mqtt_helperbot = mqtt_helperbot
-    await mqtt_helperbot.start()
-
     resp = await webserver_client.get("/")
     assert resp.status == 200
-
-    await mqtt_helperbot.disconnect()
 
     bumper.xmpp_server.disconnect()
 
 
-@pytest.mark.usefixtures("mqtt_server")
+@pytest.mark.usefixtures("helper_bot")
 async def test_restartService(webserver_client):
     remove_existing_db()
 
@@ -69,11 +62,6 @@ async def test_restartService(webserver_client):
     bumper.xmpp_server = xmpp_server
     await xmpp_server.start_async_server()
 
-    # Start Helperbot
-    mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
-    bumper.mqtt_helperbot = mqtt_helperbot
-    await mqtt_helperbot.start()
-
     resp = await webserver_client.get("/restart_Helperbot")
     assert resp.status == 200
 
@@ -82,8 +70,6 @@ async def test_restartService(webserver_client):
 
     resp = await webserver_client.get("/restart_XMPPServer")
     assert resp.status == 200
-
-    await mqtt_helperbot.disconnect()
 
     xmpp_server.disconnect()
 
@@ -718,12 +704,11 @@ async def test_appsvr_api(webserver_client):
     assert jsonresp["ret"] == "ok"
 
 
-async def test_lg_logs(webserver_client):
+async def test_lg_logs(webserver_client, helper_bot: HelperBot):
     remove_existing_db()
     db.bot_add("sn_1234", "did_1234", "ls1ok3", "res_1234", "eco-ng")
     db.bot_set_mqtt("did_1234", True)
     confserver = create_webserver()
-    bumper.mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
 
     # Test return get status
     command_getstatus_resp = {
@@ -731,7 +716,7 @@ async def test_lg_logs(webserver_client):
         "resp": "<ctl ret='ok' status='idle'/>",
         "ret": "ok",
     }
-    bumper.mqtt_helperbot.send_command = mock.MagicMock(
+    helper_bot.send_command = mock.MagicMock(
         return_value=async_return(command_getstatus_resp)
     )
 
@@ -775,10 +760,9 @@ async def test_postLookup(webserver_client):
     assert test_resp["result"] == "ok"
 
 
-async def test_devmgr(webserver_client):
+async def test_devmgr(webserver_client, helper_bot: HelperBot):
     remove_existing_db()
     confserver = create_webserver()
-    bumper.mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
 
     # Test PollSCResult
     postbody = {"td": "PollSCResult"}
@@ -808,7 +792,7 @@ async def test_devmgr(webserver_client):
         "resp": "<ctl ret='ok' status='idle'/>",
         "ret": "ok",
     }
-    bumper.mqtt_helperbot.send_command = mock.MagicMock(
+    helper_bot.send_command = mock.MagicMock(
         return_value=async_return(command_getstatus_resp)
     )
     resp = await webserver_client.post("/api/iot/devmanager.do", json=postbody)
@@ -819,7 +803,7 @@ async def test_devmgr(webserver_client):
 
     # Test return fail timeout
     command_timeout_resp = {"id": "resp_1234", "errno": "timeout", "ret": "fail"}
-    bumper.mqtt_helperbot.send_command = mock.MagicMock(
+    helper_bot.send_command = mock.MagicMock(
         return_value=async_return(command_timeout_resp)
     )
     resp = await webserver_client.post("/api/iot/devmanager.do", json=postbody)
@@ -829,10 +813,9 @@ async def test_devmgr(webserver_client):
     assert test_resp["ret"] == "fail"
 
 
-async def test_dim_devmanager(webserver_client):
+async def test_dim_devmanager(webserver_client, helper_bot: HelperBot):
     remove_existing_db()
     confserver = create_webserver()
-    bumper.mqtt_helperbot = MQTTHelperBot(HOST, MQTT_PORT)
 
     # Test PollSCResult
     postbody = {"td": "PollSCResult"}
@@ -862,7 +845,7 @@ async def test_dim_devmanager(webserver_client):
         "resp": "<ctl ret='ok' status='idle'/>",
         "ret": "ok",
     }
-    bumper.mqtt_helperbot.send_command = mock.MagicMock(
+    helper_bot.send_command = mock.MagicMock(
         return_value=async_return(command_getstatus_resp)
     )
     resp = await webserver_client.post("/api/dim/devmanager.do", json=postbody)
@@ -873,7 +856,7 @@ async def test_dim_devmanager(webserver_client):
 
     # Test return fail timeout
     command_timeout_resp = {"id": "resp_1234", "errno": "timeout", "ret": "fail"}
-    bumper.mqtt_helperbot.send_command = mock.MagicMock(
+    helper_bot.send_command = mock.MagicMock(
         return_value=async_return(command_timeout_resp)
     )
     resp = await webserver_client.post("/api/dim/devmanager.do", json=postbody)
@@ -885,7 +868,7 @@ async def test_dim_devmanager(webserver_client):
 
     # Set bot not on mqtt
     db.bot_set_mqtt("did_1234", False)
-    bumper.mqtt_helperbot.send_command = mock.MagicMock(
+    helper_bot.send_command = mock.MagicMock(
         return_value=async_return(command_getstatus_resp)
     )
     resp = await webserver_client.post("/api/dim/devmanager.do", json=postbody)

@@ -5,7 +5,8 @@ import socket
 import sys
 
 from bumper.db import revoke_expired_oauths, revoke_expired_tokens
-from bumper.mqttserver import MQTTHelperBot, MQTTServer
+from bumper.mqtt.helper_bot import HelperBot
+from bumper.mqttserver import MQTTServer
 from bumper.util import get_logger, log_to_stdout
 from bumper.web.server import WebServer, WebserverBinding
 from bumper.xmppserver import XMPPServer
@@ -50,7 +51,7 @@ token_validity_seconds = 3600  # 1 hour
 oauth_validity_days = 15
 
 mqtt_server: MQTTServer
-mqtt_helperbot: MQTTHelperBot
+mqtt_helperbot: HelperBot
 web_server: WebServer
 xmpp_server: XMPPServer
 
@@ -103,7 +104,7 @@ async def start():
     global mqtt_server
     mqtt_server = MQTTServer(bumper_listen, mqtt_listen_port)
     global mqtt_helperbot
-    mqtt_helperbot = MQTTHelperBot(bumper_listen, mqtt_listen_port)
+    mqtt_helperbot = HelperBot(bumper_listen, mqtt_listen_port)
     global web_server
     web_server = WebServer(web_server_bindings)
     global xmpp_server

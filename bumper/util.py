@@ -41,7 +41,7 @@ def get_logger(name: str, rotate: RotatingFileHandler = None) -> logging.Logger:
         )  # Ignore this logger
         get_logger("amqtt.broker", rotate)
         get_logger("amqtt.mqtt.protocol", rotate)
-        get_logger("amqtt.client", rotate)
+        get_logger("gmqtt", rotate)
 
     return logger
 
