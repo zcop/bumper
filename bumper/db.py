@@ -49,7 +49,7 @@ def user_get(userid):
     return users.get(User.userid == userid)
 
 
-def user_by_deviceid(deviceid):
+def user_by_deviceid(deviceid: str):
     users = db_get().table("users")
     User = Query()
     return users.get(User.devices.any([deviceid]))
@@ -166,7 +166,7 @@ def user_revoke_expired_tokens(userid):
                 tokens.remove(doc_ids=[i.doc_id])
 
 
-def user_revoke_token(userid, token):
+def user_revoke_token(userid: str, token: str):
     opendb = db_get()
     with opendb:
         tokens = opendb.table("tokens")
@@ -287,7 +287,7 @@ def loginByItToken(authcode):
     return {}
 
 
-def check_token(uid, token):
+def check_token(uid: str, token: str) -> bool:
     bumperlog.debug(f"Checking for token: {token}")
     tokens = db_get().table("tokens")
     tmpauth = tokens.get(

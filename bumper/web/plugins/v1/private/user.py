@@ -1,11 +1,14 @@
 """User plugin module."""
+import logging
 from typing import Iterable
 
 from aiohttp import web
+from aiohttp.web_exceptions import HTTPInternalServerError
 from aiohttp.web_request import Request
 from aiohttp.web_response import Response
 from aiohttp.web_routedef import AbstractRouteDef
 
+from bumper.db import check_token, user_by_deviceid, user_revoke_token
 from bumper.web import auth_util
 
 from ... import WebserverPlugin, get_success_response
@@ -37,7 +40,7 @@ class UserPlugin(WebserverPlugin):
             web.route(
                 "*",
                 f"{BASE_URL}user/logout",
-                auth_util.logout,
+                _logout,
             ),
             web.route(
                 "*",
@@ -52,7 +55,7 @@ class UserPlugin(WebserverPlugin):
             web.route(
                 "*",
                 f"{BASE_URL}user/getUserAccountInfo",
-                auth_util.get_user_account_info,
+                _get_user_account_info,
             ),
             web.route(
                 "*",
@@ -75,6 +78,74 @@ class UserPlugin(WebserverPlugin):
                 _handle_accept_agreement_batch,
             ),
         ]
+
+
+async def _logout(request: Request) -> Response:
+    try:
+        user_device_id = request.match_info.get("devid", None)
+        if user_device_id:
+            user = user_by_deviceid(user_device_id)
+            if user:
+                if check_token(user["userid"], request.query["accessToken"]):
+                    # Deactivate old tokens and authcodes
+                    user_revoke_token(user["userid"], request.query["accessToken"])
+
+        return get_success_response(None)
+
+    except Exception:  # pylint: disable=broad-except
+        logging.error("Unexpected exception occurred", exc_info=True)
+
+    raise HTTPInternalServerError
+
+
+async def _get_user_account_info(request: Request) -> Response:
+    try:
+        user_devid = request.match_info.get("devid", "")
+        user = user_by_deviceid(user_devid)
+        username = f"fusername_{user['userid']}"
+        return get_success_response(
+            {
+                "email": "null@null.com",
+                "hasMobile": "N",
+                "hasPassword": "Y",
+                "uid": f"fuid_{user['userid']}",
+                "userName": username,
+                "obfuscatedMobile": None,
+                "mobile": None,
+                "loginName": username,
+            }
+        )
+
+        # Example body
+        # {
+        # "code": "0000",
+        # "data": {
+        #     "email": "user@gmail.com",
+        #     "hasMobile": "N",
+        #     "hasPassword": "Y",
+        #     "headIco": "",
+        #     "loginName": "user@gmail.com",
+        #     "mobile": null,
+        #     "mobileAreaNo": null,
+        #     "nickname": "",
+        #     "obfuscatedMobile": null,
+        #     "thirdLoginInfoList": [
+        #     {
+        #         "accountType": "WeChat",
+        #         "hasBind": "N"
+        #     }
+        #     ],
+        #     "uid": "20180719212155_*****",
+        #     "userName": "EAY*****"
+        # },
+        # "msg": "操作成功",
+        # "success": true,
+        # "time": 1578203898343
+        # }
+    except Exception:  # pylint: disable=broad-except
+        logging.error("Unexpected exception occurred", exc_info=True)
+
+    raise HTTPInternalServerError
 
 
 async def _handle_check_agreement(request: Request) -> Response:

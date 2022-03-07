@@ -1,8 +1,12 @@
 """Auth util module."""
 import json
+import logging
 import uuid
 
 from aiohttp import web
+from aiohttp.web_exceptions import HTTPInternalServerError
+from aiohttp.web_request import Request
+from aiohttp.web_response import Response
 
 from bumper import db, use_auth
 from bumper.db import (
@@ -16,7 +20,6 @@ from bumper.db import (
     user_get,
     user_get_token,
     user_revoke_expired_tokens,
-    user_revoke_token,
 )
 from bumper.models import (
     API_ERRORS,
@@ -27,6 +30,7 @@ from bumper.models import (
     EcoVacsHome_Login,
 )
 from bumper.util import get_current_time_as_millis, get_logger
+from bumper.web.plugins import get_success_response
 
 _logger = get_logger("confserver")
 
@@ -63,7 +67,7 @@ async def login(request):
             ):  # Performing basic "auth" using devid, super insecure
                 user = user_by_deviceid(user_devid)
                 if "checkLogin" in request.path:
-                    check_token(
+                    _check_token(
                         apptype, countrycode, user, request.query["accessToken"]
                     )
                 else:
@@ -119,51 +123,33 @@ async def login(request):
         _logger.exception(f"{e}")
 
 
-async def get_authcode(request):
+async def get_authcode(request: Request) -> Response:
     try:
-        apptype = request.match_info.get("apptype", "")
-        user_devid = request.match_info.get("devid", "")  # Ecovacs
-        if user_devid == "":
+        user_devid = request.match_info.get("devid", None)  # Ecovacs
+        if not user_devid:
             user_devid = request.query["deviceId"]  # Ecovacs Home
 
-        if not user_devid == "":
+        if user_devid:
             user = user_by_deviceid(user_devid)
-            token = ""
             if user:
                 if "accessToken" in request.query:
                     token = user_get_token(user["userid"], request.query["accessToken"])
-                if token:
-                    authcode = ""
-                    if not "authcode" in token:
-                        authcode = generate_authcode(
-                            user,
-                            request.match_info.get("country", "us"),
-                            request.query["accessToken"],
-                        )
-                    else:
-                        authcode = token["authcode"]
-                    if "global" in apptype:
-                        body = {
-                            "code": RETURN_API_SUCCESS,
-                            "data": {
-                                "authCode": authcode,
-                                "ecovacsUid": request.query["uid"],
-                            },
-                            "msg": "操作成功",
-                            "success": True,
-                            "time": get_current_time_as_millis(),
+                    if token:
+                        if "authcode" in token:
+                            authcode = token["authcode"]
+                        else:
+                            authcode = generate_authcode(
+                                user,
+                                request.match_info.get("country", "us"),
+                                request.query["accessToken"],
+                            )
+
+                        data = {
+                            "authCode": authcode,
+                            "ecovacsUid": request.query["uid"],
                         }
-                    else:
-                        body = {
-                            "code": RETURN_API_SUCCESS,
-                            "data": {
-                                "authCode": authcode,
-                                "ecovacsUid": request.query["uid"],
-                            },
-                            "msg": "操作成功",
-                            "time": get_current_time_as_millis(),
-                        }
-                    return web.json_response(body)
+
+                        return get_success_response(data)
 
         body = {
             "code": ERR_TOKEN_INVALID,
@@ -174,11 +160,13 @@ async def get_authcode(request):
 
         return web.json_response(body)
 
-    except Exception as e:
-        _logger.exception(f"{e}")
+    except Exception:  # pylint: disable=broad-except
+        logging.error("Unexpected exception occurred", exc_info=True)
+
+    raise HTTPInternalServerError
 
 
-def check_token(apptype, countrycode, user, token):
+def _check_token(apptype, countrycode, user, token):
     try:
         if db.check_token(user["userid"], token):
 
@@ -272,7 +260,7 @@ def _auth_any(devid, apptype, country, request):
                 _logger.error(f"No DID for bot: {bot}")
 
         if "checkLogin" in request.path:  # If request was to check a token do so
-            checkToken = check_token(
+            checkToken = _check_token(
                 apptype, countrycode, tmpuser, request.query["accessToken"]
             )
             isGood = json.loads(checkToken.text)
@@ -297,98 +285,6 @@ def _auth_any(devid, apptype, country, request):
         }
 
         return body
-
-    except Exception as e:
-        _logger.exception(f"{e}")
-
-
-def get_user_account_info(request):
-    try:
-        user_devid = request.match_info.get("devid", "")
-        countrycode = request.match_info.get("country", "us")
-        apptype = request.match_info.get("apptype", "")
-        user = user_by_deviceid(user_devid)
-
-        if "global_" in apptype:  # EcoVacs Home
-            login_details = EcoVacsHome_Login()
-            login_details.ucUid = "fuid_{}".format(user["userid"])
-            login_details.loginName = "fusername_{}".format(user["userid"])
-            login_details.mobile = None
-        else:
-            login_details = EcoVacs_Login()
-
-        login_details.uid = "fuid_{}".format(user["userid"])
-        login_details.username = "fusername_{}".format(user["userid"])
-        login_details.country = countrycode
-        login_details.email = "null@null.com"
-
-        body = {
-            "code": RETURN_API_SUCCESS,
-            "data": {
-                "email": login_details.email,
-                "hasMobile": "N",
-                "hasPassword": "Y",
-                "uid": login_details.uid,
-                "userName": login_details.username,
-                "obfuscatedMobile": None,
-                "mobile": None,
-                "loginName": login_details.loginName,
-            },
-            "msg": "操作成功",
-            "time": get_current_time_as_millis(),
-        }
-
-        # Example body
-        # {
-        # "code": "0000",
-        # "data": {
-        #     "email": "user@gmail.com",
-        #     "hasMobile": "N",
-        #     "hasPassword": "Y",
-        #     "headIco": "",
-        #     "loginName": "user@gmail.com",
-        #     "mobile": null,
-        #     "mobileAreaNo": null,
-        #     "nickname": "",
-        #     "obfuscatedMobile": null,
-        #     "thirdLoginInfoList": [
-        #     {
-        #         "accountType": "WeChat",
-        #         "hasBind": "N"
-        #     }
-        #     ],
-        #     "uid": "20180719212155_*****",
-        #     "userName": "EAY*****"
-        # },
-        # "msg": "操作成功",
-        # "success": true,
-        # "time": 1578203898343
-        # }
-
-        return web.json_response(body)
-
-    except Exception as e:
-        _logger.exception(f"{e}")
-
-
-async def logout(request):
-    try:
-        user_devid = request.match_info.get("devid", "")
-        if not user_devid == "":
-            user = user_by_deviceid(user_devid)
-            if user:
-                if db.check_token(user["userid"], request.query["accessToken"]):
-                    # Deactivate old tokens and authcodes
-                    user_revoke_token(user["userid"], request.query["accessToken"])
-
-        body = {
-            "code": RETURN_API_SUCCESS,
-            "data": None,
-            "msg": "操作成功",
-            "time": get_current_time_as_millis(),
-        }
-
-        return web.json_response(body)
 
     except Exception as e:
         _logger.exception(f"{e}")
