@@ -53,13 +53,17 @@ class HelperBot:
             client: Client, topic: str, payload: bytes, qos: int, properties: dict
         ) -> None:
             try:
-                _LOGGER.debug("Got message: topic=%s; payload=%s;", topic, payload.decode())
+                _LOGGER.debug(
+                    "Got message: topic=%s; payload=%s;", topic, payload.decode()
+                )
                 topic_split = topic.split("/")
                 data_decoded = str(payload.decode())
                 if topic_split[10] in self._commands:
                     self._commands[topic_split[10]].add_response(data_decoded)
             except Exception:
-                _LOGGER.error("An exception occured during handling message.", exc_info=True)
+                _LOGGER.error(
+                    "An exception occured during handling message.", exc_info=True
+                )
 
         self._client.on_message = _on_message
 
