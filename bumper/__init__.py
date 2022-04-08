@@ -125,6 +125,7 @@ async def start():
     # Start web servers
     await web_server.start()
 
+    bumperlog.info("Starting Bumper successful")
     # Start maintenance
     while not shutting_down:
         asyncio.create_task(maintenance())
@@ -140,15 +141,12 @@ async def shutdown():
     try:
         bumperlog.info("Shutting down")
 
+        await mqtt_helperbot.disconnect()
         await web_server.shutdown()
+        while mqtt_server.state == "starting":
+            await asyncio.sleep(0.1)
         if mqtt_server.state == "started":
             await mqtt_server.shutdown()
-        elif mqtt_server.state == "starting":
-            while mqtt_server.state == "starting":
-                await asyncio.sleep(0.1)
-            if mqtt_server.state == "started":
-                await mqtt_server.shutdown()
-                await mqtt_helperbot.disconnect()
         if xmpp_server.server:
             if xmpp_server.server._serving:
                 xmpp_server.server.close()
