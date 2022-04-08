@@ -58,7 +58,7 @@ class WebServer:
 
     _EXCLUDE_FROM_LOGGING = ["base", "remove-bot", "remove-client", "restart-service"]
 
-    def __init__(self, bindings: Union[list[WebserverBinding], WebserverBinding]):
+    def __init__(self, bindings: list[WebserverBinding] | WebserverBinding):
         self._runners: list[web.AppRunner] = []
 
         if isinstance(bindings, WebserverBinding):

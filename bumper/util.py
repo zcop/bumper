@@ -46,7 +46,7 @@ def get_logger(name: str, rotate: RotatingFileHandler = None) -> logging.Logger:
     return logger
 
 
-def convert_to_millis(seconds: Union[int, float]) -> int:
+def convert_to_millis(seconds: int | float) -> int:
     """Convert seconds to milliseconds."""
     return int(round(seconds * 1000))
 

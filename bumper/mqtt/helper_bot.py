@@ -19,9 +19,9 @@ class CommandDto:
     def __init__(self, payload_type: str) -> None:
         self._payload_type = payload_type
         self._event = asyncio.Event()
-        self._response: Union[str, bytes]
+        self._response: str | bytes
 
-    async def wait_for_response(self) -> Union[str, dict[str, Any]]:
+    async def wait_for_response(self) -> str | dict[str, Any]:
         """Wait for the response to be received."""
         await self._event.wait()
         if self._payload_type == "j":
@@ -29,7 +29,7 @@ class CommandDto:
 
         return str(self._response)
 
-    def add_response(self, response: Union[str, bytes]) -> None:
+    def add_response(self, response: str | bytes) -> None:
         """Add received response."""
         self._response = response
         self._event.set()
