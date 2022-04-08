@@ -1,6 +1,6 @@
 ARG ARCH=amd64
 
-FROM $ARCH/python:3.9-alpine
+FROM $ARCH/python:3.10-alpine
 
 EXPOSE 443
 EXPOSE 5223
@@ -10,7 +10,7 @@ EXPOSE 8883
 COPY requirements.txt /requirements.txt
 
 # install required python packages
-RUN pip3 install -r requirements.txt
+RUN apk add git && pip3 install -r requirements.txt
 
 WORKDIR /bumper
 
