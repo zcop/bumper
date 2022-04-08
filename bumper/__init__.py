@@ -6,7 +6,7 @@ import sys
 
 from bumper.db import revoke_expired_oauths, revoke_expired_tokens
 from bumper.mqtt.helper_bot import HelperBot
-from bumper.mqttserver import MQTTServer
+from bumper.mqtt.server import MQTTServer
 from bumper.util import get_logger, log_to_stdout
 from bumper.web.server import WebServer, WebserverBinding
 from bumper.xmppserver import XMPPServer

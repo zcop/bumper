@@ -1,4 +1,4 @@
-"""Mqtt module."""
+"""Server module."""
 
 import os
 from typing import Any
@@ -44,7 +44,7 @@ class MQTTServer:
             # The below adds a plugin to the amqtt.broker.plugins without having to futz with setup.py
             distribution = pkg_resources.Distribution("amqtt.broker.plugins")
             bumper_plugin = pkg_resources.EntryPoint.parse(
-                "bumper = bumper.mqttserver:BumperMQTTServerPlugin", dist=distribution
+                "bumper = bumper.mqtt.server:BumperMQTTServerPlugin", dist=distribution
             )
             distribution._ep_map = {"amqtt.broker.plugins": {"bumper": bumper_plugin}}  # type: ignore[attr-defined]
             pkg_resources.working_set.add(distribution)
