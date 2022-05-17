@@ -27,3 +27,4 @@ certs/*
 !certs/README.md
 
 venv/
+.idea/
