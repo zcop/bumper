@@ -12,7 +12,13 @@ from bumper.util import convert_to_millis
 
 class VacBotDevice:
     def __init__(
-        self, did="", vac_bot_device_class="", resource="", name="", nick="", company=""
+        self,
+        did: str = "",
+        vac_bot_device_class: str = "",
+        resource: str = "",
+        name: str = "",
+        nick: str = "",
+        company: str = "",
     ):
         self.vac_bot_device_class = vac_bot_device_class
         self.company = company
@@ -23,7 +29,7 @@ class VacBotDevice:
         self.mqtt_connection = False
         self.xmpp_connection = False
 
-    def asdict(self):
+    def asdict(self) -> dict[str, str | bool]:
         return {
             "class": self.vac_bot_device_class,
             "company": self.company,
@@ -37,12 +43,12 @@ class VacBotDevice:
 
 
 class BumperUser:
-    def __init__(self, userid=""):
+    def __init__(self, userid: str = ""):
         self.userid = userid
-        self.devices = []
-        self.bots = []
+        self.devices: list[str] = []
+        self.bots: list[str] = []
 
-    def asdict(self):
+    def asdict(self) -> dict[str, Any]:
         return {"userid": self.userid, "devices": self.devices, "bots": self.bots}
 
 
@@ -55,14 +61,14 @@ class GlobalVacBotDevice(VacBotDevice):  # EcoVacs Home
 
 
 class VacBotClient:
-    def __init__(self, userid="", realm="", token=""):
+    def __init__(self, userid: str = "", realm: str = "", token: str = ""):
         self.userid = userid
         self.realm = realm
         self.resource = token
         self.mqtt_connection = False
         self.xmpp_connection = False
 
-    def asdict(self):
+    def asdict(self) -> dict[str, Any]:
         return {
             "userid": self.userid,
             "realm": self.realm,
@@ -79,10 +85,8 @@ class EcoVacs_Login:
     uid = ""
     username = ""
 
-    def toJSON(self):
-        return json.dumps(
-            self, default=lambda o: o.__dict__, sort_keys=False
-        )  # , indent=4)
+    def toJSON(self) -> str:
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=False)
 
 
 class EcoVacsHome_Login(EcoVacs_Login):
@@ -97,11 +101,11 @@ class OAuth:
     refresh_token = ""
     userId = ""
 
-    def __init__(self, **entries):
+    def __init__(self, **entries: str):
         self.__dict__.update(entries)
 
     @classmethod
-    def create_new(cls, userId: str):
+    def create_new(cls, userId: str) -> "OAuth":
         oauth = OAuth()
         oauth.userId = userId
         oauth.access_token = uuid.uuid4().hex
@@ -111,7 +115,7 @@ class OAuth:
         oauth.refresh_token = uuid.uuid4().hex
         return oauth
 
-    def toDB(self):
+    def toDB(self) -> dict:
         return self.__dict__
 
     def toResponse(self) -> dict:
@@ -122,7 +126,7 @@ class OAuth:
         return data
 
 
-def include_EcoVacsHomeProducts_info(bot) -> dict[str, Any]:
+def include_EcoVacsHomeProducts_info(bot: dict[str, Any]) -> dict[str, Any]:
     result = copy.deepcopy(bot)
 
     for botprod in EcoVacsHomeProducts:
@@ -160,12 +164,13 @@ def include_EcoVacsHomeProducts_info(bot) -> dict[str, Any]:
                 if did == bot["did"] and session.transitions.state == "connected":
                     result["status"] = 1
 
-            return result
+            break
+    return result
 
 
 # EcoVacs Home Product IOT Map - 2021-04-15
 # https://portal-ww.ecouser.net/api/pim/product/getProductIotMap
-EcoVacsHomeProducts = [
+EcoVacsHomeProducts: list[dict[str, Any]] = [
     {
         "classid": "4f0c4e",
         "product": {

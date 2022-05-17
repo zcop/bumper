@@ -13,7 +13,7 @@ __loggers: MutableMapping[str, logging.Logger] = {}
 log_to_stdout = os.environ.get("LOG_TO_STDOUT")
 
 
-def get_logger(name: str, rotate: RotatingFileHandler = None) -> logging.Logger:
+def get_logger(name: str, rotate: RotatingFileHandler | None = None) -> logging.Logger:
     found_logger = __loggers.get(name)
     if found_logger:
         return found_logger
