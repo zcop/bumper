@@ -1,3 +1,4 @@
+"""Message plugin module."""
 from typing import Iterable
 
 from aiohttp import web

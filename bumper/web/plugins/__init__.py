@@ -31,6 +31,7 @@ def _add_routes(
     if not module.__name__.startswith(plugin_module_name):
         return
 
+    assert module.__file__ is not None
     if module.__file__.endswith("__init__.py"):
         sub_app = web.Application()
     else:
@@ -53,6 +54,7 @@ def _add_routes(
 
 
 def _import_plugins(module: ModuleType) -> None:
+    assert module.__file__ is not None
     for file in glob(join(dirname(module.__file__), "**/*.py"), recursive=True):
         if not isfile(file) or file == module.__file__:
             continue
@@ -77,6 +79,7 @@ def add_plugins(app: web.Application) -> None:
 
 
 def get_success_response(data: Any) -> Response:
+    """Get success response with provided data."""
     body = {
         "code": RETURN_API_SUCCESS,
         "data": data,

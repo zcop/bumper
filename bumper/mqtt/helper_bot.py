@@ -2,7 +2,7 @@
 import asyncio
 import json
 import ssl
-from typing import Any, MutableMapping, Union
+from typing import Any, MutableMapping
 
 from cachetools import TTLCache
 from gmqtt import Client, Subscription
@@ -60,7 +60,7 @@ class HelperBot:
                 data_decoded = str(payload.decode())
                 if topic_split[10] in self._commands:
                     self._commands[topic_split[10]].add_response(data_decoded)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 _LOGGER.error(
                     "An exception occurred during handling message.", exc_info=True
                 )

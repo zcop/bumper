@@ -29,14 +29,15 @@ class CampaignPlugin(WebserverPlugin):
 
 
 async def _handle_home_page_alert(_: Request) -> Response:
-    nextAlert = convert_to_millis((datetime.now() + timedelta(hours=12)).timestamp())
     return get_success_response(
         {
             "clickSchemeUrl": None,
             "clickWebUrl": None,
             "hasCampaign": "N",
             "imageUrl": None,
-            "nextAlertTime": nextAlert,
+            "nextAlertTime": convert_to_millis(
+                (datetime.now() + timedelta(hours=12)).timestamp()
+            ),
             "serverTime": get_current_time_as_millis(),
         }
     )

@@ -4,6 +4,9 @@ import logging
 from typing import Iterable
 
 from aiohttp import web
+from aiohttp.web_exceptions import HTTPInternalServerError
+from aiohttp.web_request import Request
+from aiohttp.web_response import Response
 from aiohttp.web_routedef import AbstractRouteDef
 
 from bumper.models import RETURN_API_SUCCESS, EcoVacsHomeProducts
@@ -22,7 +25,7 @@ class PimPlugin(WebserverPlugin):
             web.route(
                 "*",
                 "/pim/product/getProductIotMap",
-                self.handle_getProductIotMap,
+                _handle_get_product_iot_map,
             ),
             web.route(
                 "*",
@@ -32,83 +35,93 @@ class PimPlugin(WebserverPlugin):
             web.route(
                 "*",
                 "/pim/product/getConfignetAll",
-                self.handle_getConfignetAll,
+                _handle_get_confignet_all,
             ),
             web.route(
                 "*",
                 "/pim/product/getConfigGroups",
-                self.handle_getConfigGroups,
+                _handle_get_config_groups,
             ),
             web.route(
                 "*",
                 "/pim/dictionary/getErrDetail",
-                self.handle_getErrDetail,
+                _handle_get_err_detail,
             ),
             web.route(
                 "*",
                 "/pim/product/software/config/batch",
-                self.handle_product_config_batch,
+                _handle_product_config_batch,
             ),
         ]
 
-    async def handle_getProductIotMap(self, request):
-        try:
-            body = {
-                "code": RETURN_API_SUCCESS,
-                "data": EcoVacsHomeProducts,
-            }
-            return web.json_response(body)
 
-        except Exception as e:
-            logging.exception(f"{e}")
+async def _handle_get_product_iot_map(_: Request) -> Response:
+    """Get product iot map."""
+    try:
+        body = {
+            "code": RETURN_API_SUCCESS,
+            "data": EcoVacsHomeProducts,
+        }
+        return web.json_response(body)
+    except Exception:  # pylint: disable=broad-except
+        logging.error("An exception occurred during handling request.", exc_info=True)
+    raise HTTPInternalServerError
 
-    async def handle_getConfignetAll(self, request):
-        try:
-            body = confignetAllResponse
-            return web.json_response(body)
 
-        except Exception as e:
-            logging.exception(f"{e}")
+async def _handle_get_confignet_all(_: Request) -> Response:
+    """Get config net all."""
+    try:
+        body = confignetAllResponse
+        return web.json_response(body)
+    except Exception:  # pylint: disable=broad-except
+        logging.error("An exception occurred during handling request.", exc_info=True)
+    raise HTTPInternalServerError
 
-    async def handle_getConfigGroups(self, request):
-        try:
-            body = configGroupsResponse
-            return web.json_response(body)
 
-        except Exception as e:
-            logging.exception(f"{e}")
+async def _handle_get_config_groups(_: Request) -> Response:
+    """Get config groups."""
+    try:
+        body = configGroupsResponse
+        return web.json_response(body)
+    except Exception:  # pylint: disable=broad-except
+        logging.error("An exception occurred during handling request.", exc_info=True)
+    raise HTTPInternalServerError
 
-    async def handle_getErrDetail(self, request):
-        try:
-            body = {
-                "code": -1,
-                "data": [],
-                "msg": "This errcode's detail is not exists",
-            }
-            return web.json_response(body)
 
-        except Exception as e:
-            logging.exception(f"{e}")
+async def _handle_get_err_detail(_: Request) -> Response:
+    """Get error details."""
+    try:
+        body = {
+            "code": -1,
+            "data": [],
+            "msg": "This errcode's detail is not exists",
+        }
+        return web.json_response(body)
+    except Exception:  # pylint: disable=broad-except
+        logging.error("An exception occurred during handling request.", exc_info=True)
+    raise HTTPInternalServerError
 
-    async def handle_product_config_batch(self, request):
-        try:
-            json_body = json.loads(await request.text())
-            data = []
-            for pid in json_body["pids"]:
-                for productConfig in productConfigBatch:
-                    if pid == productConfig["pid"]:
-                        data.append(productConfig)
-                        continue
 
-                # not found in productConfigBatch
-                # some devices don't have any product configuration
-                data.append({"cfg": {}, "pid": pid})
+async def _handle_product_config_batch(request: Request) -> Response:
+    """Handle product config batch."""
+    try:
+        json_body = json.loads(await request.text())
+        data = []
+        for pid in json_body["pids"]:
+            for product_config in productConfigBatch:
+                if pid == product_config["pid"]:
+                    data.append(product_config)
+                    continue
 
-            body = {"code": 200, "data": data, "message": "success"}
-            return web.json_response(body)
+            # not found in productConfigBatch
+            # some devices don't have any product configuration
+            data.append({"cfg": {}, "pid": pid})
 
-        except Exception as e:
-            logging.exception(f"{e}")
+        body = {"code": 200, "data": data, "message": "success"}
+        return web.json_response(body)
+    except Exception:  # pylint: disable=broad-except
+        logging.error("An exception occurred during handling request.", exc_info=True)
+    raise HTTPInternalServerError
 
 
 confignetAllResponse = {

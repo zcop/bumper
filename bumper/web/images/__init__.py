@@ -1,3 +1,4 @@
+"""Web image module."""
 import logging
 import os
 

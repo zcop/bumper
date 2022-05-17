@@ -29,23 +29,23 @@ async def _handle_lg_log(request: Request) -> Response:
 
         botdetails = bot_get(did)
         if botdetails:
-            if not "cmdName" in json_body:
+            if "cmdName" not in json_body:
                 if "td" in json_body:
                     json_body["cmdName"] = json_body["td"]
 
-            if not "toId" in json_body:
+            if "toId" not in json_body:
                 json_body["toId"] = did
 
-            if not "toType" in json_body:
+            if "toType" not in json_body:
                 json_body["toType"] = botdetails["class"]
 
-            if not "toRes" in json_body:
+            if "toRes" not in json_body:
                 json_body["toRes"] = botdetails["resource"]
 
-            if not "payloadType" in json_body:
+            if "payloadType" not in json_body:
                 json_body["payloadType"] = "x"
 
-            if not "payload" in json_body:
+            if "payload" not in json_body:
                 # json_body["payload"] = ""
                 if json_body["td"] == "GetCleanLogs":
                     json_body["td"] = "q"
@@ -56,17 +56,17 @@ async def _handle_lg_log(request: Request) -> Response:
             if bot["company"] == "eco-ng":
                 retcmd = await bumper.mqtt_helperbot.send_command(json_body, randomid)
                 body = retcmd
-                logging.debug(f"Send Bot - {json_body}")
-                logging.debug(f"Bot Response - {body}")
+                logging.debug("Send Bot - %s", json_body)
+                logging.debug("Bot Response - %s", body)
                 logs = []
                 logsroot = ET.fromstring(retcmd["resp"])
                 if logsroot.attrib["ret"] == "ok":
-                    for l in logsroot:
+                    for log_line in logsroot:
                         cleanlog = {
-                            "ts": l.attrib["s"],
-                            "area": l.attrib["a"],
-                            "last": l.attrib["l"],
-                            "cleanType": l.attrib["t"],
+                            "ts": log_line.attrib["s"],
+                            "area": log_line.attrib["a"],
+                            "last": log_line.attrib["l"],
+                            "cleanType": log_line.attrib["t"],
                             # imageUrl allows for providing images of cleanings, something to look into later
                             # "imageUrl": "https://localhost:8007",
                         }
@@ -78,15 +78,13 @@ async def _handle_lg_log(request: Request) -> Response:
                 else:
                     body = {"ret": "ok", "logs": []}
 
-                logging.debug(f"lg logs return: {json.dumps(body)}")
+                logging.debug("lg logs return: %s", json.dumps(body))
                 return web.json_response(body)
-            else:
-                # No response, send error back
-                logging.error(
-                    "No bots with DID: {} connected to MQTT".format(json_body["toId"])
-                )
-    except Exception as e:
-        logging.exception(f"{e}")
+
+            # No response, send error back
+            logging.error("No bots with DID: %s connected to MQTT", json_body["toId"])
+    except Exception:  # pylint: disable=broad-except
+        logging.error("An unknown exception occurred", exc_info=True)
 
     body = {"id": randomid, "errno": ERR_COMMON, "ret": "fail"}
     return web.json_response(body)

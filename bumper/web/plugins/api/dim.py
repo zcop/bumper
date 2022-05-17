@@ -33,14 +33,12 @@ async def _handle_dim_devmanager(request: Request) -> Response:
             if bot["company"] == "eco-ng" and bot["mqtt_connection"]:
                 retcmd = await bumper.mqtt_helperbot.send_command(json_body, randomid)
                 body = retcmd
-                logging.debug(f"Send Bot - {json_body}")
-                logging.debug(f"Bot Response - {body}")
+                logging.debug("Send Bot - %s", json_body)
+                logging.debug("Bot Response - %s", body)
                 return web.json_response(body)
 
             # No response, send error back
-            logging.error(
-                "No bots with DID: {} connected to MQTT".format(json_body["toId"])
-            )
+            logging.error("No bots with DID: %s connected to MQTT", json_body["toId"])
             body = {"id": randomid, "errno": ERR_COMMON, "ret": "fail"}
             return web.json_response(body)
 

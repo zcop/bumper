@@ -31,35 +31,32 @@ async def _handle_devmanager_bot_command(request: Request) -> Response:
             if bot["company"] == "eco-ng":
                 retcmd = await bumper.mqtt_helperbot.send_command(json_body, randomid)
                 body = retcmd
-                logging.debug(f"Send Bot - {json_body}")
-                logging.debug(f"Bot Response - {body}")
-                return web.json_response(body)
-            else:
-                # No response, send error back
-                logging.error(
-                    "No bots with DID: {} connected to MQTT".format(json_body["toId"])
-                )
-                body = {
-                    "id": randomid,
-                    "errno": 500,
-                    "ret": "fail",
-                    "debug": "wait for response timed out",
-                }
+                logging.debug("Send Bot - %s", json_body)
+                logging.debug("Bot Response - %s", body)
                 return web.json_response(body)
 
-        else:
-            if "td" in json_body:  # Seen when doing initial wifi config
-                if json_body["td"] == "PollSCResult":
-                    body = {"ret": "ok"}
-                    return web.json_response(body)
+            # No response, send error back
+            logging.error("No bots with DID: %s connected to MQTT", json_body["toId"])
+            body = {
+                "id": randomid,
+                "errno": 500,
+                "ret": "fail",
+                "debug": "wait for response timed out",
+            }
+            return web.json_response(body)
 
-                if json_body["td"] == "HasUnreadMsg":  # EcoVacs Home
-                    body = {"ret": "ok", "unRead": False}
-                    return web.json_response(body)
+        if "td" in json_body:  # Seen when doing initial wifi config
+            if json_body["td"] == "PollSCResult":
+                body = {"ret": "ok"}
+                return web.json_response(body)
 
-                if json_body["td"] == "PreWifiConfig":  # EcoVacs Home
-                    body = {"ret": "ok"}
-                    return web.json_response(body)
+            if json_body["td"] == "HasUnreadMsg":  # EcoVacs Home
+                body = {"ret": "ok", "unRead": False}
+                return web.json_response(body)
+
+            if json_body["td"] == "PreWifiConfig":  # EcoVacs Home
+                body = {"ret": "ok"}
+                return web.json_response(body)
     except Exception:  # pylint: disable=broad-except
         logging.error("Unexpected exception occurred", exc_info=True)
 

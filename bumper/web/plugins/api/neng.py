@@ -16,6 +16,7 @@ async def _handle_neng_has_unread_message(_: Request) -> Response:
 
 
 async def handle_neng_get_share_msgs(_: Request) -> Response:
+    """Return shared messages."""
     # EcoVacs Home
     body = {"code": 0, "data": {"hasNext": False, "msgs": []}}
 
@@ -46,6 +47,7 @@ async def handle_neng_get_share_msgs(_: Request) -> Response:
 
 
 async def handle_neng_get_list(_: Request) -> Response:
+    """Get messages."""
     # EcoVacs Home
     body = {"code": 0, "data": {"hasNext": False, "msgs": []}}
 
