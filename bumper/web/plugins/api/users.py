@@ -81,7 +81,7 @@ async def _handle_usersapi(request: Request) -> Response:
                         }
                 else:  # EcoVacs Home LoginByITToken
                     login_token = loginByItToken(postbody["token"])
-                    if not login_token:
+                    if login_token:
                         body = {
                             "resource": postbody["resource"],
                             "result": "ok",
