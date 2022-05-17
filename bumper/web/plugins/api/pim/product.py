@@ -10,8 +10,10 @@ from aiohttp.web_request import Request
 from aiohttp.web_response import Response
 from aiohttp.web_routedef import AbstractRouteDef
 
-from bumper.models import RETURN_API_SUCCESS, EcoVacsHomeProducts
+from bumper.models import RETURN_API_SUCCESS
 from bumper.web.plugins import WebserverPlugin
+
+from . import get_product_iot_map
 
 
 class ProductPlugin(WebserverPlugin):
@@ -49,7 +51,7 @@ async def _handle_get_product_iot_map(_: Request) -> Response:
     try:
         body = {
             "code": RETURN_API_SUCCESS,
-            "data": EcoVacsHomeProducts,
+            "data": get_product_iot_map(),
         }
         return web.json_response(body)
     except Exception:  # pylint: disable=broad-except
