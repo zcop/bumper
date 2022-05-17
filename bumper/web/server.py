@@ -243,20 +243,10 @@ class WebServer:
         asyncio.create_task(bumper.mqtt_helperbot.start())
 
     async def _restart_mqtt_server(self) -> None:
-        loop = asyncio.get_event_loop()
-
         if bumper.mqtt_server.state not in ["stopped", "not_started"]:
-            # close session writers - this was required so bots would reconnect properly after restarting
-            for sess in list(bumper.mqtt_server.broker._sessions):
-                sessobj = bumper.mqtt_server.broker._sessions[sess][1]
-                if sessobj.session.transitions.state == "connected":
-                    await sessobj.writer.close()
+            await bumper.mqtt_server.shutdown()
 
-            loop.call_later(
-                0.1, lambda: asyncio.create_task(bumper.mqtt_server.shutdown())
-            )
-
-        loop.call_later(1.5, lambda: asyncio.create_task(bumper.mqtt_server.start()))
+        asyncio.create_task(bumper.mqtt_server.start())
 
     async def _handle_restart_service(self, request: Request) -> Response:
         try:

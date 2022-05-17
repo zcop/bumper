@@ -105,6 +105,12 @@ class MQTTServer:
 
     async def shutdown(self) -> None:
         """Shutdown server."""
+        # stop session handler manually otherwise connection will not be closed correctly
+        for (
+            _,
+            handler,
+        ) in self._broker._sessions.values():  # pylint: disable=protected-access
+            await handler.stop()
         await self._broker.shutdown()
 
 

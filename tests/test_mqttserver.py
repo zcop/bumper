@@ -354,13 +354,14 @@ async def test_nofileauth_mqttserver():
 
         mqtt_server = MQTTServer(HOST, MQTT_PORT, password_file="tests/passwd-notfound")
         await mqtt_server.start()
-        await mqtt_server.shutdown()
-
-    l.check_present(
-        (
-            "amqtt.broker.plugins.bumper",
-            "WARNING",
-            "Password file tests/passwd-notfound not found",
-        ),
-        order_matters=False,
-    )
+        try:
+            l.check_present(
+                (
+                    "amqtt.broker.plugins.bumper",
+                    "WARNING",
+                    "Password file tests/passwd-notfound not found",
+                ),
+                order_matters=False,
+            )
+        finally:
+            await mqtt_server.shutdown()

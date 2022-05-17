@@ -140,6 +140,8 @@ async def maintenance():
 async def shutdown():
     try:
         bumperlog.info("Shutting down")
+        global shutting_down
+        shutting_down = True
 
         await mqtt_helperbot.disconnect()
         await web_server.shutdown()
@@ -151,17 +153,10 @@ async def shutdown():
             if xmpp_server.server._serving:
                 xmpp_server.server.close()
             await xmpp_server.server.wait_closed()
-        global shutting_down
-        shutting_down = True
 
+        bumperlog.info("Shutdown complete")
     except asyncio.CancelledError:
         bumperlog.info("Coroutine canceled")
-
-    except Exception as e:
-        bumperlog.info(f"Exception: {e}")
-
-    finally:
-        bumperlog.info("Shutdown complete")
 
 
 def main(argv=None):
