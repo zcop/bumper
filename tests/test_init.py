@@ -28,7 +28,7 @@ async def test_start_stop(debug: bool):
         l.check_present(("bumper", "INFO", "Starting Bumper"))
         while True:
             try:
-                l.check_present(("bumper", "INFO", "Starting Bumper successful"))
+                l.check_present(("bumper", "INFO", "Bumper started successfully"))
                 break
             except AssertionError:
                 pass

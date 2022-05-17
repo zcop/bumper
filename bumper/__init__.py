@@ -125,7 +125,7 @@ async def start():
     # Start web servers
     await web_server.start()
 
-    bumperlog.info("Starting Bumper successful")
+    bumperlog.info("Bumper started successfully")
     # Start maintenance
     while not shutting_down:
         asyncio.create_task(maintenance())
