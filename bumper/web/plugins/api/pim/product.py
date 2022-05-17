@@ -31,7 +31,7 @@ class ProductPlugin(WebserverPlugin):
             web.route(
                 "*",
                 "/product/getConfignetAll",
-                _handle_get_confignet_all,
+                _handle_get_config_net_all,
             ),
             web.route(
                 "*",
@@ -59,7 +59,7 @@ async def _handle_get_product_iot_map(_: Request) -> Response:
     raise HTTPInternalServerError
 
 
-async def _handle_get_confignet_all(_: Request) -> Response:
+async def _handle_get_config_net_all(_: Request) -> Response:
     """Get config net all."""
     try:
         with open(
