@@ -1,0 +1,1 @@
+"""Api pim module plugin."""
