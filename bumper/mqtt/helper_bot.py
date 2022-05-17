@@ -62,7 +62,7 @@ class HelperBot:
                     self._commands[topic_split[10]].add_response(data_decoded)
             except Exception:
                 _LOGGER.error(
-                    "An exception occured during handling message.", exc_info=True
+                    "An exception occurred during handling message.", exc_info=True
                 )
 
         self._client.on_message = _on_message
