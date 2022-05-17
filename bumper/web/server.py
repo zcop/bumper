@@ -6,7 +6,6 @@ import json
 import logging
 import os
 import ssl
-from typing import Union
 
 import aiohttp_jinja2
 import jinja2

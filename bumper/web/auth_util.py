@@ -36,6 +36,7 @@ _logger = get_logger("confserver")
 
 
 def generate_token(user):
+    """Generate token."""
     try:
         tmpaccesstoken = uuid.uuid4().hex
         user_add_token(user["userid"], tmpaccesstoken)
@@ -46,6 +47,7 @@ def generate_token(user):
 
 
 def generate_authcode(user, countrycode, token):
+    """Generate auth token."""
     try:
         tmpauthcode = f"{countrycode}_{uuid.uuid4().hex}"
         user_add_authcode(user["userid"], token, tmpauthcode)
@@ -56,6 +58,7 @@ def generate_authcode(user, countrycode, token):
 
 
 async def login(request):
+    """Perform login."""
     try:
         user_devid = request.match_info.get("devid", "")
         countrycode = request.match_info.get("country", "us")
@@ -124,6 +127,7 @@ async def login(request):
 
 
 async def get_authcode(request: Request) -> Response:
+    """Get auth code."""
     try:
         user_devid = request.match_info.get("devid", None)  # Ecovacs
         if not user_devid:
