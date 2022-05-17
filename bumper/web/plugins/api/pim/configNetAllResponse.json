@@ -48,6 +48,474 @@
     },
     {
       "belongApp": ["ecoglobal"],
+      "checkTips": 1,
+      "failCount": 0,
+      "groupId": "5ca4711412851900016858cb",
+      "groupName": "DEEBOT OZMO 700",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d117d4f0ac6ad00012b792d",
+      "isPopular": false,
+      "materialNo": "110-1825-0201",
+      "mid": "0xyhhr",
+      "ota": false,
+      "smartType": "MQ_AP",
+      "smartTypes": [],
+      "sort": 70,
+      "steps": [
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        },
+        {
+          "btnText": "",
+          "confirmText": "I've heard the sound",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "Briefly press the RESET button for 1 second and then release. You will hear that DEEBOT is ready for network setup.",
+          "retryText": "",
+          "title": ""
+        }
+      ],
+      "supportVer": {
+        "Android": "1.1.5",
+        "IOS": "1.1.5"
+      }
+    },
+    {
+      "belongApp": ["ecoglobal"],
+      "checkTips": 1,
+      "failCount": 0,
+      "groupId": "5ca4711412851900016858cb",
+      "groupName": "DEEBOT OZMO 750",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d3aa309ba13eb00013feb69",
+      "isPopular": false,
+      "materialNo": "110-1825-0201",
+      "mid": "0xyhhr",
+      "ota": false,
+      "smartType": "MQ_AP",
+      "smartTypes": [],
+      "sort": 70,
+      "steps": [
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        },
+        {
+          "btnText": "",
+          "confirmText": "I've heard the sound",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "Briefly press the RESET button for 1 second and then release. You will hear that DEEBOT is ready for network setup.",
+          "retryText": "",
+          "title": ""
+        }
+      ],
+      "supportVer": {
+        "Android": "1.1.5",
+        "IOS": "1.1.5"
+      }
+    },
+    {
+      "belongApp": ["ecoglobal"],
+      "checkTips": 0,
+      "failCount": 0,
+      "groupId": "5bbedcd922d57f00018c13b6",
+      "groupName": "DEEBOT OZMO/PRO 930 Series",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5cf711aeb0acfc000179ff8a",
+      "isPopular": false,
+      "materialNo": "110-1803-0101",
+      "mid": "115",
+      "ota": false,
+      "smartType": "HK_AP",
+      "smartTypes": [],
+      "sort": 30,
+      "steps": [
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        },
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        }
+      ],
+      "supportVer": {
+        "Android": "1.1.8",
+        "IOS": "1.1.8"
+      }
+    },
+    {
+      "belongApp": ["ecoglobal"],
+      "checkTips": 0,
+      "failCount": 0,
+      "groupId": "5cae9aa5e9e9270001354b5d",
+      "groupName": "DEEBOT Slim2 Series",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d2c150dba13eb00013feaae",
+      "isPopular": false,
+      "materialNo": "110-1639-0102",
+      "mid": "123",
+      "ota": false,
+      "smartType": "SPA",
+      "smartTypes": [],
+      "sort": 230,
+      "steps": [
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        },
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        }
+      ],
+      "supportVer": {
+        "Android": "1.1.7",
+        "IOS": "1.1.7"
+      }
+    },
+    {
+      "belongApp": ["ecoglobal"],
+      "checkTips": 0,
+      "failCount": 0,
+      "groupId": "5cae9aa5e9e9270001354b5d",
+      "groupName": "DEEBOT Slim Neo",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d2c152f4d60de0001eaf1f4",
+      "isPopular": false,
+      "materialNo": "110-1639-0102",
+      "mid": "123",
+      "ota": false,
+      "smartType": "SPA",
+      "smartTypes": [],
+      "sort": 230,
+      "steps": [
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        },
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        }
+      ],
+      "supportVer": {
+        "Android": "1.1.7",
+        "IOS": "1.1.7"
+      }
+    },
+    {
+      "belongApp": ["ecoglobal"],
+      "checkTips": 0,
+      "failCount": 0,
+      "groupId": "5cae9662e9e9270001354b55",
+      "groupName": "DEEBOT M80 Pro",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d2c14414d60de0001eaf1f2",
+      "isPopular": false,
+      "materialNo": "110-1638-0102",
+      "mid": "125",
+      "ota": false,
+      "smartType": "SPA",
+      "smartTypes": [],
+      "sort": 150,
+      "steps": [
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        },
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        }
+      ],
+      "supportVer": {
+        "Android": "1.1.7",
+        "IOS": "1.1.7"
+      }
+    },
+    {
+      "belongApp": ["ecoglobal"],
+      "checkTips": 0,
+      "failCount": 0,
+      "groupId": "5ca31e8212851900016858c2",
+      "groupName": "DEEBOT N79",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5ca32ab2e9e9270001354b3d",
+      "isPopular": false,
+      "materialNo": "702-0000-0136",
+      "mid": "126",
+      "ota": false,
+      "smartType": "SPA",
+      "smartTypes": [],
+      "sort": 140,
+      "steps": [
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        },
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        }
+      ],
+      "supportVer": {
+        "Android": "1.1.7",
+        "IOS": "1.1.7"
+      }
+    },
+    {
+      "belongApp": ["ecoglobal"],
+      "checkTips": 0,
+      "failCount": 0,
+      "groupId": "5ca31e8212851900016858c2",
+      "groupName": "DEEBOT N79S/SE",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5cd4ca505b032200015a455d",
+      "isPopular": false,
+      "materialNo": "702-0000-0136",
+      "mid": "126",
+      "ota": false,
+      "smartType": "SPA",
+      "smartTypes": [],
+      "sort": 140,
+      "steps": [
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        },
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        }
+      ],
+      "supportVer": {
+        "Android": "1.1.7",
+        "IOS": "1.1.7"
+      }
+    },
+    {
+      "belongApp": ["ecoglobal"],
+      "checkTips": 0,
+      "failCount": 0,
+      "groupId": "5ca31e8212851900016858c2",
+      "groupName": "DEEBOT N79T/W",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5ca32a1012851900016858c6",
+      "isPopular": false,
+      "materialNo": "702-0000-0136",
+      "mid": "126",
+      "ota": false,
+      "smartType": "SPA",
+      "smartTypes": [],
+      "sort": 140,
+      "steps": [
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        },
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        }
+      ],
+      "supportVer": {
+        "Android": "1.1.7",
+        "IOS": "1.1.7"
+      }
+    },
+    {
+      "belongApp": ["ecoglobal"],
+      "checkTips": 0,
+      "failCount": 0,
+      "groupId": "5ca31ce8e9e9270001354b33",
+      "groupName": "DEEBOT M86",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5ca31df112851900016858c0",
+      "isPopular": false,
+      "materialNo": "110-1628-0101",
+      "mid": "129",
+      "ota": false,
+      "smartType": "SPA",
+      "smartTypes": [],
+      "sort": 170,
+      "steps": [
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        },
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        }
+      ],
+      "supportVer": {
+        "Android": "1.1.7",
+        "IOS": "1.1.7"
+      }
+    },
+    {
+      "belongApp": ["ecoglobal"],
+      "checkTips": 0,
+      "failCount": 0,
+      "groupId": "5cae9793e9e9270001354b57",
+      "groupName": "DEEBOT M81 Pro",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d2c2aa64d60de0001eaf1f6",
+      "isPopular": false,
+      "materialNo": "110-1638-0101",
+      "mid": "141",
+      "ota": false,
+      "smartType": "SPA",
+      "smartTypes": [],
+      "sort": 160,
+      "steps": [
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        },
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        }
+      ],
+      "supportVer": {
+        "Android": "1.1.7",
+        "IOS": "1.1.7"
+      }
+    },
+    {
+      "belongApp": ["ecoglobal"],
+      "checkTips": 0,
+      "failCount": 0,
+      "groupId": "5ca1c9a3e9e9270001354b2b",
+      "groupName": "DEEBOT Mini2",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5ca1ca79e9e9270001354b2d",
+      "isPopular": false,
+      "materialNo": "110-1640-0101",
+      "mid": "142",
+      "ota": false,
+      "smartType": "SPA",
+      "smartTypes": [],
+      "sort": 240,
+      "steps": [
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        },
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        }
+      ],
+      "supportVer": {
+        "Android": "1.1.7",
+        "IOS": "1.1.7"
+      }
+    },
+    {
+      "belongApp": ["ecoglobal"],
       "checkTips": 0,
       "failCount": 0,
       "groupId": "5ca32b5de9e9270001354b3f",
@@ -167,22 +635,22 @@
       "belongApp": ["ecoglobal"],
       "checkTips": 0,
       "failCount": 0,
-      "groupId": "5cae9662e9e9270001354b55",
-      "groupName": "DEEBOT M80 Pro",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d2c14414d60de0001eaf1f2",
+      "groupId": "5acb0f2e7c295c0001876eb4",
+      "groupName": "DEEBOT 600 Series",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5acc32067c295c0001876eea",
       "isPopular": false,
-      "materialNo": "110-1638-0102",
-      "mid": "125",
+      "materialNo": "702-0000-0170",
+      "mid": "dl8fht",
       "ota": false,
-      "smartType": "SPA",
+      "smartType": "MQ_AP",
       "smartTypes": [],
-      "sort": 150,
+      "sort": 110,
       "steps": [
         {
           "btnText": "",
           "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
+          "guideImageType": "image",
+          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5ce8e36591fd5d0001892541",
           "guideText": "",
           "retryText": "",
           "title": ""
@@ -190,32 +658,71 @@
         {
           "btnText": "",
           "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
+          "guideImageType": "image",
+          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5b8cd75f76f7f10001e9a0de",
           "guideText": "",
           "retryText": "",
           "title": ""
         }
       ],
       "supportVer": {
-        "Android": "1.1.7",
-        "IOS": "1.1.7"
+        "Android": "1.0.0",
+        "IOS": "1.0.0"
       }
     },
     {
       "belongApp": ["ecoglobal"],
       "checkTips": 0,
       "failCount": 0,
-      "groupId": "5bbedcd922d57f00018c13b6",
-      "groupName": "DEEBOT OZMO/PRO 930 Series",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5cf711aeb0acfc000179ff8a",
+      "groupId": "5acb0f2e7c295c0001876eb4",
+      "groupName": "DEEBOT 661",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d280ce3350e7a0001e84c95",
+      "isPopular": false,
+      "materialNo": "702-0000-0170",
+      "mid": "dl8fht",
+      "ota": false,
+      "smartType": "MQ_AP",
+      "smartTypes": [],
+      "sort": 110,
+      "steps": [
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "image",
+          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5ce8e36591fd5d0001892541",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        },
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "image",
+          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5b8cd75f76f7f10001e9a0de",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        }
+      ],
+      "supportVer": {
+        "Android": "1.0.0",
+        "IOS": "1.0.0"
+      }
+    },
+    {
+      "belongApp": ["ecoglobal"],
+      "checkTips": 0,
+      "failCount": 0,
+      "groupId": "5bc8187422d57f00018c13ba",
+      "groupName": "DEEBOT OZMO 960",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5c7384767b93c700013f12e7",
       "isPopular": false,
       "materialNo": "110-1803-0101",
-      "mid": "115",
+      "mid": "gd4uut",
       "ota": false,
-      "smartType": "HK_AP",
+      "smartType": "MQ_AP",
       "smartTypes": [],
-      "sort": 30,
+      "sort": 50,
       "steps": [
         {
           "btnText": "",
@@ -237,8 +744,8 @@
         }
       ],
       "supportVer": {
-        "Android": "1.1.8",
-        "IOS": "1.1.8"
+        "Android": "1.1.5",
+        "IOS": "1.1.5"
       }
     },
     {
@@ -323,22 +830,22 @@
       "belongApp": ["ecoglobal"],
       "checkTips": 0,
       "failCount": 0,
-      "groupId": "5cae9793e9e9270001354b57",
-      "groupName": "DEEBOT M81 Pro",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d2c2aa64d60de0001eaf1f6",
+      "groupId": "5ae197be7ccd1a0001e1f6a1",
+      "groupName": "DEEBOT 711",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5b5ac4cc8d5a56000111e769",
       "isPopular": false,
-      "materialNo": "110-1638-0101",
-      "mid": "141",
+      "materialNo": "702-0000-0205",
+      "mid": "uv242z",
       "ota": false,
-      "smartType": "SPA",
+      "smartType": "MQ_AP",
       "smartTypes": [],
-      "sort": 160,
+      "sort": 120,
       "steps": [
         {
           "btnText": "",
           "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
+          "guideImageType": "image",
+          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5b7fc85976f7f10001e9a0d0",
           "guideText": "",
           "retryText": "",
           "title": ""
@@ -346,16 +853,133 @@
         {
           "btnText": "",
           "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
+          "guideImageType": "image",
+          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5ce8e5d5d85b4d0001776484",
           "guideText": "",
           "retryText": "",
           "title": ""
         }
       ],
       "supportVer": {
-        "Android": "1.1.7",
-        "IOS": "1.1.7"
+        "Android": "1.0.5",
+        "IOS": "1.0.5"
+      }
+    },
+    {
+      "belongApp": ["ecoglobal"],
+      "checkTips": 0,
+      "failCount": 0,
+      "groupId": "5ae197be7ccd1a0001e1f6a1",
+      "groupName": "DEEBOT 710",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5b5ac4e45f21100001882bb9",
+      "isPopular": false,
+      "materialNo": "702-0000-0205",
+      "mid": "uv242z",
+      "ota": false,
+      "smartType": "MQ_AP",
+      "smartTypes": [],
+      "sort": 120,
+      "steps": [
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "image",
+          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5b7fc85976f7f10001e9a0d0",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        },
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "image",
+          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5ce8e5d5d85b4d0001776484",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        }
+      ],
+      "supportVer": {
+        "Android": "1.0.5",
+        "IOS": "1.0.5"
+      }
+    },
+    {
+      "belongApp": ["ecoglobal"],
+      "checkTips": 0,
+      "failCount": 0,
+      "groupId": "5ae197be7ccd1a0001e1f6a1",
+      "groupName": "DEEBOT 715",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5b7b65f176f7f10001e9a0c2",
+      "isPopular": false,
+      "materialNo": "702-0000-0205",
+      "mid": "uv242z",
+      "ota": false,
+      "smartType": "MQ_AP",
+      "smartTypes": [],
+      "sort": 120,
+      "steps": [
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "image",
+          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5b7fc85976f7f10001e9a0d0",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        },
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "image",
+          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5ce8e5d5d85b4d0001776484",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        }
+      ],
+      "supportVer": {
+        "Android": "1.0.5",
+        "IOS": "1.0.5"
+      }
+    },
+    {
+      "belongApp": ["ecoglobal"],
+      "checkTips": 0,
+      "failCount": 0,
+      "groupId": "5ae197be7ccd1a0001e1f6a1",
+      "groupName": "DEEBOT 711s",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d157f9f77a3a60001051f69",
+      "isPopular": false,
+      "materialNo": "702-0000-0205",
+      "mid": "uv242z",
+      "ota": false,
+      "smartType": "MQ_AP",
+      "smartTypes": [],
+      "sort": 120,
+      "steps": [
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "image",
+          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5b7fc85976f7f10001e9a0d0",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        },
+        {
+          "btnText": "",
+          "confirmText": "",
+          "guideImageType": "image",
+          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5ce8e5d5d85b4d0001776484",
+          "guideText": "",
+          "retryText": "",
+          "title": ""
+        }
+      ],
+      "supportVer": {
+        "Android": "1.0.5",
+        "IOS": "1.0.5"
       }
     },
     {
@@ -395,123 +1019,6 @@
       "supportVer": {
         "Android": "1.1.5",
         "IOS": "1.1.5"
-      }
-    },
-    {
-      "belongApp": ["ecoglobal"],
-      "checkTips": 0,
-      "failCount": 0,
-      "groupId": "5bc8187422d57f00018c13ba",
-      "groupName": "DEEBOT OZMO 960",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5c7384767b93c700013f12e7",
-      "isPopular": false,
-      "materialNo": "110-1803-0101",
-      "mid": "gd4uut",
-      "ota": false,
-      "smartType": "MQ_AP",
-      "smartTypes": [],
-      "sort": 50,
-      "steps": [
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        },
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        }
-      ],
-      "supportVer": {
-        "Android": "1.1.5",
-        "IOS": "1.1.5"
-      }
-    },
-    {
-      "belongApp": ["ecoglobal"],
-      "checkTips": 0,
-      "failCount": 0,
-      "groupId": "5b04bf1d7ccd1a0001e1f6a6",
-      "groupName": "DEEBOT OZMO 900 Series",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5b04c0217ccd1a0001e1f6a7",
-      "isPopular": false,
-      "materialNo": "110-1810-0101",
-      "mid": "y79a7u",
-      "ota": false,
-      "smartType": "MQ_AP",
-      "smartTypes": [],
-      "sort": 10,
-      "steps": [
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        },
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        }
-      ],
-      "supportVer": {
-        "Android": "1.0.0",
-        "IOS": "1.0.0"
-      }
-    },
-    {
-      "belongApp": ["ecoglobal"],
-      "checkTips": 0,
-      "failCount": 0,
-      "groupId": "5b04bf1d7ccd1a0001e1f6a6",
-      "groupName": "DEEBOT OZMO 905",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d1474632a6bd50001b5b6f3",
-      "isPopular": false,
-      "materialNo": "110-1810-0101",
-      "mid": "y79a7u",
-      "ota": false,
-      "smartType": "MQ_AP",
-      "smartTypes": [],
-      "sort": 10,
-      "steps": [
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        },
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        }
-      ],
-      "supportVer": {
-        "Android": "1.0.0",
-        "IOS": "1.0.0"
       }
     },
     {
@@ -674,318 +1181,6 @@
       "belongApp": ["ecoglobal"],
       "checkTips": 0,
       "failCount": 0,
-      "groupId": "5cae9aa5e9e9270001354b5d",
-      "groupName": "DEEBOT Slim2 Series",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d2c150dba13eb00013feaae",
-      "isPopular": false,
-      "materialNo": "110-1639-0102",
-      "mid": "123",
-      "ota": false,
-      "smartType": "SPA",
-      "smartTypes": [],
-      "sort": 230,
-      "steps": [
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        },
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        }
-      ],
-      "supportVer": {
-        "Android": "1.1.7",
-        "IOS": "1.1.7"
-      }
-    },
-    {
-      "belongApp": ["ecoglobal"],
-      "checkTips": 0,
-      "failCount": 0,
-      "groupId": "5cae9aa5e9e9270001354b5d",
-      "groupName": "DEEBOT Slim Neo",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d2c152f4d60de0001eaf1f4",
-      "isPopular": false,
-      "materialNo": "110-1639-0102",
-      "mid": "123",
-      "ota": false,
-      "smartType": "SPA",
-      "smartTypes": [],
-      "sort": 230,
-      "steps": [
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        },
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        }
-      ],
-      "supportVer": {
-        "Android": "1.1.7",
-        "IOS": "1.1.7"
-      }
-    },
-    {
-      "belongApp": ["ecoglobal"],
-      "checkTips": 1,
-      "failCount": 0,
-      "groupId": "5c19a8a0ddfc1f0001ede8e0",
-      "groupName": "DEEBOT OZMO 950 Series",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5caafd7e1285190001685965",
-      "isPopular": true,
-      "materialNo": "110-1820-0101",
-      "mid": "yna5xi",
-      "ota": false,
-      "smartType": "MQ_AP",
-      "smartTypes": ["MQ_AP"],
-      "sort": 40,
-      "steps": [
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        },
-        {
-          "btnText": "",
-          "confirmText": "I've heard the sound",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "Briefly press the RESET button for 1 second and then release. You will hear that DEEBOT is ready for network setup.",
-          "retryText": "",
-          "title": ""
-        }
-      ],
-      "supportVer": {
-        "Android": "1.1.5",
-        "IOS": "1.1.5"
-      }
-    },
-    {
-      "belongApp": ["ecoglobal"],
-      "checkTips": 1,
-      "failCount": 0,
-      "groupId": "5ca4711412851900016858cb",
-      "groupName": "DEEBOT OZMO 700",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d117d4f0ac6ad00012b792d",
-      "isPopular": false,
-      "materialNo": "110-1825-0201",
-      "mid": "0xyhhr",
-      "ota": false,
-      "smartType": "MQ_AP",
-      "smartTypes": [],
-      "sort": 70,
-      "steps": [
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        },
-        {
-          "btnText": "",
-          "confirmText": "I've heard the sound",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "Briefly press the RESET button for 1 second and then release. You will hear that DEEBOT is ready for network setup.",
-          "retryText": "",
-          "title": ""
-        }
-      ],
-      "supportVer": {
-        "Android": "1.1.5",
-        "IOS": "1.1.5"
-      }
-    },
-    {
-      "belongApp": ["ecoglobal"],
-      "checkTips": 1,
-      "failCount": 0,
-      "groupId": "5ca4711412851900016858cb",
-      "groupName": "DEEBOT OZMO 750",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d3aa309ba13eb00013feb69",
-      "isPopular": false,
-      "materialNo": "110-1825-0201",
-      "mid": "0xyhhr",
-      "ota": false,
-      "smartType": "MQ_AP",
-      "smartTypes": [],
-      "sort": 70,
-      "steps": [
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        },
-        {
-          "btnText": "",
-          "confirmText": "I've heard the sound",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "Briefly press the RESET button for 1 second and then release. You will hear that DEEBOT is ready for network setup.",
-          "retryText": "",
-          "title": ""
-        }
-      ],
-      "supportVer": {
-        "Android": "1.1.5",
-        "IOS": "1.1.5"
-      }
-    },
-    {
-      "belongApp": ["ecoglobal"],
-      "checkTips": 0,
-      "failCount": 0,
-      "groupId": "5acb0f2e7c295c0001876eb4",
-      "groupName": "DEEBOT 600 Series",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5acc32067c295c0001876eea",
-      "isPopular": false,
-      "materialNo": "702-0000-0170",
-      "mid": "dl8fht",
-      "ota": false,
-      "smartType": "MQ_AP",
-      "smartTypes": [],
-      "sort": 110,
-      "steps": [
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "image",
-          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5ce8e36591fd5d0001892541",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        },
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "image",
-          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5b8cd75f76f7f10001e9a0de",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        }
-      ],
-      "supportVer": {
-        "Android": "1.0.0",
-        "IOS": "1.0.0"
-      }
-    },
-    {
-      "belongApp": ["ecoglobal"],
-      "checkTips": 0,
-      "failCount": 0,
-      "groupId": "5acb0f2e7c295c0001876eb4",
-      "groupName": "DEEBOT 661",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d280ce3350e7a0001e84c95",
-      "isPopular": false,
-      "materialNo": "702-0000-0170",
-      "mid": "dl8fht",
-      "ota": false,
-      "smartType": "MQ_AP",
-      "smartTypes": [],
-      "sort": 110,
-      "steps": [
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "image",
-          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5ce8e36591fd5d0001892541",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        },
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "image",
-          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5b8cd75f76f7f10001e9a0de",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        }
-      ],
-      "supportVer": {
-        "Android": "1.0.0",
-        "IOS": "1.0.0"
-      }
-    },
-    {
-      "belongApp": ["ecoglobal"],
-      "checkTips": 0,
-      "failCount": 0,
-      "groupId": "5ca31ce8e9e9270001354b33",
-      "groupName": "DEEBOT M86",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5ca31df112851900016858c0",
-      "isPopular": false,
-      "materialNo": "110-1628-0101",
-      "mid": "129",
-      "ota": false,
-      "smartType": "SPA",
-      "smartTypes": [],
-      "sort": 170,
-      "steps": [
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        },
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        }
-      ],
-      "supportVer": {
-        "Android": "1.1.7",
-        "IOS": "1.1.7"
-      }
-    },
-    {
-      "belongApp": ["ecoglobal"],
-      "checkTips": 0,
-      "failCount": 0,
       "groupId": "5d2460f244af360001383992",
       "groupName": "DEEBOT U3",
       "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d3fe649de51dd0001fee0de",
@@ -1064,178 +1259,22 @@
       "belongApp": ["ecoglobal"],
       "checkTips": 0,
       "failCount": 0,
-      "groupId": "5ca1c9a3e9e9270001354b2b",
-      "groupName": "DEEBOT Mini2",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5ca1ca79e9e9270001354b2d",
+      "groupId": "5b04bf1d7ccd1a0001e1f6a6",
+      "groupName": "DEEBOT OZMO 900 Series",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5b04c0217ccd1a0001e1f6a7",
       "isPopular": false,
-      "materialNo": "110-1640-0101",
-      "mid": "142",
-      "ota": false,
-      "smartType": "SPA",
-      "smartTypes": [],
-      "sort": 240,
-      "steps": [
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        },
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        }
-      ],
-      "supportVer": {
-        "Android": "1.1.7",
-        "IOS": "1.1.7"
-      }
-    },
-    {
-      "belongApp": ["ecoglobal"],
-      "checkTips": 0,
-      "failCount": 0,
-      "groupId": "5ca31e8212851900016858c2",
-      "groupName": "DEEBOT N79",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5ca32ab2e9e9270001354b3d",
-      "isPopular": false,
-      "materialNo": "702-0000-0136",
-      "mid": "126",
-      "ota": false,
-      "smartType": "SPA",
-      "smartTypes": [],
-      "sort": 140,
-      "steps": [
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        },
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        }
-      ],
-      "supportVer": {
-        "Android": "1.1.7",
-        "IOS": "1.1.7"
-      }
-    },
-    {
-      "belongApp": ["ecoglobal"],
-      "checkTips": 0,
-      "failCount": 0,
-      "groupId": "5ca31e8212851900016858c2",
-      "groupName": "DEEBOT N79S/SE",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5cd4ca505b032200015a455d",
-      "isPopular": false,
-      "materialNo": "702-0000-0136",
-      "mid": "126",
-      "ota": false,
-      "smartType": "SPA",
-      "smartTypes": [],
-      "sort": 140,
-      "steps": [
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        },
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        }
-      ],
-      "supportVer": {
-        "Android": "1.1.7",
-        "IOS": "1.1.7"
-      }
-    },
-    {
-      "belongApp": ["ecoglobal"],
-      "checkTips": 0,
-      "failCount": 0,
-      "groupId": "5ca31e8212851900016858c2",
-      "groupName": "DEEBOT N79T/W",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5ca32a1012851900016858c6",
-      "isPopular": false,
-      "materialNo": "702-0000-0136",
-      "mid": "126",
-      "ota": false,
-      "smartType": "SPA",
-      "smartTypes": [],
-      "sort": 140,
-      "steps": [
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        },
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "",
-          "guideImageUrl": "",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        }
-      ],
-      "supportVer": {
-        "Android": "1.1.7",
-        "IOS": "1.1.7"
-      }
-    },
-    {
-      "belongApp": ["ecoglobal"],
-      "checkTips": 0,
-      "failCount": 0,
-      "groupId": "5ae197be7ccd1a0001e1f6a1",
-      "groupName": "DEEBOT 711",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5b5ac4cc8d5a56000111e769",
-      "isPopular": false,
-      "materialNo": "702-0000-0205",
-      "mid": "uv242z",
+      "materialNo": "110-1810-0101",
+      "mid": "y79a7u",
       "ota": false,
       "smartType": "MQ_AP",
       "smartTypes": [],
-      "sort": 120,
+      "sort": 10,
       "steps": [
         {
           "btnText": "",
           "confirmText": "",
-          "guideImageType": "image",
-          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5b7fc85976f7f10001e9a0d0",
+          "guideImageType": "",
+          "guideImageUrl": "",
           "guideText": "",
           "retryText": "",
           "title": ""
@@ -1243,38 +1282,38 @@
         {
           "btnText": "",
           "confirmText": "",
-          "guideImageType": "image",
-          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5ce8e5d5d85b4d0001776484",
+          "guideImageType": "",
+          "guideImageUrl": "",
           "guideText": "",
           "retryText": "",
           "title": ""
         }
       ],
       "supportVer": {
-        "Android": "1.0.5",
-        "IOS": "1.0.5"
+        "Android": "1.0.0",
+        "IOS": "1.0.0"
       }
     },
     {
       "belongApp": ["ecoglobal"],
       "checkTips": 0,
       "failCount": 0,
-      "groupId": "5ae197be7ccd1a0001e1f6a1",
-      "groupName": "DEEBOT 710",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5b5ac4e45f21100001882bb9",
+      "groupId": "5b04bf1d7ccd1a0001e1f6a6",
+      "groupName": "DEEBOT OZMO 905",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d1474632a6bd50001b5b6f3",
       "isPopular": false,
-      "materialNo": "702-0000-0205",
-      "mid": "uv242z",
+      "materialNo": "110-1810-0101",
+      "mid": "y79a7u",
       "ota": false,
       "smartType": "MQ_AP",
       "smartTypes": [],
-      "sort": 120,
+      "sort": 10,
       "steps": [
         {
           "btnText": "",
           "confirmText": "",
-          "guideImageType": "image",
-          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5b7fc85976f7f10001e9a0d0",
+          "guideImageType": "",
+          "guideImageUrl": "",
           "guideText": "",
           "retryText": "",
           "title": ""
@@ -1282,94 +1321,55 @@
         {
           "btnText": "",
           "confirmText": "",
-          "guideImageType": "image",
-          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5ce8e5d5d85b4d0001776484",
+          "guideImageType": "",
+          "guideImageUrl": "",
           "guideText": "",
           "retryText": "",
           "title": ""
         }
       ],
       "supportVer": {
-        "Android": "1.0.5",
-        "IOS": "1.0.5"
+        "Android": "1.0.0",
+        "IOS": "1.0.0"
       }
     },
     {
       "belongApp": ["ecoglobal"],
-      "checkTips": 0,
+      "checkTips": 1,
       "failCount": 0,
-      "groupId": "5ae197be7ccd1a0001e1f6a1",
-      "groupName": "DEEBOT 715",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5b7b65f176f7f10001e9a0c2",
-      "isPopular": false,
-      "materialNo": "702-0000-0205",
-      "mid": "uv242z",
+      "groupId": "5c19a8a0ddfc1f0001ede8e0",
+      "groupName": "DEEBOT OZMO 950 Series",
+      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5caafd7e1285190001685965",
+      "isPopular": true,
+      "materialNo": "110-1820-0101",
+      "mid": "yna5xi",
       "ota": false,
       "smartType": "MQ_AP",
-      "smartTypes": [],
-      "sort": 120,
+      "smartTypes": ["MQ_AP"],
+      "sort": 40,
       "steps": [
         {
           "btnText": "",
           "confirmText": "",
-          "guideImageType": "image",
-          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5b7fc85976f7f10001e9a0d0",
+          "guideImageType": "",
+          "guideImageUrl": "",
           "guideText": "",
           "retryText": "",
           "title": ""
         },
         {
           "btnText": "",
-          "confirmText": "",
-          "guideImageType": "image",
-          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5ce8e5d5d85b4d0001776484",
-          "guideText": "",
+          "confirmText": "I've heard the sound",
+          "guideImageType": "",
+          "guideImageUrl": "",
+          "guideText": "Briefly press the RESET button for 1 second and then release. You will hear that DEEBOT is ready for network setup.",
           "retryText": "",
           "title": ""
         }
       ],
       "supportVer": {
-        "Android": "1.0.5",
-        "IOS": "1.0.5"
-      }
-    },
-    {
-      "belongApp": ["ecoglobal"],
-      "checkTips": 0,
-      "failCount": 0,
-      "groupId": "5ae197be7ccd1a0001e1f6a1",
-      "groupName": "DEEBOT 711s",
-      "icon": "https://portal-ww.ecouser.net/api/pim/file/get/5d157f9f77a3a60001051f69",
-      "isPopular": false,
-      "materialNo": "702-0000-0205",
-      "mid": "uv242z",
-      "ota": false,
-      "smartType": "MQ_AP",
-      "smartTypes": [],
-      "sort": 120,
-      "steps": [
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "image",
-          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5b7fc85976f7f10001e9a0d0",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        },
-        {
-          "btnText": "",
-          "confirmText": "",
-          "guideImageType": "image",
-          "guideImageUrl": "https://portal-ww.ecouser.net/api/pim/file/get/5ce8e5d5d85b4d0001776484",
-          "guideText": "",
-          "retryText": "",
-          "title": ""
-        }
-      ],
-      "supportVer": {
-        "Android": "1.0.5",
-        "IOS": "1.0.5"
+        "Android": "1.1.5",
+        "IOS": "1.1.5"
       }
     }
   ],

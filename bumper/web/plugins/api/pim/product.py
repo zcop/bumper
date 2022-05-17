@@ -63,7 +63,7 @@ async def _handle_get_confignet_all(_: Request) -> Response:
     """Get config net all."""
     try:
         with open(
-            os.path.join(os.path.dirname(__file__), "confignetAllResponse.json"),
+            os.path.join(os.path.dirname(__file__), "configNetAllResponse.json"),
             encoding="utf-8",
         ) as file:
             return web.json_response(json.load(file))

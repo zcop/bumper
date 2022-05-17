@@ -9,19 +9,7 @@
         "video": false
       }
     },
-    "pid": "5e14196a6e71b80001b60fda"
-  },
-  {
-    "cfg": {
-      "supported": {
-        "battery": true,
-        "charge": true,
-        "clean": true,
-        "tmallstand": false,
-        "video": false
-      }
-    },
-    "pid": "5e8e8d8a032edd8457c66bfb"
+    "pid": "5c19a8f3a1e6ee0001782247"
   },
   {
     "cfg": {
@@ -34,18 +22,6 @@
       }
     },
     "pid": "5c19a91ca1e6ee000178224a"
-  },
-  {
-    "cfg": {
-      "supported": {
-        "battery": true,
-        "charge": true,
-        "clean": true,
-        "tmallstand": false,
-        "video": false
-      }
-    },
-    "pid": "5e8e8d2a032edd3c03c66bf7"
   },
   {
     "cfg": {
@@ -69,7 +45,7 @@
         "video": false
       }
     },
-    "pid": "5c19a8f3a1e6ee0001782247"
+    "pid": "5e14196a6e71b80001b60fda"
   },
   {
     "cfg": {
@@ -94,6 +70,42 @@
       }
     },
     "pid": "5e699a4106f6de83ea64c620"
+  },
+  {
+    "cfg": {
+      "supported": {
+        "battery": true,
+        "charge": true,
+        "clean": true,
+        "tmallstand": false,
+        "video": false
+      }
+    },
+    "pid": "5e8e8d2a032edd3c03c66bf7"
+  },
+  {
+    "cfg": {
+      "supported": {
+        "battery": true,
+        "charge": true,
+        "clean": true,
+        "tmallstand": false,
+        "video": false
+      }
+    },
+    "pid": "5e8e8d8a032edd8457c66bfb"
+  },
+  {
+    "cfg": {
+      "supported": {
+        "battery": true,
+        "charge": true,
+        "clean": true,
+        "tmallstand": false,
+        "video": false
+      }
+    },
+    "pid": "5ed5e4d3a719ea460ec3216c"
   },
   {
     "cfg": {
@@ -129,7 +141,7 @@
         "video": false
       }
     },
-    "pid": "5ed5e4d3a719ea460ec3216c"
+    "pid": "5f8819156cf8de0008ed7c0d"
   },
   {
     "cfg": {
@@ -142,18 +154,6 @@
       }
     },
     "pid": "5f88195e6cf8de0008ed7c11"
-  },
-  {
-    "cfg": {
-      "supported": {
-        "battery": true,
-        "charge": true,
-        "clean": true,
-        "tmallstand": false,
-        "video": false
-      }
-    },
-    "pid": "5f8819156cf8de0008ed7c0d"
   },
   {
     "cfg": {
