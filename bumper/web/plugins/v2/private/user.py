@@ -1,15 +1,17 @@
-"""Private user module."""
+"""User plugin module."""
 from typing import Iterable
 
 from aiohttp import web
 from aiohttp.web_routedef import AbstractRouteDef
 
-from ... import auth_util
-from .. import WebserverPlugin
+from bumper.web import auth_util
+
+from ... import WebserverPlugin
+from . import BASE_URL
 
 
-class PrivateUserPlugin(WebserverPlugin):
-    """Private user plugin."""
+class UserPlugin(WebserverPlugin):
+    """User plugin."""
 
     @property
     def routes(self) -> Iterable[AbstractRouteDef]:
@@ -17,7 +19,7 @@ class PrivateUserPlugin(WebserverPlugin):
         return [
             web.route(
                 "*",
-                "/private/{country}/{language}/{devid}/{apptype}/{appversion}/{devtype}/{aid}/user/checkLogin",
+                f"{BASE_URL}user/checkLogin",
                 auth_util.login,
             ),
         ]
