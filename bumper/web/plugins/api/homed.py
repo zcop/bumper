@@ -20,7 +20,7 @@ class HomedPlugin(WebserverPlugin):
         return [
             web.route(
                 "*",
-                "(homed/home/list",
+                "/homed/home/list",
                 _handle_home_list,
             ),
         ]
