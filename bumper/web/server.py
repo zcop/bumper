@@ -208,7 +208,9 @@ class WebServer:
 
                 response = await handler(request)
                 if response is None:
-                    confserverlog.warning("Response was null!")
+                    confserverlog.warning(  # type:ignore[unreachable]
+                        "Response was null!"
+                    )
                     confserverlog.warning(json.dumps(to_log))
                     raise HTTPNoContent
 
@@ -218,7 +220,9 @@ class WebServer:
                 if (
                     "application/octet-stream" not in response.content_type
                     and isinstance(response, Response)
+                    and response.body
                 ):
+                    assert isinstance(response.body, bytes)
                     to_log["response"]["body"] = f"{json.loads(response.body)}"
 
                 confserverlog.debug(json.dumps(to_log))

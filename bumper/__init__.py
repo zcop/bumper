@@ -109,7 +109,7 @@ async def start() -> None:
     global web_server
     web_server = WebServer(web_server_bindings)
     global xmpp_server
-    xmpp_server = XMPPServer((bumper_listen, xmpp_listen_port))
+    xmpp_server = XMPPServer(bumper_listen, xmpp_listen_port)
 
     # Start XMPP Server
     asyncio.create_task(xmpp_server.start_async_server())
@@ -151,7 +151,7 @@ async def shutdown() -> None:
         if mqtt_server.state == "started":
             await mqtt_server.shutdown()
         if xmpp_server.server:
-            if xmpp_server.server._serving:
+            if xmpp_server.server.is_serving:
                 xmpp_server.server.close()
             await xmpp_server.server.wait_closed()
 

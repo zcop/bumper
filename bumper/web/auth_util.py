@@ -275,6 +275,7 @@ def _auth_any(
             checkToken = _check_token(
                 apptype, countrycode, tmpuser, request.query["accessToken"]
             )
+            assert checkToken.text
             isGood: dict[str, Any] = json.loads(checkToken.text)
             if isGood["code"] == "0000":
                 return isGood

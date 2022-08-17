@@ -41,8 +41,7 @@ async def test_base(webserver_client):
     remove_existing_db()
 
     # Start XMPP
-    xmpp_address = (HOST, 5223)
-    xmpp_server = XMPPServer(xmpp_address)
+    xmpp_server = XMPPServer(HOST, 5223)
     bumper.xmpp_server = xmpp_server
     await xmpp_server.start_async_server()
 
@@ -57,8 +56,7 @@ async def test_restartService(webserver_client):
     remove_existing_db()
 
     # Start XMPP
-    xmpp_address = (HOST, 5223)
-    xmpp_server = XMPPServer(xmpp_address)
+    xmpp_server = XMPPServer(HOST, 5223)
     bumper.xmpp_server = xmpp_server
     await xmpp_server.start_async_server()
 
