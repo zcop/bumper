@@ -41,6 +41,7 @@ def get_logger(name: str, rotate: RotatingFileHandler | None = None) -> logging.
         )  # Ignore this logger
         get_logger("amqtt.broker", rotate)
         get_logger("amqtt.mqtt.protocol", rotate)
+    elif name == "helperbot":
         get_logger("gmqtt", rotate)
 
     return logger

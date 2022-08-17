@@ -102,19 +102,20 @@ async def _get_user_account_info(request: Request) -> Response:
     try:
         user_devid = request.match_info.get("devid", "")
         user = user_by_deviceid(user_devid)
-        username = f"fusername_{user['userid']}"
-        return get_success_response(
-            {
-                "email": "null@null.com",
-                "hasMobile": "N",
-                "hasPassword": "Y",
-                "uid": f"fuid_{user['userid']}",
-                "userName": username,
-                "obfuscatedMobile": None,
-                "mobile": None,
-                "loginName": username,
-            }
-        )
+        if user:
+            username = f"fusername_{user['userid']}"
+            return get_success_response(
+                {
+                    "email": "null@null.com",
+                    "hasMobile": "N",
+                    "hasPassword": "Y",
+                    "uid": f"fuid_{user['userid']}",
+                    "userName": username,
+                    "obfuscatedMobile": None,
+                    "mobile": None,
+                    "loginName": username,
+                }
+            )
 
         # Example body
         # {

@@ -181,15 +181,17 @@ async def _handle_appsvr_service_list(_: Request) -> Response:
 async def _handle_appsvr_oauth_callback(request: Request) -> Response:
     try:
         token = token_by_authcode(request.query["code"])
-        oauth = user_add_oauth(token["userid"])
-        body = {
-            "code": 0,
-            "data": oauth.toResponse(),
-            "ret": "ok",
-            "todo": "result",
-        }
+        if token:
+            oauth = user_add_oauth(token["userid"])
+            if oauth:
+                body = {
+                    "code": 0,
+                    "data": oauth.toResponse(),
+                    "ret": "ok",
+                    "todo": "result",
+                }
 
-        return web.json_response(body)
+                return web.json_response(body)
 
     except Exception:  # pylint: disable=broad-except
         logging.error("Unexpected exception occurred", exc_info=True)

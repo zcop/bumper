@@ -177,7 +177,7 @@ class WebServer:
     async def _log_all_requests(
         self, request: Request, handler: Handler
     ) -> StreamResponse:
-        if request._match_info.route.name not in self._EXCLUDE_FROM_LOGGING:
+        if request.match_info.route.name not in self._EXCLUDE_FROM_LOGGING:
             to_log = {
                 "request": {
                     "route_name": f"{request.match_info.route.name}",

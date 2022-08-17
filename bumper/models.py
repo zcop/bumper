@@ -88,7 +88,7 @@ class EcoVacs_Login:
 
 class EcoVacsHome_Login(EcoVacs_Login):
     loginName = ""
-    mobile = ""
+    mobile: str | None = ""
     ucUid = ""
 
 

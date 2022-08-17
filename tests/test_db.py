@@ -56,9 +56,7 @@ def test_user_db():
     assert db.check_authcode("testuser", "auth_1234")
     # Test that authcode was found for testuser
 
-    db.user_revoke_authcode(
-        "testuser", "token_1234", "auth_1234"
-    )  # Remove authcode from testuser
+    db.user_revoke_authcode("testuser", "token_1234")  # Remove authcode from testuser
     assert db.check_authcode("testuser", "auth_1234") == False
     # Test that authcode was not found for testuser
     db.user_revoke_token("testuser", "token_1234")  # Remove token from testuser

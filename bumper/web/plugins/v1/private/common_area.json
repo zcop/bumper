@@ -1,14 +1,23 @@
 {
-  "currentVersion": 231,
   "areaList": [
-    { "areaKey": "JP", "chsName": "日本", "enName": "Japan", "pyFirst": "R" },
+    {
+      "areaKey": "JP",
+      "chsName": "日本",
+      "enName": "Japan",
+      "pyFirst": "R"
+    },
     {
       "areaKey": "MY",
       "chsName": "马来西亚",
       "enName": "Malaysia",
       "pyFirst": "M"
     },
-    { "areaKey": "DE", "chsName": "德国", "enName": "Germany", "pyFirst": "D" },
+    {
+      "areaKey": "DE",
+      "chsName": "德国",
+      "enName": "Germany",
+      "pyFirst": "D"
+    },
     {
       "areaKey": "LI",
       "chsName": "列支敦斯登",
@@ -21,8 +30,18 @@
       "enName": "Austria",
       "pyFirst": "A"
     },
-    { "areaKey": "TW", "chsName": "台湾", "enName": "Taiwan", "pyFirst": "T" },
-    { "areaKey": "FR", "chsName": "法国", "enName": "France", "pyFirst": "F" },
+    {
+      "areaKey": "TW",
+      "chsName": "台湾",
+      "enName": "Taiwan",
+      "pyFirst": "T"
+    },
+    {
+      "areaKey": "FR",
+      "chsName": "法国",
+      "enName": "France",
+      "pyFirst": "F"
+    },
     {
       "areaKey": "CN",
       "chsName": "中国大陆",
@@ -101,7 +120,12 @@
       "enName": "Vanuatu",
       "pyFirst": "W"
     },
-    { "areaKey": "IN", "chsName": "印度", "enName": "India", "pyFirst": "Y" },
+    {
+      "areaKey": "IN",
+      "chsName": "印度",
+      "enName": "India",
+      "pyFirst": "Y"
+    },
     {
       "areaKey": "CM",
       "chsName": "喀麦隆",
@@ -126,7 +150,12 @@
       "enName": "Cayman Islands",
       "pyFirst": "K"
     },
-    { "areaKey": "QA", "chsName": "卡塔尔", "enName": "Qatar", "pyFirst": "K" },
+    {
+      "areaKey": "QA",
+      "chsName": "卡塔尔",
+      "enName": "Qatar",
+      "pyFirst": "K"
+    },
     {
       "areaKey": "AZ",
       "chsName": "阿塞拜疆",
@@ -157,7 +186,12 @@
       "enName": "Colombia",
       "pyFirst": "G"
     },
-    { "areaKey": "IR", "chsName": "伊朗", "enName": "Iran", "pyFirst": "Y" },
+    {
+      "areaKey": "IR",
+      "chsName": "伊朗",
+      "enName": "Iran",
+      "pyFirst": "Y"
+    },
     {
       "areaKey": "ZA",
       "chsName": "南非",
@@ -170,8 +204,18 @@
       "enName": "Uruguay",
       "pyFirst": "W"
     },
-    { "areaKey": "GU", "chsName": "关岛", "enName": "Guam", "pyFirst": "G" },
-    { "areaKey": "GH", "chsName": "加纳", "enName": "Ghana", "pyFirst": "J" },
+    {
+      "areaKey": "GU",
+      "chsName": "关岛",
+      "enName": "Guam",
+      "pyFirst": "G"
+    },
+    {
+      "areaKey": "GH",
+      "chsName": "加纳",
+      "enName": "Ghana",
+      "pyFirst": "J"
+    },
     {
       "areaKey": "GN",
       "chsName": "几内亚",
@@ -184,16 +228,36 @@
       "enName": "Marshall Islands",
       "pyFirst": "M"
     },
-    { "areaKey": "SE", "chsName": "瑞典", "enName": "Sweden", "pyFirst": "R" },
+    {
+      "areaKey": "SE",
+      "chsName": "瑞典",
+      "enName": "Sweden",
+      "pyFirst": "R"
+    },
     {
       "areaKey": "SB",
       "chsName": "所罗门群岛",
       "enName": "Solomon Islands",
       "pyFirst": "S"
     },
-    { "areaKey": "NE", "chsName": "尼日尔", "enName": "Niger", "pyFirst": "N" },
-    { "areaKey": "HT", "chsName": "海地", "enName": "Haiti", "pyFirst": "H" },
-    { "areaKey": "PL", "chsName": "波兰", "enName": "Poland", "pyFirst": "B" },
+    {
+      "areaKey": "NE",
+      "chsName": "尼日尔",
+      "enName": "Niger",
+      "pyFirst": "N"
+    },
+    {
+      "areaKey": "HT",
+      "chsName": "海地",
+      "enName": "Haiti",
+      "pyFirst": "H"
+    },
+    {
+      "areaKey": "PL",
+      "chsName": "波兰",
+      "enName": "Poland",
+      "pyFirst": "B"
+    },
     {
       "areaKey": "DO",
       "chsName": "多米尼加共和国",
@@ -230,7 +294,12 @@
       "enName": "Kyrgyzstan",
       "pyFirst": "J"
     },
-    { "areaKey": "JO", "chsName": "约旦", "enName": "Jordan", "pyFirst": "Y" },
+    {
+      "areaKey": "JO",
+      "chsName": "约旦",
+      "enName": "Jordan",
+      "pyFirst": "Y"
+    },
     {
       "areaKey": "IL",
       "chsName": "以色列",
@@ -291,7 +360,12 @@
       "enName": "Ethiopia",
       "pyFirst": "A"
     },
-    { "areaKey": "CL", "chsName": "智利", "enName": "Chile", "pyFirst": "Z" },
+    {
+      "areaKey": "CL",
+      "chsName": "智利",
+      "enName": "Chile",
+      "pyFirst": "Z"
+    },
     {
       "areaKey": "GP",
       "chsName": "瓜德罗普岛",
@@ -328,7 +402,12 @@
       "enName": "Maldives",
       "pyFirst": "M"
     },
-    { "areaKey": "CU", "chsName": "古巴", "enName": "Cuba", "pyFirst": "G" },
+    {
+      "areaKey": "CU",
+      "chsName": "古巴",
+      "enName": "Cuba",
+      "pyFirst": "G"
+    },
     {
       "areaKey": "LS",
       "chsName": "莱索托",
@@ -383,7 +462,12 @@
       "enName": "Latvia",
       "pyFirst": "L"
     },
-    { "areaKey": "NO", "chsName": "挪威", "enName": "Norway", "pyFirst": "N" },
+    {
+      "areaKey": "NO",
+      "chsName": "挪威",
+      "enName": "Norway",
+      "pyFirst": "N"
+    },
     {
       "areaKey": "BE",
       "chsName": "比利时",
@@ -456,7 +540,12 @@
       "enName": "Bangladesh",
       "pyFirst": "M"
     },
-    { "areaKey": "TD", "chsName": "乍得", "enName": "Chad", "pyFirst": "Z" },
+    {
+      "areaKey": "TD",
+      "chsName": "乍得",
+      "enName": "Chad",
+      "pyFirst": "Z"
+    },
     {
       "areaKey": "LT",
       "chsName": "立陶宛",
@@ -481,7 +570,12 @@
       "enName": "Bahamas",
       "pyFirst": "B"
     },
-    { "areaKey": "MM", "chsName": "缅甸", "enName": "Myanmar", "pyFirst": "M" },
+    {
+      "areaKey": "MM",
+      "chsName": "缅甸",
+      "enName": "Myanmar",
+      "pyFirst": "M"
+    },
     {
       "areaKey": "BI",
       "chsName": "布隆迪",
@@ -500,8 +594,18 @@
       "enName": "Slovakia",
       "pyFirst": "S"
     },
-    { "areaKey": "FI", "chsName": "芬兰", "enName": "Finland", "pyFirst": "F" },
-    { "areaKey": "GA", "chsName": "加蓬", "enName": "Gabon", "pyFirst": "J" },
+    {
+      "areaKey": "FI",
+      "chsName": "芬兰",
+      "enName": "Finland",
+      "pyFirst": "F"
+    },
+    {
+      "areaKey": "GA",
+      "chsName": "加蓬",
+      "enName": "Gabon",
+      "pyFirst": "J"
+    },
     {
       "areaKey": "DZ",
       "chsName": "阿尔及利亚",
@@ -520,7 +624,12 @@
       "enName": "Zambia",
       "pyFirst": "Z"
     },
-    { "areaKey": "NU", "chsName": "纽埃", "enName": "Niue", "pyFirst": "N" },
+    {
+      "areaKey": "NU",
+      "chsName": "纽埃",
+      "enName": "Niue",
+      "pyFirst": "N"
+    },
     {
       "areaKey": "ER",
       "chsName": "厄立特里亚国",
@@ -533,7 +642,12 @@
       "enName": "Hong Kong",
       "pyFirst": "X"
     },
-    { "areaKey": "IT", "chsName": "意大利", "enName": "Italy", "pyFirst": "Y" },
+    {
+      "areaKey": "IT",
+      "chsName": "意大利",
+      "enName": "Italy",
+      "pyFirst": "Y"
+    },
     {
       "areaKey": "MS",
       "chsName": "蒙特色拉特岛",
@@ -546,9 +660,24 @@
       "enName": "Estonia",
       "pyFirst": "A"
     },
-    { "areaKey": "WS", "chsName": "萨摩亚", "enName": "Samoa", "pyFirst": "S" },
-    { "areaKey": "TG", "chsName": "多哥", "enName": "Togo", "pyFirst": "D" },
-    { "areaKey": "ML", "chsName": "马里", "enName": "Mali", "pyFirst": "M" },
+    {
+      "areaKey": "WS",
+      "chsName": "萨摩亚",
+      "enName": "Samoa",
+      "pyFirst": "S"
+    },
+    {
+      "areaKey": "TG",
+      "chsName": "多哥",
+      "enName": "Togo",
+      "pyFirst": "D"
+    },
+    {
+      "areaKey": "ML",
+      "chsName": "马里",
+      "enName": "Mali",
+      "pyFirst": "M"
+    },
     {
       "areaKey": "GF",
       "chsName": "法属圭亚那",
@@ -567,8 +696,18 @@
       "enName": "Indonesia",
       "pyFirst": "Y"
     },
-    { "areaKey": "KE", "chsName": "肯尼亚", "enName": "Kenya", "pyFirst": "K" },
-    { "areaKey": "EG", "chsName": "埃及", "enName": "Egypt", "pyFirst": "A" },
+    {
+      "areaKey": "KE",
+      "chsName": "肯尼亚",
+      "enName": "Kenya",
+      "pyFirst": "K"
+    },
+    {
+      "areaKey": "EG",
+      "chsName": "埃及",
+      "enName": "Egypt",
+      "pyFirst": "A"
+    },
     {
       "areaKey": "NF",
       "chsName": "诺福克岛",
@@ -587,7 +726,12 @@
       "enName": "Turkey",
       "pyFirst": "T"
     },
-    { "areaKey": "DK", "chsName": "丹麦", "enName": "Denmark", "pyFirst": "D" },
+    {
+      "areaKey": "DK",
+      "chsName": "丹麦",
+      "enName": "Denmark",
+      "pyFirst": "D"
+    },
     {
       "areaKey": "AD",
       "chsName": "安道尔",
@@ -624,7 +768,12 @@
       "enName": "East Timor",
       "pyFirst": "D"
     },
-    { "areaKey": "LY", "chsName": "利比亚", "enName": "Libya", "pyFirst": "L" },
+    {
+      "areaKey": "LY",
+      "chsName": "利比亚",
+      "enName": "Libya",
+      "pyFirst": "L"
+    },
     {
       "areaKey": "RW",
       "chsName": "卢旺达",
@@ -697,14 +846,24 @@
       "enName": "Guatemala",
       "pyFirst": "W"
     },
-    { "areaKey": "BT", "chsName": "不丹", "enName": "Bhutan", "pyFirst": "B" },
+    {
+      "areaKey": "BT",
+      "chsName": "不丹",
+      "enName": "Bhutan",
+      "pyFirst": "B"
+    },
     {
       "areaKey": "AI",
       "chsName": "安圭拉岛",
       "enName": "Anguilla",
       "pyFirst": "A"
     },
-    { "areaKey": "OM", "chsName": "阿曼", "enName": "Oman", "pyFirst": "A" },
+    {
+      "areaKey": "OM",
+      "chsName": "阿曼",
+      "enName": "Oman",
+      "pyFirst": "A"
+    },
     {
       "areaKey": "KI",
       "chsName": "基里巴斯",
@@ -717,7 +876,12 @@
       "enName": "Ukraine",
       "pyFirst": "W"
     },
-    { "areaKey": "YE", "chsName": "也门", "enName": "Yemen", "pyFirst": "Y" },
+    {
+      "areaKey": "YE",
+      "chsName": "也门",
+      "enName": "Yemen",
+      "pyFirst": "Y"
+    },
     {
       "areaKey": "DR",
       "chsName": "刚果民主共和国",
@@ -754,14 +918,24 @@
       "enName": "Bosnia Hercegovina",
       "pyFirst": "B"
     },
-    { "areaKey": "MO", "chsName": "澳门", "enName": "Macao", "pyFirst": "A" },
+    {
+      "areaKey": "MO",
+      "chsName": "澳门",
+      "enName": "Macao",
+      "pyFirst": "A"
+    },
     {
       "areaKey": "KN",
       "chsName": "圣基茨和尼维斯",
       "enName": "Saint Kitts and Nevis",
       "pyFirst": "S"
     },
-    { "areaKey": "TO", "chsName": "汤加", "enName": "Tonga", "pyFirst": "T" },
+    {
+      "areaKey": "TO",
+      "chsName": "汤加",
+      "enName": "Tonga",
+      "pyFirst": "T"
+    },
     {
       "areaKey": "NG",
       "chsName": "尼日利亚",
@@ -780,7 +954,12 @@
       "enName": "Central African Republic",
       "pyFirst": "Z"
     },
-    { "areaKey": "PE", "chsName": "秘鲁", "enName": "Peru", "pyFirst": "M" },
+    {
+      "areaKey": "PE",
+      "chsName": "秘鲁",
+      "enName": "Peru",
+      "pyFirst": "M"
+    },
     {
       "areaKey": "PG",
       "chsName": "巴布亚新几内亚",
@@ -805,10 +984,30 @@
       "enName": "Bolivia",
       "pyFirst": "B"
     },
-    { "areaKey": "IQ", "chsName": "伊拉克", "enName": "Iraq", "pyFirst": "Y" },
-    { "areaKey": "NP", "chsName": "尼泊尔", "enName": "Nepal", "pyFirst": "N" },
-    { "areaKey": "BJ", "chsName": "贝宁", "enName": "Benin", "pyFirst": "B" },
-    { "areaKey": "VN", "chsName": "越南", "enName": "Vietnam", "pyFirst": "Y" },
+    {
+      "areaKey": "IQ",
+      "chsName": "伊拉克",
+      "enName": "Iraq",
+      "pyFirst": "Y"
+    },
+    {
+      "areaKey": "NP",
+      "chsName": "尼泊尔",
+      "enName": "Nepal",
+      "pyFirst": "N"
+    },
+    {
+      "areaKey": "BJ",
+      "chsName": "贝宁",
+      "enName": "Benin",
+      "pyFirst": "B"
+    },
+    {
+      "areaKey": "VN",
+      "chsName": "越南",
+      "enName": "Vietnam",
+      "pyFirst": "Y"
+    },
     {
       "areaKey": "NI",
       "chsName": "尼加拉瓜",
@@ -833,7 +1032,12 @@
       "enName": "San Marino",
       "pyFirst": "S"
     },
-    { "areaKey": "NR", "chsName": "瑙鲁", "enName": "Nauru", "pyFirst": "N" },
+    {
+      "areaKey": "NR",
+      "chsName": "瑙鲁",
+      "enName": "Nauru",
+      "pyFirst": "N"
+    },
     {
       "areaKey": "BN",
       "chsName": "文莱",
@@ -846,7 +1050,12 @@
       "enName": "Mozambique",
       "pyFirst": "M"
     },
-    { "areaKey": "GR", "chsName": "希腊", "enName": "Greece", "pyFirst": "X" },
+    {
+      "areaKey": "GR",
+      "chsName": "希腊",
+      "enName": "Greece",
+      "pyFirst": "X"
+    },
     {
       "areaKey": "TN",
       "chsName": "突尼斯",
@@ -889,7 +1098,12 @@
       "enName": "Mauritius",
       "pyFirst": "M"
     },
-    { "areaKey": "LA", "chsName": "老挝", "enName": "Laos", "pyFirst": "L" },
+    {
+      "areaKey": "LA",
+      "chsName": "老挝",
+      "enName": "Laos",
+      "pyFirst": "L"
+    },
     {
       "areaKey": "US",
       "chsName": "美国",
@@ -1022,14 +1236,24 @@
       "enName": "Cyprus",
       "pyFirst": "S"
     },
-    { "areaKey": "BR", "chsName": "巴西", "enName": "Brazil", "pyFirst": "B" },
+    {
+      "areaKey": "BR",
+      "chsName": "巴西",
+      "enName": "Brazil",
+      "pyFirst": "B"
+    },
     {
       "areaKey": "LB",
       "chsName": "黎巴嫩",
       "enName": "Lebanon",
       "pyFirst": "L"
     },
-    { "areaKey": "IS", "chsName": "冰岛", "enName": "Iceland", "pyFirst": "B" },
+    {
+      "areaKey": "IS",
+      "chsName": "冰岛",
+      "enName": "Iceland",
+      "pyFirst": "B"
+    },
     {
       "areaKey": "PA",
       "chsName": "巴拿马",
@@ -1054,14 +1278,24 @@
       "enName": "New Caledonia",
       "pyFirst": "X"
     },
-    { "areaKey": "MT", "chsName": "马尔他", "enName": "Malta", "pyFirst": "M" },
+    {
+      "areaKey": "MT",
+      "chsName": "马尔他",
+      "enName": "Malta",
+      "pyFirst": "M"
+    },
     {
       "areaKey": "BG",
       "chsName": "保加利亚",
       "enName": "Bulgaria",
       "pyFirst": "B"
     },
-    { "areaKey": "ES", "chsName": "西班牙", "enName": "Spain", "pyFirst": "X" },
+    {
+      "areaKey": "ES",
+      "chsName": "西班牙",
+      "enName": "Spain",
+      "pyFirst": "X"
+    },
     {
       "areaKey": "CI",
       "chsName": "象牙海岸",
@@ -1098,14 +1332,24 @@
       "enName": "Georgia",
       "pyFirst": "G"
     },
-    { "areaKey": "SD", "chsName": "苏丹", "enName": "Sudan", "pyFirst": "S" },
+    {
+      "areaKey": "SD",
+      "chsName": "苏丹",
+      "enName": "Sudan",
+      "pyFirst": "S"
+    },
     {
       "areaKey": "PR",
       "chsName": "波多黎各",
       "enName": "Puerto Rico",
       "pyFirst": "B"
     },
-    { "areaKey": "FJ", "chsName": "斐济", "enName": "Fiji", "pyFirst": "F" },
+    {
+      "areaKey": "FJ",
+      "chsName": "斐济",
+      "enName": "Fiji",
+      "pyFirst": "F"
+    },
     {
       "areaKey": "NL",
       "chsName": "荷兰",
@@ -1130,5 +1374,6 @@
       "enName": "Turks and Caicos Islands",
       "pyFirst": "T"
     }
-  ]
+  ],
+  "currentVersion": 231
 }

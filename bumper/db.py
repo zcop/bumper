@@ -1,7 +1,9 @@
 import os
 from datetime import datetime, timedelta
+from typing import Any
 
 from tinydb import Query, TinyDB
+from tinydb.table import Document
 
 import bumper
 from bumper.models import BumperUser, OAuth, VacBotClient, VacBotDevice
@@ -11,11 +13,11 @@ from .util import get_logger
 bumperlog = get_logger("bumper")
 
 
-def db_file():
+def db_file() -> str:
     return os.environ.get("DB_FILE") or os_db_path()
 
 
-def os_db_path():  # createdir=True):
+def os_db_path() -> str:  # createdir=True):
     return os.path.join(bumper.data_dir, "bumper.db")
 
 
@@ -33,7 +35,7 @@ def db_get() -> TinyDB:
     return db
 
 
-def user_add(userid):
+def user_add(userid: str) -> None:
     newuser = BumperUser()
     newuser.userid = userid
 
@@ -43,19 +45,19 @@ def user_add(userid):
         user_full_upsert(newuser.asdict())
 
 
-def user_get(userid):
+def user_get(userid: str) -> None | Document:
     users = db_get().table("users")
     User = Query()
     return users.get(User.userid == userid)
 
 
-def user_by_deviceid(deviceid: str):
+def user_by_deviceid(deviceid: str) -> None | Document:
     users = db_get().table("users")
     User = Query()
     return users.get(User.devices.any([deviceid]))
 
 
-def user_full_upsert(user):
+def user_full_upsert(user: dict[str, Any]) -> None:
     opendb = db_get()
     with opendb:
         users = opendb.table("users")
@@ -63,69 +65,73 @@ def user_full_upsert(user):
         users.upsert(user, User.did == user["userid"])
 
 
-def user_add_device(userid, devid):
+def user_add_device(userid: str, devid: str) -> None:
     opendb = db_get()
     with opendb:
         users = opendb.table("users")
         User = Query()
         user = users.get(User.userid == userid)
-        userdevices = list(user["devices"])
-        if not devid in userdevices:
-            userdevices.append(devid)
+        if user:
+            userdevices = list(user["devices"])
+            if not devid in userdevices:
+                userdevices.append(devid)
 
         users.upsert({"devices": userdevices}, User.userid == userid)
 
 
-def user_remove_device(userid, devid):
+def user_remove_device(userid: str, devid: str) -> None:
     opendb = db_get()
     with opendb:
         users = opendb.table("users")
         User = Query()
         user = users.get(User.userid == userid)
-        userdevices = list(user["devices"])
-        if devid in userdevices:
-            userdevices.remove(devid)
+        if user:
+            userdevices = list(user["devices"])
+            if devid in userdevices:
+                userdevices.remove(devid)
 
         users.upsert({"devices": userdevices}, User.userid == userid)
 
 
-def user_add_bot(userid, did):
+def user_add_bot(userid: str, did: str) -> None:
     opendb = db_get()
     with opendb:
         users = opendb.table("users")
         User = Query()
         user = users.get(User.userid == userid)
-        userbots = list(user["bots"])
-        if not did in userbots:
-            userbots.append(did)
+        if user:
+            userbots = list(user["bots"])
+            if not did in userbots:
+                userbots.append(did)
 
         users.upsert({"bots": userbots}, User.userid == userid)
 
 
-def user_remove_bot(userid, did):
+def user_remove_bot(userid: str, did: str) -> None:
     opendb = db_get()
     with opendb:
         users = opendb.table("users")
         User = Query()
         user = users.get(User.userid == userid)
-        userbots = list(user["bots"])
-        if did in userbots:
-            userbots.remove(did)
+        if user:
+            userbots = list(user["bots"])
+            if did in userbots:
+                userbots.remove(did)
 
         users.upsert({"bots": userbots}, User.userid == userid)
 
 
-def user_get_tokens(userid):
+def user_get_tokens(userid: str) -> list[Document]:
     tokens = db_get().table("tokens")
     return tokens.search(Query().userid == userid)
 
 
-def user_get_token(userid, token):
+def user_get_token(userid: str, token: str) -> Document | None:
     tokens = db_get().table("tokens")
     return tokens.get((Query().userid == userid) & (Query().token == token))
 
 
-def user_add_token(userid, token):
+def user_add_token(userid: str, token: str) -> None:
     opendb = db_get()
     with opendb:
         tokens = opendb.table("tokens")
@@ -144,7 +150,7 @@ def user_add_token(userid, token):
             )
 
 
-def user_revoke_all_tokens(userid):
+def user_revoke_all_tokens(userid: str) -> None:
     opendb = db_get()
     with opendb:
         tokens = opendb.table("tokens")
@@ -153,7 +159,7 @@ def user_revoke_all_tokens(userid):
             tokens.remove(doc_ids=[i.doc_id])
 
 
-def user_revoke_expired_tokens(userid):
+def user_revoke_expired_tokens(userid: str) -> None:
     opendb = db_get()
     with opendb:
         tokens = opendb.table("tokens")
@@ -166,7 +172,7 @@ def user_revoke_expired_tokens(userid):
                 tokens.remove(doc_ids=[i.doc_id])
 
 
-def user_revoke_token(userid: str, token: str):
+def user_revoke_token(userid: str, token: str) -> None:
     opendb = db_get()
     with opendb:
         tokens = opendb.table("tokens")
@@ -175,7 +181,7 @@ def user_revoke_token(userid: str, token: str):
             tokens.remove(doc_ids=[tmptoken.doc_id])
 
 
-def user_add_authcode(userid, token, authcode):
+def user_add_authcode(userid: str, token: str, authcode: str) -> None:
     opendb = db_get()
     with opendb:
         tokens = opendb.table("tokens")
@@ -187,7 +193,7 @@ def user_add_authcode(userid, token, authcode):
             )
 
 
-def user_revoke_authcode(userid, token, authcode):
+def user_revoke_authcode(userid: str, token: str) -> None:
     opendb = db_get()
     with opendb:
         tokens = opendb.table("tokens")
@@ -199,7 +205,7 @@ def user_revoke_authcode(userid, token, authcode):
             )
 
 
-def revoke_expired_oauths():
+def revoke_expired_oauths() -> None:
     opendb = db_get()
     with opendb:
         table = opendb.table("oauth")
@@ -214,7 +220,7 @@ def revoke_expired_oauths():
                 table.remove(doc_ids=[i.doc_id])
 
 
-def user_revoke_expired_oauths(userid):
+def user_revoke_expired_oauths(userid: str) -> None:
     opendb = db_get()
     with opendb:
         table = opendb.table("oauth")
@@ -228,7 +234,7 @@ def user_revoke_expired_oauths(userid):
                 table.remove(doc_ids=[i.doc_id])
 
 
-def user_add_oauth(userid) -> OAuth:
+def user_add_oauth(userid: str) -> OAuth:
     user_revoke_expired_oauths(userid)
     opendb = db_get()
     with opendb:
@@ -243,12 +249,12 @@ def user_add_oauth(userid) -> OAuth:
             return oauth
 
 
-def token_by_authcode(authcode: str):
+def token_by_authcode(authcode: str) -> Document | None:
     tokens = db_get().table("tokens")
     return tokens.get(Query().authcode == authcode)
 
 
-def get_disconnected_xmpp_clients():
+def get_disconnected_xmpp_clients() -> list[Document]:
     clients = db_get().table("clients")
     Client = Query()
     return clients.search(Client.xmpp_connection == False)
@@ -270,7 +276,7 @@ def check_authcode(uid: str, authcode: str) -> bool:
     return False
 
 
-def loginByItToken(authcode):
+def loginByItToken(authcode: str) -> dict[str, str]:
     bumperlog.debug(f"Checking for authcode: {authcode}")
     tokens = db_get().table("tokens")
     tmpauth = tokens.get(
@@ -303,7 +309,7 @@ def check_token(uid: str, token: str) -> bool:
     return False
 
 
-def revoke_expired_tokens():
+def revoke_expired_tokens() -> None:
     tokens = db_get().table("tokens").all()
     for i in tokens:
         if datetime.now() >= datetime.fromisoformat(i["expiration"]):
@@ -328,20 +334,20 @@ def bot_add(sn: str, did: str, devclass: str, resource: str, company: str) -> No
             bot_full_upsert(newbot.asdict())
 
 
-def bot_remove(did: str):
+def bot_remove(did: str) -> None:
     bots = db_get().table("bots")
     bot = bot_get(did)
     if bot:
         bots.remove(doc_ids=[bot.doc_id])
 
 
-def bot_get(did: str):
+def bot_get(did: str) -> Document | None:
     bots = db_get().table("bots")
     Bot = Query()
     return bots.get(Bot.did == did)
 
 
-def bot_full_upsert(vacbot):
+def bot_full_upsert(vacbot: dict[str, Any]) -> None:
     bots = db_get().table("bots")
     Bot = Query()
     if "did" in vacbot:
@@ -350,7 +356,7 @@ def bot_full_upsert(vacbot):
         bumperlog.error(f"No DID in vacbot: {vacbot}")
 
 
-def bot_set_nick(did, nick):
+def bot_set_nick(did: str, nick: str) -> None:
     bots = db_get().table("bots")
     Bot = Query()
     bots.upsert({"nick": nick}, Bot.did == did)
@@ -362,7 +368,7 @@ def bot_set_mqtt(did: str, mqtt: bool) -> None:
     bots.upsert({"mqtt_connection": mqtt}, Bot.did == did)
 
 
-def bot_set_xmpp(did, xmpp):
+def bot_set_xmpp(did: str, xmpp: bool) -> None:
     bots = db_get().table("bots")
     Bot = Query()
     bots.upsert({"xmpp_connection": xmpp}, Bot.did == did)
@@ -380,20 +386,20 @@ def client_add(userid: str, realm: str, resource: str) -> None:
         client_full_upsert(newclient.asdict())
 
 
-def client_remove(resource: str):
+def client_remove(resource: str) -> None:
     clients = db_get().table("clients")
     client = client_get(resource)
     if client:
         clients.remove(doc_ids=[client.doc_id])
 
 
-def client_get(resource: str):
+def client_get(resource: str) -> Document | None:
     clients = db_get().table("clients")
     Client = Query()
     return clients.get(Client.resource == resource)
 
 
-def client_full_upsert(client):
+def client_full_upsert(client: dict[str, Any]) -> None:
     clients = db_get().table("clients")
     Client = Query()
     clients.upsert(client, Client.resource == client["resource"])
@@ -405,7 +411,7 @@ def client_set_mqtt(resource: str, mqtt: bool) -> None:
     clients.upsert({"mqtt_connection": mqtt}, Client.resource == resource)
 
 
-def client_set_xmpp(resource, xmpp):
+def client_set_xmpp(resource: str, xmpp: bool) -> None:
     clients = db_get().table("clients")
     Client = Query()
     clients.upsert({"xmpp_connection": xmpp}, Client.resource == resource)

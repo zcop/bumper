@@ -30,7 +30,7 @@ async def _handle_dim_devmanager(request: Request) -> Response:
 
         if did != "":
             bot = bot_get(did)
-            if bot["company"] == "eco-ng" and bot["mqtt_connection"]:
+            if bot and bot["company"] == "eco-ng" and bot["mqtt_connection"]:
                 retcmd = await bumper.mqtt_helperbot.send_command(json_body, randomid)
                 body = retcmd
                 logging.debug("Send Bot - %s", json_body)

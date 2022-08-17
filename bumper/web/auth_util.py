@@ -2,6 +2,7 @@
 import json
 import logging
 import uuid
+from typing import Any
 
 from aiohttp import web
 from aiohttp.web_exceptions import HTTPInternalServerError
@@ -35,29 +36,21 @@ from bumper.web.plugins import get_success_response
 _logger = get_logger("confserver")
 
 
-def generate_token(user):
+def _generate_token(user: dict[str, Any]) -> str:
     """Generate token."""
-    try:
-        tmpaccesstoken = uuid.uuid4().hex
-        user_add_token(user["userid"], tmpaccesstoken)
-        return tmpaccesstoken
-
-    except Exception as e:
-        _logger.exception(f"{e}")
+    token = uuid.uuid4().hex
+    user_add_token(user["userid"], token)
+    return token
 
 
-def generate_authcode(user, countrycode, token):
+def _generate_authcode(user: dict[str, Any], countrycode: str, token: str) -> str:
     """Generate auth token."""
-    try:
-        tmpauthcode = f"{countrycode}_{uuid.uuid4().hex}"
-        user_add_authcode(user["userid"], token, tmpauthcode)
-        return tmpauthcode
-
-    except Exception as e:
-        _logger.exception(f"{e}")
+    tmpauthcode = f"{countrycode}_{uuid.uuid4().hex}"
+    user_add_authcode(user["userid"], token, tmpauthcode)
+    return tmpauthcode
 
 
-async def login(request):
+async def login(request: Request) -> Response:
     """Perform login."""
     try:
         user_devid = request.match_info.get("devid", "")
@@ -69,44 +62,48 @@ async def login(request):
                 not user_devid == ""
             ):  # Performing basic "auth" using devid, super insecure
                 user = user_by_deviceid(user_devid)
-                if "checkLogin" in request.path:
-                    _check_token(
-                        apptype, countrycode, user, request.query["accessToken"]
-                    )
-                else:
-                    if "global_" in apptype:  # EcoVacs Home
-                        login_details = EcoVacsHome_Login()
-                        login_details.ucUid = "fuid_{}".format(user["userid"])
-                        login_details.loginName = "fusername_{}".format(user["userid"])
-                        login_details.mobile = None
-
+                if user:
+                    if "checkLogin" in request.path:
+                        _check_token(
+                            apptype, countrycode, user, request.query["accessToken"]
+                        )
                     else:
-                        login_details = EcoVacs_Login()
+                        login_details: EcoVacsHome_Login | EcoVacs_Login
+                        if "global_" in apptype:  # EcoVacs Home
+                            login_details = EcoVacsHome_Login()
+                            login_details.ucUid = "fuid_{}".format(user["userid"])
+                            login_details.loginName = "fusername_{}".format(
+                                user["userid"]
+                            )
+                            login_details.mobile = None
 
-                    # Deactivate old tokens and authcodes
-                    user_revoke_expired_tokens(user["userid"])
+                        else:
+                            login_details = EcoVacs_Login()
 
-                    login_details.accessToken = generate_token(user)
-                    login_details.uid = "fuid_{}".format(user["userid"])
-                    login_details.username = "fusername_{}".format(user["userid"])
-                    login_details.country = countrycode
-                    login_details.email = "null@null.com"
+                        # Deactivate old tokens and authcodes
+                        user_revoke_expired_tokens(user["userid"])
 
-                    body = {
-                        "code": API_ERRORS[RETURN_API_SUCCESS],
-                        "data": json.loads(login_details.toJSON()),
-                        # {
-                        #    "accessToken": self.generate_token(tmpuser),  # Generate a token
-                        #    "country": countrycode,
-                        #    "email": "null@null.com",
-                        #    "uid": "fuid_{}".format(tmpuser["userid"]),
-                        #    "username": "fusername_{}".format(tmpuser["userid"]),
-                        # },
-                        "msg": "操作成功",
-                        "time": get_current_time_as_millis(),
-                    }
+                        login_details.accessToken = _generate_token(user)
+                        login_details.uid = "fuid_{}".format(user["userid"])
+                        login_details.username = "fusername_{}".format(user["userid"])
+                        login_details.country = countrycode
+                        login_details.email = "null@null.com"
 
-                    return web.json_response(body)
+                        body = {
+                            "code": API_ERRORS[RETURN_API_SUCCESS],
+                            "data": json.loads(login_details.toJSON()),
+                            # {
+                            #    "accessToken": self.generate_token(tmpuser),  # Generate a token
+                            #    "country": countrycode,
+                            #    "email": "null@null.com",
+                            #    "uid": "fuid_{}".format(tmpuser["userid"]),
+                            #    "username": "fusername_{}".format(tmpuser["userid"]),
+                            # },
+                            "msg": "操作成功",
+                            "time": get_current_time_as_millis(),
+                        }
+
+                        return web.json_response(body)
 
             body = {
                 "code": ERR_USER_NOT_ACTIVATED,
@@ -125,6 +122,8 @@ async def login(request):
     except Exception as e:
         _logger.exception(f"{e}")
 
+    raise HTTPInternalServerError
+
 
 async def get_authcode(request: Request) -> Response:
     """Get auth code."""
@@ -142,7 +141,7 @@ async def get_authcode(request: Request) -> Response:
                         if "authcode" in token:
                             authcode = token["authcode"]
                         else:
-                            authcode = generate_authcode(
+                            authcode = _generate_authcode(
                                 user,
                                 request.match_info.get("country", "us"),
                                 request.query["accessToken"],
@@ -170,10 +169,12 @@ async def get_authcode(request: Request) -> Response:
     raise HTTPInternalServerError
 
 
-def _check_token(apptype, countrycode, user, token):
+def _check_token(
+    apptype: str, countrycode: str, user: dict[str, Any], token: str
+) -> Response:
     try:
         if db.check_token(user["userid"], token):
-
+            login_details: EcoVacsHome_Login | EcoVacs_Login
             if "global_" in apptype:  # EcoVacs Home
                 login_details = EcoVacsHome_Login()
                 login_details.ucUid = "fuid_{}".format(user["userid"])
@@ -215,13 +216,18 @@ def _check_token(apptype, countrycode, user, token):
     except Exception as e:
         _logger.exception(f"{e}")
 
+    raise HTTPInternalServerError
 
-def _auth_any(devid, apptype, country, request):
+
+def _auth_any(
+    devid: str, apptype: str, country: str, request: Request
+) -> dict[str, Any]:
     try:
         user_devid = devid
         countrycode = country
         user = user_by_deviceid(user_devid)
         bots = db_get().table("bots").all()
+        login_details: EcoVacs_Login | EcoVacsHome_Login
 
         if user:  # Default to user 0
             tmpuser = user
@@ -233,7 +239,7 @@ def _auth_any(devid, apptype, country, request):
             else:
                 login_details = EcoVacs_Login()
 
-            login_details.accessToken = generate_token(tmpuser)
+            login_details.accessToken = _generate_token(tmpuser)
             login_details.uid = "fuid_{}".format(tmpuser["userid"])
             login_details.username = "fusername_{}".format(tmpuser["userid"])
             login_details.country = countrycode
@@ -241,7 +247,9 @@ def _auth_any(devid, apptype, country, request):
             user_add_device(tmpuser["userid"], user_devid)
         else:
             user_add("tmpuser")  # Add a new user
-            tmpuser = user_get("tmpuser")
+            tmp = user_get("tmpuser")
+            assert tmp
+            tmpuser = tmp
             if "global_" in apptype:  # EcoVacs Home
                 login_details = EcoVacsHome_Login()
                 login_details.ucUid = "fuid_{}".format(tmpuser["userid"])
@@ -250,7 +258,7 @@ def _auth_any(devid, apptype, country, request):
             else:
                 login_details = EcoVacs_Login()
 
-            login_details.accessToken = generate_token(tmpuser)
+            login_details.accessToken = _generate_token(tmpuser)
             login_details.uid = "fuid_{}".format(tmpuser["userid"])
             login_details.username = "fusername_{}".format(tmpuser["userid"])
             login_details.country = countrycode
@@ -267,7 +275,7 @@ def _auth_any(devid, apptype, country, request):
             checkToken = _check_token(
                 apptype, countrycode, tmpuser, request.query["accessToken"]
             )
-            isGood = json.loads(checkToken.text)
+            isGood: dict[str, Any] = json.loads(checkToken.text)
             if isGood["code"] == "0000":
                 return isGood
 
@@ -292,3 +300,4 @@ def _auth_any(devid, apptype, country, request):
 
     except Exception as e:
         _logger.exception(f"{e}")
+        return {}

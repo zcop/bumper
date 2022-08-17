@@ -3,6 +3,7 @@ import logging
 import os
 import socket
 import sys
+from typing import Any
 
 from bumper.db import revoke_expired_oauths, revoke_expired_tokens
 from bumper.mqtt.helper_bot import HelperBot
@@ -12,7 +13,7 @@ from bumper.web.server import WebServer, WebserverBinding
 from bumper.xmppserver import XMPPServer
 
 
-def strtobool(strbool):
+def strtobool(strbool: str | bool | None) -> bool:
     if str(strbool).lower() in ["true", "1", "t", "y", "on", "yes"]:
         return True
     else:
@@ -64,12 +65,12 @@ web_server_https_port = os.environ.get("WEB_SERVER_HTTPS_PORT") or 443
 mqtt_listen_port = 8883
 xmpp_listen_port = 5223
 web_server_bindings = [
-    WebserverBinding(bumper_listen, web_server_https_port, True),
+    WebserverBinding(bumper_listen, int(web_server_https_port), True),
     WebserverBinding(bumper_listen, 8007, False),
 ]
 
 
-async def start():
+async def start() -> None:
     try:
         loop = asyncio.get_event_loop()
     except:
@@ -132,12 +133,12 @@ async def start():
         await asyncio.sleep(5)
 
 
-async def maintenance():
+async def maintenance() -> None:
     revoke_expired_tokens()
     revoke_expired_oauths()
 
 
-async def shutdown():
+async def shutdown() -> None:
     try:
         bumperlog.info("Shutting down")
         global shutting_down
@@ -159,7 +160,7 @@ async def shutdown():
         bumperlog.info("Coroutine canceled")
 
 
-def main(argv=None):
+def main(argv: None | list[str] = None) -> None:
     import argparse
 
     global bumper_debug

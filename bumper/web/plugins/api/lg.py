@@ -53,7 +53,7 @@ async def _handle_lg_log(request: Request) -> Response:
 
         if did != "":
             bot = bot_get(did)
-            if bot["company"] == "eco-ng":
+            if bot and bot["company"] == "eco-ng":
                 retcmd = await bumper.mqtt_helperbot.send_command(json_body, randomid)
                 body = retcmd
                 logging.debug("Send Bot - %s", json_body)
