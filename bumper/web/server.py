@@ -375,6 +375,7 @@ class WebServer:
             proxymodelog.exception(
                 f"Request cancelled or timeout - {request.url}", exc_info=True
             )
+            raise
 
         except Exception:
             proxymodelog.exception("An exception occurred", exc_info=True)
