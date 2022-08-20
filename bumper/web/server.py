@@ -1,5 +1,4 @@
 """Web server module."""
-
 import asyncio
 import dataclasses
 import json
@@ -7,21 +6,19 @@ import logging
 import os
 import ssl
 
+import aiohttp
 import aiohttp_jinja2
 import jinja2
 from aiohttp import web
-from aiohttp.typedefs import Handler
-from aiohttp.web_exceptions import (
-    HTTPBadRequest,
-    HTTPInternalServerError,
-    HTTPNoContent,
-)
+from aiohttp.web_exceptions import HTTPInternalServerError
 from aiohttp.web_request import Request
-from aiohttp.web_response import Response, StreamResponse
+from aiohttp.web_response import Response
 
 import bumper
 from bumper.db import bot_get, bot_remove, client_get, client_remove, db_get
+from bumper.dns import get_resolver_with_public_nameserver
 from bumper.util import get_logger
+from bumper.web.middlewares import log_all_requests
 from bumper.web.plugins import add_plugins
 
 
@@ -41,6 +38,7 @@ class _aiohttp_filter(logging.Filter):
 confserverlog = get_logger("confserver")
 # Add logging filter above to aiohttp.access
 logging.getLogger("aiohttp.access").addFilter(_aiohttp_filter())
+proxymodelog = logging.getLogger("proxymode")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -55,9 +53,9 @@ class WebserverBinding:
 class WebServer:
     """Web server."""
 
-    _EXCLUDE_FROM_LOGGING = ["base", "remove-bot", "remove-client", "restart-service"]
-
-    def __init__(self, bindings: list[WebserverBinding] | WebserverBinding):
+    def __init__(
+        self, bindings: list[WebserverBinding] | WebserverBinding, proxy_mode: bool
+    ):
         self._runners: list[web.AppRunner] = []
 
         if isinstance(bindings, WebserverBinding):
@@ -66,7 +64,7 @@ class WebServer:
 
         self._app = web.Application(
             middlewares=[
-                self._log_all_requests,
+                log_all_requests,
             ],
         )
         aiohttp_jinja2.setup(
@@ -75,32 +73,39 @@ class WebServer:
                 os.path.join(bumper.bumper_dir, "bumper", "web", "templates")
             ),
         )
-        self._add_routes()
+        self._add_routes(proxy_mode)
         self._app.freeze()  # no modification allowed anymore
 
-    def _add_routes(self) -> None:
+    def _add_routes(self, proxy_mode: bool) -> None:
         self._app.add_routes(
             [
-                web.get("", self._handle_base, name="base"),
-                web.get(
-                    "/bot/remove/{did}", self._handle_remove_bot, name="remove-bot"
-                ),
+                web.get("/bot/remove/{did}", self._handle_remove_bot),
                 web.get(
                     "/client/remove/{resource}",
                     self._handle_remove_client,
-                    name="remove-client",
                 ),
                 web.get(
                     "/restart_{service}",
                     self._handle_restart_service,
-                    name="restart-service",
                 ),
-                web.post("/lookup.do", self._handle_lookup),
-                web.post("/newauth.do", self._handle_newauth),
             ]
         )
 
-        add_plugins(self._app)
+        if proxy_mode:
+            self._app.add_routes(
+                [
+                    web.route("*", "/{path:.*}", self._handle_proxy),
+                ]
+            )
+        else:
+            self._app.add_routes(
+                [
+                    web.get("", self._handle_base),
+                    web.post("/lookup.do", self._handle_lookup),
+                    web.post("/newauth.do", self._handle_newauth),
+                ]
+            )
+            add_plugins(self._app)
 
     async def start(self) -> None:
         """Start server."""
@@ -172,75 +177,6 @@ class WebServer:
             confserverlog.exception(f"{e}")
 
         raise HTTPInternalServerError
-
-    @web.middleware
-    async def _log_all_requests(
-        self, request: Request, handler: Handler
-    ) -> StreamResponse:
-        if request.match_info.route.name not in self._EXCLUDE_FROM_LOGGING:
-            to_log = {
-                "request": {
-                    "route_name": f"{request.match_info.route.name}",
-                    "method": f"{request.method}",
-                    "path": f"{request.path}",
-                    "query_string": f"{request.query_string}",
-                    "raw_path": f"{request.raw_path}",
-                    "raw_headers": f'{",".join(map("{}".format, request.raw_headers))}',
-                }
-            }
-            try:
-                postbody = None
-                if request.content_length:
-                    if request.content_type == "application/x-www-form-urlencoded":
-                        postbody = await request.post()
-
-                    elif request.content_type == "application/json":
-                        try:
-                            postbody = json.loads(await request.text())
-                        except Exception as e:
-                            confserverlog.error(f"Request body not json: {e}")
-                            raise HTTPBadRequest(reason="Body was not json")
-
-                    else:
-                        postbody = await request.post()
-
-                to_log["request"]["body"] = f"{postbody}"
-
-                response = await handler(request)
-                if response is None:
-                    confserverlog.warning(  # type:ignore[unreachable]
-                        "Response was null!"
-                    )
-                    confserverlog.warning(json.dumps(to_log))
-                    raise HTTPNoContent
-
-                to_log["response"] = {
-                    "status": f"{response.status}",
-                }
-                if (
-                    "application/octet-stream" not in response.content_type
-                    and isinstance(response, Response)
-                    and response.body
-                ):
-                    assert isinstance(response.body, bytes)
-                    to_log["response"]["body"] = f"{json.loads(response.body)}"
-
-                confserverlog.debug(json.dumps(to_log))
-
-                return response
-
-            except web.HTTPNotFound as notfound:
-                confserverlog.debug(f"Request path {request.raw_path} not found")
-                confserverlog.debug(json.dumps(to_log))
-                return notfound
-
-            except Exception as e:
-                confserverlog.exception(f"{e}")
-                confserverlog.error(json.dumps(to_log))
-                raise e
-
-        else:
-            return await handler(request)
 
     async def _restart_helper_bot(self) -> None:
         await bumper.mqtt_helperbot.disconnect()
@@ -363,5 +299,81 @@ class WebServer:
 
         except Exception as e:
             confserverlog.exception(f"{e}")
+
+        raise HTTPInternalServerError
+
+    async def _handle_proxy(self, request: Request) -> Response:
+        try:
+            if request.raw_path == "/":
+                return await self._handle_base(request)
+            if request.raw_path == "/lookup.do":
+                return await self._handle_lookup(request)
+                # use bumper to handle lookup so bot gets Bumper IP and not Ecovacs
+
+            async with aiohttp.ClientSession(
+                headers=request.headers,
+                connector=aiohttp.TCPConnector(
+                    verify_ssl=False, resolver=get_resolver_with_public_nameserver()
+                ),
+            ) as session:
+                if request.content.total_bytes > 0:
+                    read_body = await request.read()
+                    proxymodelog.info(
+                        f"HTTP Proxy Request to EcoVacs (body=true) (URL:{request.url}) - {read_body.decode('utf-8')}"
+                    )
+                    if request.content_type == "application/x-www-form-urlencoded":
+                        # android apps use form
+                        fdata = await request.post()
+                        async with session.request(
+                            request.method, request.url, data=fdata
+                        ) as resp:
+                            response = await resp.text()
+                            proxymodelog.info(
+                                f"HTTP Proxy Response from EcoVacs (URL: {request.url}) - (Status: {resp.status}) - {response}"
+                            )
+                    else:
+                        # handle json
+                        jdata = read_body.decode("utf8")
+                        jdata = json.loads(jdata)
+                        async with session.request(
+                            request.method, request.url, json=jdata
+                        ) as resp:
+                            response = await resp.text()
+                            proxymodelog.info(
+                                f"HTTP Proxy Response from EcoVacs (URL: {request.url}) - (Status: {resp.status}) - {response}"
+                            )
+
+                else:
+                    proxymodelog.info(
+                        f"HTTP Proxy Request to EcoVacs (body=false) (URL:{request.url})"
+                    )
+                    async with session.request(request.method, request.url) as resp:
+                        if resp.content_type == "application/octet-stream":
+                            proxymodelog.info(
+                                f"HTTP Proxy Response from EcoVacs (URL: {request.url}) - (Status: {resp.status}) - <BYTES CONTENT>"
+                            )
+                            return web.Response(body=await resp.read())
+                        else:
+                            response = await resp.text()
+                            proxymodelog.info(
+                                f"HTTP Proxy Response from EcoVacs (URL: {request.url}) - (Status: {resp.status}) - {response}"
+                            )
+
+                if resp.status == 200:
+                    if resp.content_type == "application/json":
+                        response = json.loads(response)
+                        return web.json_response(response)
+                    if resp.content_type == "application/octet-stream":
+                        return web.Response(body=response)
+
+                return web.Response(text=response)
+        except asyncio.CancelledError:
+            proxymodelog.exception(
+                f"Request cancelled or timeout - {request.url}", exc_info=True
+            )
+            raise
+
+        except Exception:
+            proxymodelog.exception("An exception occurred", exc_info=True)
 
         raise HTTPInternalServerError

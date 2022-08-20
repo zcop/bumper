@@ -12,7 +12,7 @@ from tests import HOST, MQTT_PORT, WEBSERVER_PORT
 
 
 def create_webserver():
-    return WebServer(WebserverBinding(HOST, WEBSERVER_PORT, False))
+    return WebServer(WebserverBinding(HOST, WEBSERVER_PORT, False), False)
 
 
 def async_return(result):
@@ -27,12 +27,12 @@ def remove_existing_db():
 
 
 async def test_webserver_ssl():
-    webserver = WebServer(WebserverBinding(HOST, WEBSERVER_PORT, True))
+    webserver = WebServer(WebserverBinding(HOST, WEBSERVER_PORT, True), False)
     await webserver.start()
 
 
 async def test_webserver_no_ssl():
-    webserver = WebServer(WebserverBinding(HOST, 11112, False))
+    webserver = WebServer(WebserverBinding(HOST, 11112, False), False)
     await webserver.start()
 
 

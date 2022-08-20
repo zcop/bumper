@@ -230,7 +230,7 @@ class XMPPAsyncClient:
                     xmppserverlog.debug(
                         "admin username received from bot: {}".format(ctl.get("admin"))
                     )
-                    #XMPPServer.client_id = ctl.get("admin")
+                    # XMPPServer.client_id = ctl.get("admin")
                     return
 
             # forward
@@ -314,8 +314,8 @@ class XMPPAsyncClient:
                     xmppserverlog.info(
                         "Bot reported user has no permissions, Bumper will attempt to add user to bot. This is typical if bot was last on Ecovacs Network."
                     )
-                    xquery = xml.getchildren()
-                    ctl = xquery[0].getchildren()
+                    xquery = list(xml)
+                    ctl = list(xquery[0])
                     if "error" in ctl[0].attrib:
                         ctlerr = ctl[0].attrib["error"]
                         adminuser = ctlerr.replace(
@@ -328,7 +328,8 @@ class XMPPAsyncClient:
                         adminuser.startswith("fuid_")
                         or adminuser.startswith("fusername_")
                         or bumper.use_auth
-                    ):  # if not fuid_ then its ecovacs OR ignore bumper auth
+                    ):
+                        # if not fuid_ then its ecovacs OR ignore bumper auth
                         # TODO: Implement auth later, should this user have access to bot?
 
                         # Add user jid to bot

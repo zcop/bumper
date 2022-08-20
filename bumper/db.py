@@ -415,3 +415,17 @@ def client_set_xmpp(resource: str, xmpp: bool) -> None:
     clients = db_get().table("clients")
     Client = Query()
     clients.upsert({"xmpp_connection": xmpp}, Client.resource == resource)
+
+
+def bot_reset_connectionStatus() -> None:
+    bots = db_get().table("bots")
+    for bot in bots:
+        bot_set_mqtt(bot["did"], False)
+        bot_set_xmpp(bot["did"], False)
+
+
+def client_reset_connectionStatus() -> None:
+    clients = db_get().table("clients")
+    for client in clients:
+        client_set_mqtt(client["resource"], False)
+        client_set_xmpp(client["resource"], False)
