@@ -18,13 +18,12 @@ class CustomEncoder(json.JSONEncoder):
             return list(obj)
         return json.JSONEncoder.default(self, obj)
 
+
 _EXCLUDE_FROM_LOGGING = ["base", "remove-bot", "remove-client", "restart-service"]
 
 
 @web.middleware
-async def log_all_requests(
-    request: Request, handler: Handler
-) -> StreamResponse:
+async def log_all_requests(request: Request, handler: Handler) -> StreamResponse:
     if request.match_info.route.name not in _EXCLUDE_FROM_LOGGING:
         to_log = {
             "request": {
@@ -55,10 +54,7 @@ async def log_all_requests(
                 "status": f"{response.status}",
             }
 
-            if (
-                isinstance(response, Response)
-                    and response.body
-            ):
+            if isinstance(response, Response) and response.body:
                 if response.content_type == "application/json":
                     to_log["response"]["body"] = json.loads(response.text)
                 elif response.content_type.startswith("text"):
@@ -71,7 +67,9 @@ async def log_all_requests(
             raise
 
         except Exception:
-            _LOGGER.exception("An exception occurred in the logging middleware.", exc_info=True)
+            _LOGGER.exception(
+                "An exception occurred in the logging middleware.", exc_info=True
+            )
             raise
 
         finally:

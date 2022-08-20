@@ -178,7 +178,6 @@ class WebServer:
 
         raise HTTPInternalServerError
 
-
     async def _restart_helper_bot(self) -> None:
         await bumper.mqtt_helperbot.disconnect()
         asyncio.create_task(bumper.mqtt_helperbot.start())
@@ -374,7 +373,7 @@ class WebServer:
 
         except asyncio.CancelledError:
             proxymodelog.exception(
-                f"Request cancelled or timeout - {request.url} - {jdata}", exc_info=True
+                f"Request cancelled or timeout - {request.url}", exc_info=True
             )
 
         except Exception:
