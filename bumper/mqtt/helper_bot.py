@@ -35,6 +35,9 @@ class CommandDto:
         self._event.set()
 
 
+HELPER_BOT_CLIENT_ID = "helperbot@bumper/helperbot"
+
+
 class HelperBot:
     """Helper bot, which converts commands from the rest api to mqtt ones."""
 
@@ -44,9 +47,8 @@ class HelperBot:
         )
         self._host = host
         self._port = port
-        self._client_id = "helperbot@bumper/helperbot"
         self._timeout = timeout
-        self._client = Client(self._client_id)
+        self._client = Client(HELPER_BOT_CLIENT_ID)
 
         # pylint: disable=unused-argument
         async def _on_message(

@@ -20,6 +20,7 @@ from bumper.db import (
     client_get,
     client_set_mqtt,
 )
+from bumper.mqtt.helper_bot import HELPER_BOT_CLIENT_ID
 from bumper.mqtt.proxy import ProxyClient
 from bumper.util import get_logger
 
@@ -282,7 +283,7 @@ class BumperMQTTServerPlugin:
                 proxymodelog.info(
                     f"MQTT Proxy Mode - New MQTT Topic Subscription - Client: {client_id} - Topic: {topic}"
                 )
-            else:
+            elif client_id != HELPER_BOT_CLIENT_ID:
                 proxymodelog.warning(
                     f"MQTT Proxy Mode - No proxy client found! - Client: {client_id} - Topic: {topic}"
                 )
