@@ -174,22 +174,8 @@ class BumperMQTTServerPlugin:
 
                     if bumper.bumper_proxy_mode:
                         mqtt_server = await dns.resolve("mq-ww.ecouser.net")
-                        if mqtt_server:
-                            proxymodelog.info(
-                                f"MQTT Proxy Mode - Using server {mqtt_server}"
-                            )
-                        else:
-                            proxymodelog.error(
-                                "MQTT Proxy Mode - No server found! Load defaults or "
-                                "set mqtt_server in config_proxymode table!"
-                            )
-                            proxymodelog.exception(
-                                f"MQTT Proxy Mode - Exiting due to no MQTT Server configured!"
-                            )
-                            exit(1)
-
                         proxymodelog.info(
-                            f"MQTT Proxy Mode - Proxy Bot to MQTT - Client_id: {client_id} - Username: {username}"
+                            f"MQTT Proxy Mode - Using server {mqtt_server} for client {client_id}"
                         )
                         proxy = ProxyClient(
                             client_id, mqtt_server, config={"check_hostname": False}

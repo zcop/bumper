@@ -31,12 +31,6 @@ _LOGGER = get_logger("proxymode")
 # /[receiver did]/[receiver class]]/[receiver resource]/[q|p/[request id/j
 # [q|p] q-> request p-> response
 
-TOPIC_P2P = re.compile(
-    "iot/p2p/(?P<command>[^/]+)/(?P<sender_id>[^/]+)/(?P<sender_cls>[^/]+)/(?P<sender_resource>[^/]+)/"
-    "/(?P<receiver_id>[^/]+)/(?P<receiver_cls>[^/]+)/(?P<receiver_resource>[^/]+)/(?P<mode>[^/]+)/"
-    "(?P<request_id>[^/]+)/(?P<data_type>[^/]+)"
-)
-
 
 class ProxyClient:
     """Mqtt client, which proxies all messages to the ecovacs servers."""
