@@ -152,6 +152,9 @@ class HelperBot:
         finally:
             self._commands.pop(request_id, None)
 
+    def publish(self, topic: str, data: bytes) -> None:
+        self._client.publish(topic, data)
+
     async def disconnect(self) -> None:
         """Disconnect client."""
         if self.is_connected:

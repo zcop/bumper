@@ -149,11 +149,14 @@ class BumperMQTTServerPlugin:
         client_id = session.client_id
 
         try:
+            if client_id == HELPER_BOT_CLIENT_ID:
+                mqttserverlog.info("Bumper Authentication Success - Helperbot")
+                return True
+
             if "@" in client_id:
                 didsplit = str(client_id).split("@")
-                if not (  # if ecouser or bumper aren't in details it is a bot
-                    "ecouser" in didsplit[1] or "bumper" in didsplit[1]
-                ):
+                if "ecouser" not in didsplit[1]:
+                    # if ecouser aren't in details it is a bot
                     tmpbotdetail = str(didsplit[1]).split("/")
                     bot_add(
                         username,
@@ -201,11 +204,6 @@ class BumperMQTTServerPlugin:
                 realm = tmpclientdetail[0]
                 resource = tmpclientdetail[1]
 
-                if userid == "helperbot":
-                    mqttserverlog.info(
-                        "Bumper Authentication Success - Helperbot: %s", client_id
-                    )
-                    return True
                 if check_authcode(didsplit[0], password) or not bumper.use_auth:
                     client_add(userid, realm, resource)
                     mqttserverlog.info(
@@ -342,7 +340,7 @@ class BumperMQTTServerPlugin:
                     )
                     if ttopic[6] == "":
                         proxymodelog.warning(
-                            "MQTT Proxy Client - Request mapper is missing entry, "
+                            "Request mapper is missing entry, "
                             f"probably request took to long... Client_id: {client_id}"
                             f" - Request_id: {ttopic[10]}"
                         )
@@ -350,19 +348,19 @@ class BumperMQTTServerPlugin:
 
                     ttopic_join = "/".join(ttopic)
                     proxymodelog.info(
-                        f"MQTT Proxy Client - Bot Message Converted Topic From {message.topic} TO {ttopic_join} "
+                        f"Bot Message Converted Topic From {message.topic} TO {ttopic_join} "
                         f"with message: {data_decoded}"
                     )
                 else:
                     ttopic_join = message.topic
                     proxymodelog.info(
-                        f"MQTT Proxy Client - Bot Message From {ttopic_join} with message: {data_decoded}"
+                        f"Bot Message From {ttopic_join} with message: {data_decoded}"
                     )
 
                 try:
                     # Send back to ecovacs
                     proxymodelog.info(
-                        "MQTT Proxy Client - Proxy Forward Message to Ecovacs - Topic:"
+                        "Proxy Forward Message to Ecovacs - Topic:"
                         f" {ttopic_join} - Message: {data_decoded}"
                     )
                     await self._proxy_clients[client_id].publish(
@@ -370,7 +368,7 @@ class BumperMQTTServerPlugin:
                     )
                 except Exception:  # pylint: disable=broad-except
                     proxymodelog.error(
-                        "MQTT Proxy Client - Forwarding to Ecovacs - Exception",
+                        "Forwarding to Ecovacs - Exception",
                         exc_info=True,
                     )
 

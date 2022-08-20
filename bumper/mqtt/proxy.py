@@ -20,8 +20,8 @@ from amqtt.mqtt.protocol.client_handler import ClientProtocolHandler
 from amqtt.mqtt.protocol.handler import ProtocolHandlerException
 from cachetools import TTLCache
 from websockets.exceptions import InvalidHandshake, InvalidURI
-from websockets.legacy.client import connect
-from websockets.typing import Subprotocol
+
+import bumper
 
 from ..util import get_logger
 
@@ -74,22 +74,27 @@ class ProxyClient:
                 data = str(message.data.decode("utf-8"))
 
                 _LOGGER.info(
-                    f"MQTT Proxy Client - Message Received From Ecovacs - Topic: {message.topic} - Message: {data}"
+                    f"Message Received From Ecovacs - Topic: {message.topic} - Message: {data}"
                 )
                 topic = message.topic
                 ttopic = topic.split("/")
                 if ttopic[1] == "p2p":
+                    if ttopic[3] == "proxyhelper":
+                        _LOGGER.error(
+                            f'"proxyhelper" was sender - INVALID!! Topic: {topic}'
+                        )
+                        continue
+
                     self.request_mapper[ttopic[10]] = ttopic[3]
                     ttopic[3] = "proxyhelper"
                     topic = "/".join(ttopic)
-                    _LOGGER.info(
-                        f"MQTT Proxy Client - Converted Topic From {message.topic} TO {topic}"
-                    )
+                    _LOGGER.info(f"Converted Topic From {message.topic} TO {topic}")
 
                 _LOGGER.info(
-                    f"MQTT Proxy Client - Proxy Forward Message to Robot - Topic: {topic} - Message: {data}"
+                    f"Proxy Forward Message to Robot - Topic: {topic} - Message: {data}"
                 )
-                await self._client.publish(topic, data.encode(), QOS_0)
+
+                bumper.mqtt_helperbot.publish(topic, message.data)
             except Exception:  # pylint: disable=broad-except
                 _LOGGER.error(
                     "An error occurred during handling a message", exc_info=True
@@ -105,7 +110,7 @@ class ProxyClient:
         await self._client.publish(topic, message, qos)
 
 
-class _NoCertVerifyClient(MQTTClient):
+class _NoCertVerifyClient(MQTTClient):  # type:ignore[misc]
     """
     Mqtt client, which is not verify the certificate.
 
