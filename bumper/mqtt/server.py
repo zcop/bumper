@@ -1,15 +1,16 @@
 """Server module."""
-
 import os
 from typing import Any
 
 import amqtt
 import pkg_resources
 from amqtt.broker import Broker, BrokerContext
+from amqtt.mqtt.constants import QOS_0, QOS_1, QOS_2
 from amqtt.session import IncomingApplicationMessage, Session
 from passlib.apps import custom_app_context as pwd_context
 
 import bumper
+from bumper import dns
 from bumper.db import (
     bot_add,
     bot_get,
@@ -19,11 +20,13 @@ from bumper.db import (
     client_get,
     client_set_mqtt,
 )
+from bumper.mqtt.proxy import ProxyClient
 from bumper.util import get_logger
 
 mqttserverlog = get_logger("mqttserver")
 helperbotlog = get_logger("helperbot")
 boterrorlog = get_logger("boterror")
+proxymodelog = get_logger("proxymode")
 
 
 class MQTTServer:
@@ -122,6 +125,7 @@ class BumperMQTTServerPlugin:
     """MQTT Server plugin which handles the authentication."""
 
     def __init__(self, context: BrokerContext) -> None:
+        self._proxy_clients: dict[str, ProxyClient] = {}
         self.context = context
         try:
             self.auth_config = self.context.config["auth"]
@@ -163,6 +167,32 @@ class BumperMQTTServerPlugin:
                         didsplit[0],
                         tmpbotdetail[0],
                     )
+
+                    if bumper.bumper_proxy_mode:
+                        mqtt_server = await dns.resolve("mq-ww.ecouser.net")
+                        if mqtt_server:
+                            proxymodelog.info(
+                                f"MQTT Proxy Mode - Using server {mqtt_server}"
+                            )
+                        else:
+                            proxymodelog.error(
+                                "MQTT Proxy Mode - No server found! Load defaults or "
+                                "set mqtt_server in config_proxymode table!"
+                            )
+                            proxymodelog.exception(
+                                f"MQTT Proxy Mode - Exiting due to no MQTT Server configured!"
+                            )
+                            exit(1)
+
+                        proxymodelog.info(
+                            f"MQTT Proxy Mode - Proxy Bot to MQTT - Client_id: {client_id} - Username: {username}"
+                        )
+                        proxy = ProxyClient(
+                            client_id, mqtt_server, config={"check_hostname": False}
+                        )
+                        self._proxy_clients[client_id] = proxy
+                        await proxy.connect(username, password)
+
                     return True
 
                 tmpclientdetail = str(didsplit[1]).split("/")
@@ -242,6 +272,21 @@ class BumperMQTTServerPlugin:
 
         return users
 
+    async def on_broker_client_subscribed(
+        self, client_id: str, topic: str, qos: QOS_0 | QOS_1 | QOS_2
+    ) -> None:
+        if bumper.bumper_proxy_mode:
+            # if proxy mode, also subscribe on ecovacs server
+            if client_id in self._proxy_clients:
+                await self._proxy_clients[client_id].subscribe(topic, qos)
+                proxymodelog.info(
+                    f"MQTT Proxy Mode - New MQTT Topic Subscription - Client: {client_id} - Topic: {topic}"
+                )
+            else:
+                proxymodelog.warning(
+                    f"MQTT Proxy Mode - No proxy client found! - Client: {client_id} - Topic: {topic}"
+                )
+
     async def on_broker_client_connected(self, client_id: str) -> None:
         """On client connected."""
         self._set_client_connected(client_id, True)
@@ -262,12 +307,13 @@ class BumperMQTTServerPlugin:
             client_set_mqtt(client["resource"], connected)
 
     async def on_broker_message_received(  # pylint: disable=no-self-use
-        self, message: IncomingApplicationMessage, **_: dict[str, Any]
+        self, message: IncomingApplicationMessage, client_id: str
     ) -> None:
         """On message received."""
         topic = message.topic
         topic_split = str(topic).split("/")
         data_decoded = str(message.data.decode("utf-8"))
+
         if topic_split[6] == "helperbot":
             # Response to command
             _log__helperbot_message("Received Response", topic, data_decoded)
@@ -285,6 +331,50 @@ class BumperMQTTServerPlugin:
         else:
             _log__helperbot_message("Received Message", topic, data_decoded)
 
+        if bumper.bumper_proxy_mode and client_id in self._proxy_clients:
+            if not topic_split[3] == "proxyhelper":
+                # if from proxyhelper, don't send back to ecovacs...yet
+                if topic_split[6] == "proxyhelper":
+                    ttopic = message.topic.split("/")
+                    ttopic[6] = self._proxy_clients[client_id].request_mapper.pop(
+                        ttopic[10], ""
+                    )
+                    if ttopic[6] == "":
+                        proxymodelog.warning(
+                            "MQTT Proxy Client - Request mapper is missing entry, "
+                            f"probably request took to long... Client_id: {client_id}"
+                            f" - Request_id: {ttopic[10]}"
+                        )
+                        return
+
+                    ttopic_join = "/".join(ttopic)
+                    proxymodelog.info(
+                        f"MQTT Proxy Client - Bot Message Converted Topic From {message.topic} TO {ttopic_join} "
+                        f"with message: {data_decoded}"
+                    )
+                else:
+                    ttopic_join = message.topic
+                    proxymodelog.info(
+                        f"MQTT Proxy Client - Bot Message From {ttopic_join} with message: {data_decoded}"
+                    )
+
+                try:
+                    # Send back to ecovacs
+                    proxymodelog.info(
+                        "MQTT Proxy Client - Proxy Forward Message to Ecovacs - Topic:"
+                        f" {ttopic_join} - Message: {data_decoded}"
+                    )
+                    await self._proxy_clients[client_id].publish(
+                        ttopic_join, data_decoded.encode(), message.qos
+                    )
+                except Exception:  # pylint: disable=broad-except
+                    proxymodelog.error(
+                        "MQTT Proxy Client - Forwarding to Ecovacs - Exception",
+                        exc_info=True,
+                    )
+
     async def on_broker_client_disconnected(self, client_id: str) -> None:
         """On client disconnect."""
+        if bumper.bumper_proxy_mode and client_id in self._proxy_clients:
+            await self._proxy_clients.pop(client_id).disconnect()
         self._set_client_connected(client_id, False)

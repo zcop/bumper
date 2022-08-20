@@ -3,9 +3,13 @@ import logging
 import os
 import socket
 import sys
-from typing import Any
 
-from bumper.db import revoke_expired_oauths, revoke_expired_tokens
+from bumper.db import (
+    bot_reset_connectionStatus,
+    client_reset_connectionStatus,
+    revoke_expired_oauths,
+    revoke_expired_tokens,
+)
 from bumper.mqtt.helper_bot import HelperBot
 from bumper.mqtt.server import MQTTServer
 from bumper.util import get_logger, log_to_stdout
@@ -50,6 +54,7 @@ bumper_debug = strtobool(os.environ.get("BUMPER_DEBUG")) or False
 use_auth = False
 token_validity_seconds = 3600  # 1 hour
 oauth_validity_days = 15
+bumper_proxy_mode = strtobool(os.environ.get("BUMPER_PROXY_MODE")) or False
 
 mqtt_server: MQTTServer
 mqtt_helperbot: HelperBot
@@ -60,6 +65,7 @@ shutting_down = False
 
 bumperlog = get_logger("bumper")
 logging.getLogger("asyncio").setLevel(logging.CRITICAL + 1)  # Ignore this logger
+proxymodelog = get_logger("proxymode")
 
 web_server_https_port = os.environ.get("WEB_SERVER_HTTPS_PORT") or 443
 mqtt_listen_port = 8883
@@ -71,6 +77,10 @@ web_server_bindings = [
 
 
 async def start() -> None:
+    # Reset xmpp/mqtt to false in database for bots and clients
+    bot_reset_connectionStatus()
+    client_reset_connectionStatus()
+
     try:
         loop = asyncio.get_event_loop()
     except:
@@ -102,12 +112,16 @@ async def start() -> None:
         return
 
     bumperlog.info("Starting Bumper")
+
+    if bumper_proxy_mode:
+        bumperlog.info("Proxy Mode Enabled")
+
     global mqtt_server
     mqtt_server = MQTTServer(bumper_listen, mqtt_listen_port)
     global mqtt_helperbot
     mqtt_helperbot = HelperBot(bumper_listen, mqtt_listen_port)
     global web_server
-    web_server = WebServer(web_server_bindings)
+    web_server = WebServer(web_server_bindings, bumper_proxy_mode)
     global xmpp_server
     xmpp_server = XMPPServer(bumper_listen, xmpp_listen_port)
 
@@ -194,11 +208,18 @@ def main(argv: None | list[str] = None) -> None:
             help="announce address to bots on checkin",
         )
         parser.add_argument("--debug", action="store_true", help="enable debug logs")
+        parser.add_argument(
+            "--proxy-mode", action="store_true", help="enable proxy mode"
+        )
 
         args = parser.parse_args(args=argv)
 
         if args.debug:
             bumper_debug = True
+
+        if args.proxy_mode:
+            global bumper_proxy_mode
+            bumper_proxy_mode = True
 
         if args.listen:
             bumper_listen = args.listen

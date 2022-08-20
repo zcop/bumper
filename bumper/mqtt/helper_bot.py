@@ -46,7 +46,7 @@ class HelperBot:
         self._port = port
         self._client_id = "helperbot@bumper/helperbot"
         self._timeout = timeout
-        self._client = Client("helperbot@bumper/helperbot")
+        self._client = Client(self._client_id)
 
         # pylint: disable=unused-argument
         async def _on_message(

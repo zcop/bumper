@@ -54,7 +54,7 @@ async def helper_bot(mqtt_server: MQTTServer):
 
 @pytest.fixture
 async def webserver_client(aiohttp_client):
-    webserver = bumper.WebServer(WebserverBinding(HOST, WEBSERVER_PORT, False))
+    webserver = bumper.WebServer(WebserverBinding(HOST, WEBSERVER_PORT, False), False)
     client = await aiohttp_client(webserver._app)
 
     yield client
