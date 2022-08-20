@@ -71,7 +71,7 @@ class ProxyClient:
         while self._client.session.transitions.is_connected():
             try:
                 message = await self._client.deliver_message()
-                data = str(message.data.decode("utf-8"))
+                data = message.data.decode("utf-8") if message.data else ""
 
                 _LOGGER.info(
                     f"Message Received From Ecovacs - Topic: {message.topic} - Message: {data}"
