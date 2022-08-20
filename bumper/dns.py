@@ -8,4 +8,4 @@ def get_resolver_with_public_nameserver() -> AsyncResolver:
 
 async def resolve(host: str) -> str:
     hosts = await get_resolver_with_public_nameserver().resolve(host)
-    return hosts[0]["host"]
+    return hosts[0]["host"]  # type:ignore[no-any-return]

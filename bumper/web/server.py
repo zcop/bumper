@@ -319,7 +319,7 @@ class WebServer:
                 if request.content.total_bytes > 0:
                     read_body = await request.read()
                     proxymodelog.info(
-                        f"HTTP Proxy Request to EcoVacs (body=true) (URL:{request.url}) - {read_body}"
+                        f"HTTP Proxy Request to EcoVacs (body=true) (URL:{request.url}) - {read_body.decode('utf-8')}"
                     )
                     if request.content_type == "application/x-www-form-urlencoded":
                         # android apps use form
@@ -349,10 +349,10 @@ class WebServer:
                     )
                     async with session.request(request.method, request.url) as resp:
                         if resp.content_type == "application/octet-stream":
-                            response = await resp.read()
                             proxymodelog.info(
                                 f"HTTP Proxy Response from EcoVacs (URL: {request.url}) - (Status: {resp.status}) - <BYTES CONTENT>"
                             )
+                            return web.Response(body=await resp.read())
                         else:
                             response = await resp.text()
                             proxymodelog.info(
@@ -363,14 +363,10 @@ class WebServer:
                     if resp.content_type == "application/json":
                         response = json.loads(response)
                         return web.json_response(response)
-                    elif resp.content_type == "application/octet-stream":
+                    if resp.content_type == "application/octet-stream":
                         return web.Response(body=response)
-                    else:
-                        return web.Response(text=response)
 
-                else:
-                    return web.Response(text=response)
-
+                return web.Response(text=response)
         except asyncio.CancelledError:
             proxymodelog.exception(
                 f"Request cancelled or timeout - {request.url}", exc_info=True

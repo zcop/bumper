@@ -1,5 +1,6 @@
 """Web server middleware module."""
 import json
+from typing import Any
 
 from aiohttp import web
 from aiohttp.typedefs import Handler
@@ -13,7 +14,7 @@ _LOGGER = get_logger("webserver_requests")
 
 
 class CustomEncoder(json.JSONEncoder):
-    def default(self, obj):
+    def default(self, obj: Any) -> Any:
         if isinstance(obj, set):
             return list(obj)
         return json.JSONEncoder.default(self, obj)
@@ -32,9 +33,14 @@ async def log_all_requests(request: Request, handler: Handler) -> StreamResponse
                 "path": request.path,
                 "query_string": request.query_string,
                 "headers": {h for h in request.headers.items()},
-                "route_resource": request.match_info.route.resource.canonical,
             }
         }
+
+        if request.match_info.route.resource:
+            to_log["request"][
+                "route_resource"
+            ] = request.match_info.route.resource.canonical
+
         try:
             if request.content_length:
                 if request.content_type == "application/json":
@@ -44,7 +50,7 @@ async def log_all_requests(request: Request, handler: Handler) -> StreamResponse
 
             response = await handler(request)
             if response is None:
-                confserverlog.warning(  # type:ignore[unreachable]
+                _LOGGER.warning(  # type:ignore[unreachable]
                     "Response was null!"
                 )
                 _LOGGER.warning(json.dumps(to_log, cls=CustomEncoder))
@@ -55,6 +61,7 @@ async def log_all_requests(request: Request, handler: Handler) -> StreamResponse
             }
 
             if isinstance(response, Response) and response.body:
+                assert response.text
                 if response.content_type == "application/json":
                     to_log["response"]["body"] = json.loads(response.text)
                 elif response.content_type.startswith("text"):
