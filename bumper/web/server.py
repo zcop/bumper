@@ -10,15 +10,15 @@ import aiohttp
 import aiohttp_jinja2
 import jinja2
 from aiohttp import web
-from aiohttp.typedefs import Handler
-from aiohttp.web_exceptions import HTTPInternalServerError, HTTPNoContent
+from aiohttp.web_exceptions import HTTPInternalServerError
 from aiohttp.web_request import Request
-from aiohttp.web_response import Response, StreamResponse
+from aiohttp.web_response import Response
 
 import bumper
 from bumper.db import bot_get, bot_remove, client_get, client_remove, db_get
 from bumper.dns import get_resolver_with_public_nameserver
 from bumper.util import get_logger
+from bumper.web.middlewares import log_all_requests
 from bumper.web.plugins import add_plugins
 
 
@@ -53,8 +53,6 @@ class WebserverBinding:
 class WebServer:
     """Web server."""
 
-    _EXCLUDE_FROM_LOGGING = ["base", "remove-bot", "remove-client", "restart-service"]
-
     def __init__(
         self, bindings: list[WebserverBinding] | WebserverBinding, proxy_mode: bool
     ):
@@ -66,7 +64,7 @@ class WebServer:
 
         self._app = web.Application(
             middlewares=[
-                self._log_all_requests,
+                log_all_requests,
             ],
         )
         aiohttp_jinja2.setup(
@@ -180,67 +178,6 @@ class WebServer:
 
         raise HTTPInternalServerError
 
-    @web.middleware
-    async def _log_all_requests(
-        self, request: Request, handler: Handler
-    ) -> StreamResponse:
-        if request.match_info.route.name not in self._EXCLUDE_FROM_LOGGING:
-            to_log = {
-                "request": {
-                    "route_name": f"{request.match_info.route.name}",
-                    "method": f"{request.method}",
-                    "path": f"{request.path}",
-                    "query_string": f"{request.query_string}",
-                    "raw_path": f"{request.raw_path}",
-                    "raw_headers": f'{",".join(map("{}".format, request.raw_headers))}',
-                }
-            }
-            try:
-                if request.content_length:
-                    if request.content_type == "application/json":
-                        to_log["request"]["body"] = await request.text()
-                    else:
-                        to_log["request"]["body"] = f"{await request.post()}"
-
-                response = await handler(request)
-                if response is None:
-                    confserverlog.warning(  # type:ignore[unreachable]
-                        "Response was null!"
-                    )
-                    confserverlog.warning(json.dumps(to_log))
-                    raise HTTPNoContent
-
-                to_log["response"] = {
-                    "status": f"{response.status}",
-                }
-
-                if (
-                    isinstance(response, Response)
-                    and response.body
-                    and (
-                        response.content_type.startswith("text")
-                        or response.content_type == "application/json"
-                    )
-                ):
-                    assert isinstance(response.body, bytes)
-                    to_log["response"]["body"] = response.body.decode("utf-8")
-
-                confserverlog.debug(json.dumps(to_log))
-
-                return response
-
-            except web.HTTPNotFound as notfound:
-                confserverlog.debug(f"Request path {request.raw_path} not found")
-                confserverlog.debug(json.dumps(to_log))
-                return notfound
-
-            except Exception as e:
-                confserverlog.exception(f"{e}")
-                confserverlog.error(json.dumps(to_log))
-                raise e
-
-        else:
-            return await handler(request)
 
     async def _restart_helper_bot(self) -> None:
         await bumper.mqtt_helperbot.disconnect()
