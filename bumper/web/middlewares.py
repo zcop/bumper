@@ -63,6 +63,7 @@ async def log_all_requests(request: Request, handler: Handler) -> StreamResponse
 
         to_log["response"] = {
             "status": f"{response.status}",
+            "headers": {h for h in response.headers.items()},
         }
 
         if isinstance(response, Response) and response.body:
