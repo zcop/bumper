@@ -44,7 +44,7 @@ class ProxyClient:
         timeout: float = 180,
     ):
         self.request_mapper: MutableMapping[str, str] = TTLCache(
-            maxsize=timeout * 60, ttl=timeout * 1.1
+            maxsize=timeout * timeout, ttl=timeout * 1.1
         )
         self._client = _NoCertVerifyClient(client_id=client_id, config=config)
         self._host = host
