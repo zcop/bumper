@@ -47,42 +47,49 @@ async def log_all_requests(request: Request, handler: Handler) -> StreamResponse
     }
 
     try:
-        if request.content_length:
-            if request.content_type == "application/json":
-                to_log["request"]["body"] = await request.json()
-            else:
-                to_log["request"]["body"] = {h for h in await request.post()}
+        try:
+            if request.content_length:
+                if request.content_type == "application/json":
+                    to_log["request"]["body"] = await request.json()
+                else:
+                    to_log["request"]["body"] = {h for h in await request.post()}
+        except Exception:
+            _LOGGER.exception(
+                "An exception occurred during logging the request.", exc_info=True
+            )
+            raise
 
         response = await handler(request)
-        if response is None:
-            _LOGGER.warning(  # type:ignore[unreachable]
-                "Response was null!"
+
+        try:
+            if response is None:
+                _LOGGER.warning(  # type:ignore[unreachable]
+                    "Response was null!"
+                )
+                _LOGGER.warning(json.dumps(to_log, cls=CustomEncoder))
+                raise HTTPNoContent
+
+            to_log["response"] = {
+                "status": f"{response.status}",
+                "headers": {h for h in response.headers.items()},
+            }
+
+            if isinstance(response, Response) and response.body:
+                assert response.text
+                if response.content_type == "application/json":
+                    to_log["response"]["body"] = json.loads(response.text)
+                elif response.content_type.startswith("text"):
+                    to_log["response"]["body"] = response.text
+
+            return response
+        except Exception:
+            _LOGGER.exception(
+                "An exception occurred during logging the response", exc_info=True
             )
-            _LOGGER.warning(json.dumps(to_log, cls=CustomEncoder))
-            raise HTTPNoContent
-
-        to_log["response"] = {
-            "status": f"{response.status}",
-            "headers": {h for h in response.headers.items()},
-        }
-
-        if isinstance(response, Response) and response.body:
-            assert response.text
-            if response.content_type == "application/json":
-                to_log["response"]["body"] = json.loads(response.text)
-            elif response.content_type.startswith("text"):
-                to_log["response"]["body"] = response.text
-
-        return response
+            raise
 
     except web.HTTPNotFound:
         _LOGGER.debug(f"Request path {request.raw_path} not found")
-        raise
-
-    except Exception:
-        _LOGGER.exception(
-            "An exception occurred in the logging middleware.", exc_info=True
-        )
         raise
 
     finally:

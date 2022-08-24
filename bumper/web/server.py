@@ -333,10 +333,8 @@ class WebServer:
                             )
                     else:
                         # handle json
-                        jdata = read_body.decode("utf8")
-                        jdata = json.loads(jdata)
                         async with session.request(
-                            request.method, request.url, json=jdata
+                            request.method, request.url, json=request.json()
                         ) as resp:
                             response = await resp.text()
                             proxymodelog.info(
