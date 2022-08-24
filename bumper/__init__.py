@@ -54,7 +54,8 @@ bumper_debug = strtobool(os.environ.get("BUMPER_DEBUG")) or False
 use_auth = False
 token_validity_seconds = 3600  # 1 hour
 oauth_validity_days = 15
-bumper_proxy_mode = strtobool(os.environ.get("BUMPER_PROXY_MODE")) or False
+bumper_proxy_mqtt = strtobool(os.environ.get("BUMPER_PROXY_MQTT")) or False
+bumper_proxy_web = strtobool(os.environ.get("BUMPER_PROXY_WEB")) or False
 
 mqtt_server: MQTTServer
 mqtt_helperbot: HelperBot
@@ -65,7 +66,6 @@ shutting_down = False
 
 bumperlog = get_logger("bumper")
 logging.getLogger("asyncio").setLevel(logging.CRITICAL + 1)  # Ignore this logger
-proxymodelog = get_logger("proxymode")
 
 web_server_https_port = os.environ.get("WEB_SERVER_HTTPS_PORT") or 443
 mqtt_listen_port = 8883
@@ -113,15 +113,17 @@ async def start() -> None:
 
     bumperlog.info("Starting Bumper")
 
-    if bumper_proxy_mode:
-        bumperlog.info("Proxy Mode Enabled")
+    if bumper_proxy_mqtt:
+        bumperlog.info("Proxy MQTT Enabled")
+    if bumper_proxy_web:
+        bumperlog.info("Proxy Web Enabled")
 
     global mqtt_server
     mqtt_server = MQTTServer(bumper_listen, mqtt_listen_port)
     global mqtt_helperbot
     mqtt_helperbot = HelperBot(bumper_listen, mqtt_listen_port)
     global web_server
-    web_server = WebServer(web_server_bindings, bumper_proxy_mode)
+    web_server = WebServer(web_server_bindings, bumper_proxy_web)
     global xmpp_server
     xmpp_server = XMPPServer(bumper_listen, xmpp_listen_port)
 
@@ -208,18 +210,11 @@ def main(argv: None | list[str] = None) -> None:
             help="announce address to bots on checkin",
         )
         parser.add_argument("--debug", action="store_true", help="enable debug logs")
-        parser.add_argument(
-            "--proxy-mode", action="store_true", help="enable proxy mode"
-        )
 
         args = parser.parse_args(args=argv)
 
         if args.debug:
             bumper_debug = True
-
-        if args.proxy_mode:
-            global bumper_proxy_mode
-            bumper_proxy_mode = True
 
         if args.listen:
             bumper_listen = args.listen

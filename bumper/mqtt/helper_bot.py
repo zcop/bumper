@@ -10,7 +10,7 @@ from gmqtt.mqtt.constants import MQTTv311
 
 from bumper.util import get_logger
 
-_LOGGER = get_logger("helperbot")
+_LOGGER = get_logger("helper_bot")
 
 
 class CommandDto:

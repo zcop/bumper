@@ -32,7 +32,7 @@ def get_logger(name: str, rotate: RotatingFileHandler | None = None) -> logging.
 
     __loggers[name] = logger
 
-    if name == "mqttserver":
+    if name == "mqtt_server":
         get_logger("transitions", rotate).setLevel(
             logging.CRITICAL + 1
         )  # Ignore this logger

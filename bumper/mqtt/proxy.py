@@ -25,7 +25,7 @@ import bumper
 
 from ..util import get_logger
 
-_LOGGER = get_logger("proxymode")
+_LOGGER = get_logger("mqtt_proxy")
 
 # iot/p2p/[command]]/[sender did]/[sender class]]/[sender resource]
 # /[receiver did]/[receiver class]]/[receiver resource]/[q|p/[request id/j

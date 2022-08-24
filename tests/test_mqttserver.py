@@ -27,7 +27,7 @@ async def test_helperbot_message(mqtt_client: Client):
 
         l.check_present(
             (
-                "helperbot",
+                "mqtt_messages",
                 "DEBUG",
                 "Received Broadcast - Topic: iot/atr/DustCaseST/bot_serial/ls1ok3/wC3g/x - Message: <ctl ts='1547822804960' td='DustCaseST' st='0'/>",
             )
@@ -47,7 +47,7 @@ async def test_helperbot_message(mqtt_client: Client):
 
         l.check_present(
             (
-                "helperbot",
+                "mqtt_messages",
                 "DEBUG",
                 "Send Command - Topic: iot/p2p/GetWKVer/helperbot/bumper/helperbot/bot_serial/ls1ok3/wC3g/q/iCmuqp/j - Message: {}",
             )
@@ -67,7 +67,7 @@ async def test_helperbot_message(mqtt_client: Client):
 
         l.check_present(
             (
-                "helperbot",
+                "mqtt_messages",
                 "DEBUG",
                 'Received Response - Topic: iot/p2p/GetWKVer/bot_serial/ls1ok3/wC3g/helperbot/bumper/helperbot/p/iCmuqp/j - Message: {"ret":"ok","ver":"0.13.5"}',
             )
@@ -83,11 +83,11 @@ async def test_helperbot_message(mqtt_client: Client):
         msg_topic_name = "iot/p2p/GetWKVer/bot_serial/ls1ok3/wC3g/TESTBAD/bumper/helperbot/p/iCmuqp/j"
         mqtt_client.publish(msg_topic_name, msg_payload.encode())
 
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.2)
 
         l.check_present(
             (
-                "helperbot",
+                "mqtt_messages",
                 "DEBUG",
                 "Received Message - Topic: iot/p2p/GetWKVer/bot_serial/ls1ok3/wC3g/TESTBAD/bumper/helperbot/p/iCmuqp/j - Message: test",
             )
@@ -107,9 +107,9 @@ async def test_helperbot_message(mqtt_client: Client):
 
         l.check_present(
             (
-                "boterror",
-                "ERROR",
-                "Received Error - Topic: iot/atr/errors/bot_serial/ls1ok3/wC3g/x - Message: <ctl ts='1560904925396' td='errors' old='' new='110'/>",
+                "mqtt_messages",
+                "DEBUG",
+                "Received Broadcast - Topic: iot/atr/errors/bot_serial/ls1ok3/wC3g/x - Message: <ctl ts='1560904925396' td='errors' old='' new='110'/>",
             )
         )  # Check received message was logged
         l.clear()
@@ -324,7 +324,7 @@ async def test_mqttserver():
 
             l.check_present(
                 (
-                    "mqttserver",
+                    "mqtt_server",
                     "INFO",
                     "File Authentication Failed - Username: test-client - ClientID: test-file-auth",
                 ),
@@ -339,7 +339,7 @@ async def test_mqttserver():
 
             l.check_present(
                 (
-                    "mqttserver",
+                    "mqtt_server",
                     "INFO",
                     "File Authentication Failed - No Entry - Username: test-client-noexist - ClientID: test-file-auth",
                 ),

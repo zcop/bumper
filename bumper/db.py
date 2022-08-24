@@ -10,7 +10,7 @@ from bumper.models import BumperUser, OAuth, VacBotClient, VacBotDevice
 
 from .util import get_logger
 
-bumperlog = get_logger("bumper")
+_LOGGER = get_logger("db")
 
 
 def db_file() -> str:
@@ -41,7 +41,7 @@ def user_add(userid: str) -> None:
 
     user = user_get(userid)
     if not user:
-        bumperlog.info(f"Adding new user with userid: {newuser.userid}")
+        _LOGGER.info(f"Adding new user with userid: {newuser.userid}")
         user_full_upsert(newuser.asdict())
 
 
@@ -137,7 +137,7 @@ def user_add_token(userid: str, token: str) -> None:
         tokens = opendb.table("tokens")
         tmptoken = tokens.get((Query().userid == userid) & (Query().token == token))
         if not tmptoken:
-            bumperlog.debug(f"Adding token {token} for userid {userid}")
+            _LOGGER.debug(f"Adding token {token} for userid {userid}")
             tokens.insert(
                 {
                     "userid": userid,
@@ -166,9 +166,7 @@ def user_revoke_expired_tokens(userid: str) -> None:
         tsearch = tokens.search(Query().userid == userid)
         for i in tsearch:
             if datetime.now() >= datetime.fromisoformat(i["expiration"]):
-                bumperlog.debug(
-                    "Removing token {} due to expiration".format(i["token"])
-                )
+                _LOGGER.debug("Removing token {} due to expiration".format(i["token"]))
                 tokens.remove(doc_ids=[i.doc_id])
 
 
@@ -214,9 +212,7 @@ def revoke_expired_oauths() -> None:
         for i in entries:
             oauth = OAuth(**i)
             if datetime.now() >= datetime.fromisoformat(oauth.expire_at):
-                bumperlog.debug(
-                    f"Removing oauth {oauth.access_token} due to expiration"
-                )
+                _LOGGER.debug(f"Removing oauth {oauth.access_token} due to expiration")
                 table.remove(doc_ids=[i.doc_id])
 
 
@@ -228,9 +224,7 @@ def user_revoke_expired_oauths(userid: str) -> None:
         for i in search:
             oauth = OAuth(**i)
             if datetime.now() >= datetime.fromisoformat(oauth.expire_at):
-                bumperlog.debug(
-                    f"Removing oauth {oauth.access_token} due to expiration"
-                )
+                _LOGGER.debug(f"Removing oauth {oauth.access_token} due to expiration")
                 table.remove(doc_ids=[i.doc_id])
 
 
@@ -244,7 +238,7 @@ def user_add_oauth(userid: str) -> OAuth:
             return OAuth(**entry)
         else:
             oauth = OAuth.create_new(userid)
-            bumperlog.debug(f"Adding oauth {oauth.access_token} for userid {userid}")
+            _LOGGER.debug(f"Adding oauth {oauth.access_token} for userid {userid}")
             table.insert(oauth.toDB())
             return oauth
 
@@ -261,7 +255,7 @@ def get_disconnected_xmpp_clients() -> list[Document]:
 
 
 def check_authcode(uid: str, authcode: str) -> bool:
-    bumperlog.debug(f"Checking for authcode: {authcode}")
+    _LOGGER.debug(f"Checking for authcode: {authcode}")
     tokens = db_get().table("tokens")
     tmpauth = tokens.get(
         (Query().authcode == authcode)
@@ -277,7 +271,7 @@ def check_authcode(uid: str, authcode: str) -> bool:
 
 
 def loginByItToken(authcode: str) -> dict[str, str]:
-    bumperlog.debug(f"Checking for authcode: {authcode}")
+    _LOGGER.debug(f"Checking for authcode: {authcode}")
     tokens = db_get().table("tokens")
     tmpauth = tokens.get(
         Query().authcode
@@ -294,7 +288,7 @@ def loginByItToken(authcode: str) -> dict[str, str]:
 
 
 def check_token(uid: str, token: str) -> bool:
-    bumperlog.debug(f"Checking for token: {token}")
+    _LOGGER.debug(f"Checking for token: {token}")
     tokens = db_get().table("tokens")
     tmpauth = tokens.get(
         (Query().token == token)
@@ -313,7 +307,7 @@ def revoke_expired_tokens() -> None:
     tokens = db_get().table("tokens").all()
     for i in tokens:
         if datetime.now() >= datetime.fromisoformat(i["expiration"]):
-            bumperlog.debug("Removing token {} due to expiration".format(i["token"]))
+            _LOGGER.debug("Removing token {} due to expiration".format(i["token"]))
             db_get().table("tokens").remove(doc_ids=[i.doc_id])
 
 
@@ -330,7 +324,7 @@ def bot_add(sn: str, did: str, devclass: str, resource: str, company: str) -> No
         if (
             not devclass == "" or "@" not in sn or "tmp" not in sn
         ):  # try to prevent bad additions to the bot list
-            bumperlog.info(f"Adding new bot with SN: {newbot.name} DID: {newbot.did}")
+            _LOGGER.info(f"Adding new bot with SN: {newbot.name} DID: {newbot.did}")
             bot_full_upsert(newbot.asdict())
 
 
@@ -353,7 +347,7 @@ def bot_full_upsert(vacbot: dict[str, Any]) -> None:
     if "did" in vacbot:
         bots.upsert(vacbot, Bot.did == vacbot["did"])
     else:
-        bumperlog.error(f"No DID in vacbot: {vacbot}")
+        _LOGGER.error(f"No DID in vacbot: {vacbot}")
 
 
 def bot_set_nick(did: str, nick: str) -> None:
@@ -382,7 +376,7 @@ def client_add(userid: str, realm: str, resource: str) -> None:
 
     client = client_get(resource)
     if not client:
-        bumperlog.info(f"Adding new client with resource {newclient.resource}")
+        _LOGGER.info(f"Adding new client with resource {newclient.resource}")
         client_full_upsert(newclient.asdict())
 
 

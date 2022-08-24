@@ -35,10 +35,10 @@ class _aiohttp_filter(logging.Filter):
             return False
 
 
-confserverlog = get_logger("confserver")
+_LOGGER = get_logger("webserver")
 # Add logging filter above to aiohttp.access
 logging.getLogger("aiohttp.access").addFilter(_aiohttp_filter())
-proxymodelog = logging.getLogger("proxymode")
+_LOGGER_PROXY = logging.getLogger("web_proxy")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -110,7 +110,7 @@ class WebServer:
     async def start(self) -> None:
         """Start server."""
         try:
-            confserverlog.info("Starting ConfServer")
+            _LOGGER.info("Starting ConfServer")
             for binding in self._bindings:
                 runner = web.AppRunner(self._app)
                 self._runners.append(runner)
@@ -130,13 +130,13 @@ class WebServer:
 
                 await site.start()
         except Exception as e:
-            confserverlog.exception(f"{e}")
+            _LOGGER.exception(f"{e}")
             raise e
 
     async def shutdown(self) -> None:
         """Shutdown server."""
         try:
-            confserverlog.info("Shutting down")
+            _LOGGER.info("Shutting down")
             for runner in self._runners:
                 await runner.shutdown()
 
@@ -144,7 +144,7 @@ class WebServer:
             await self._app.shutdown()
 
         except Exception as e:
-            confserverlog.exception(f"{e}")
+            _LOGGER.exception(f"{e}")
 
     async def _handle_base(self, request: Request) -> Response:
         try:
@@ -174,7 +174,7 @@ class WebServer:
             }
             return aiohttp_jinja2.render_template("home.jinja2", request, context=all)
         except Exception as e:
-            confserverlog.exception(f"{e}")
+            _LOGGER.exception(f"{e}")
 
         raise HTTPInternalServerError
 
@@ -209,7 +209,7 @@ class WebServer:
 
             return web.json_response({"status": "invalid service"})
         except Exception as e:
-            confserverlog.exception(f"{e}")
+            _LOGGER.exception(f"{e}")
             raise
 
     async def _handle_remove_bot(self, request: Request) -> Response:
@@ -222,7 +222,7 @@ class WebServer:
                 return web.json_response({"status": "successfully removed bot"})
 
         except Exception as e:
-            confserverlog.exception(f"{e}")
+            _LOGGER.exception(f"{e}")
 
         raise HTTPInternalServerError
 
@@ -236,7 +236,7 @@ class WebServer:
                 return web.json_response({"status": "successfully removed client"})
 
         except Exception as e:
-            confserverlog.exception(f"{e}")
+            _LOGGER.exception(f"{e}")
 
         raise HTTPInternalServerError
 
@@ -247,14 +247,14 @@ class WebServer:
             else:
                 body = json.loads(await request.text())
 
-            confserverlog.debug(body)
+            _LOGGER.debug(body)
 
             if body["todo"] == "FindBest":
                 service = body["service"]
                 if service == "EcoMsgNew":
                     srvip = bumper.bumper_announce_ip
                     srvport = 5223
-                    confserverlog.info(
+                    _LOGGER.info(
                         "Announcing EcoMsgNew Server to bot as: {}:{}".format(
                             srvip, srvport
                         )
@@ -267,7 +267,7 @@ class WebServer:
                 elif service == "EcoUpdate":
                     srvip = "47.88.66.164"  # EcoVacs Server
                     srvport = 8005
-                    confserverlog.info(
+                    _LOGGER.info(
                         "Announcing EcoUpdate Server to bot as: {}:{}".format(
                             srvip, srvport
                         )
@@ -279,7 +279,7 @@ class WebServer:
             return web.json_response({})
 
         except Exception as e:
-            confserverlog.exception(f"{e}")
+            _LOGGER.exception(f"{e}")
 
         raise HTTPInternalServerError
 
@@ -291,14 +291,14 @@ class WebServer:
             else:
                 postbody = json.loads(await request.text())
 
-            confserverlog.debug(postbody)
+            _LOGGER.debug(postbody)
 
             body = {"authCode": postbody["itToken"], "result": "ok", "todo": "result"}
 
             return web.json_response(body)
 
         except Exception as e:
-            confserverlog.exception(f"{e}")
+            _LOGGER.exception(f"{e}")
 
         raise HTTPInternalServerError
 
@@ -318,7 +318,7 @@ class WebServer:
             ) as session:
                 if request.content.total_bytes > 0:
                     read_body = await request.read()
-                    proxymodelog.info(
+                    _LOGGER_PROXY.info(
                         f"HTTP Proxy Request to EcoVacs (body=true) (URL:{request.url}) - {read_body.decode('utf-8')}"
                     )
                     if request.content_type == "application/x-www-form-urlencoded":
@@ -328,7 +328,7 @@ class WebServer:
                             request.method, request.url, data=fdata
                         ) as resp:
                             response = await resp.text()
-                            proxymodelog.info(
+                            _LOGGER_PROXY.info(
                                 f"HTTP Proxy Response from EcoVacs (URL: {request.url}) - (Status: {resp.status}) - {response}"
                             )
                     else:
@@ -337,23 +337,23 @@ class WebServer:
                             request.method, request.url, json=await request.json()
                         ) as resp:
                             response = await resp.text()
-                            proxymodelog.info(
+                            _LOGGER_PROXY.info(
                                 f"HTTP Proxy Response from EcoVacs (URL: {request.url}) - (Status: {resp.status}) - {response}"
                             )
 
                 else:
-                    proxymodelog.info(
+                    _LOGGER_PROXY.info(
                         f"HTTP Proxy Request to EcoVacs (body=false) (URL:{request.url})"
                     )
                     async with session.request(request.method, request.url) as resp:
                         if resp.content_type == "application/octet-stream":
-                            proxymodelog.info(
+                            _LOGGER_PROXY.info(
                                 f"HTTP Proxy Response from EcoVacs (URL: {request.url}) - (Status: {resp.status}) - <BYTES CONTENT>"
                             )
                             return web.Response(body=await resp.read())
                         else:
                             response = await resp.text()
-                            proxymodelog.info(
+                            _LOGGER_PROXY.info(
                                 f"HTTP Proxy Response from EcoVacs (URL: {request.url}) - (Status: {resp.status}) - {response}"
                             )
 
@@ -366,12 +366,12 @@ class WebServer:
 
                 return web.Response(text=response)
         except asyncio.CancelledError:
-            proxymodelog.exception(
+            _LOGGER_PROXY.exception(
                 f"Request cancelled or timeout - {request.url}", exc_info=True
             )
             raise
 
         except Exception:
-            proxymodelog.exception("An exception occurred", exc_info=True)
+            _LOGGER_PROXY.exception("An exception occurred", exc_info=True)
 
         raise HTTPInternalServerError

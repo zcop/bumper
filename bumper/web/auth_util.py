@@ -30,10 +30,9 @@ from bumper.models import (
     EcoVacs_Login,
     EcoVacsHome_Login,
 )
-from bumper.util import get_current_time_as_millis, get_logger
+from bumper.util import get_current_time_as_millis
 from bumper.web.plugins import get_success_response
-
-_logger = get_logger("confserver")
+from bumper.web.server import _LOGGER
 
 
 def _generate_token(user: dict[str, Any]) -> str:
@@ -56,7 +55,7 @@ async def login(request: Request) -> Response:
         user_devid = request.match_info.get("devid", "")
         countrycode = request.match_info.get("country", "us")
         apptype = request.match_info.get("apptype", "")
-        _logger.info(f"client with devid {user_devid} attempting login")
+        _LOGGER.info(f"client with devid {user_devid} attempting login")
         if use_auth:
             if (
                 not user_devid == ""
@@ -120,7 +119,7 @@ async def login(request: Request) -> Response:
             )
 
     except Exception as e:
-        _logger.exception(f"{e}")
+        _LOGGER.exception(f"{e}")
 
     raise HTTPInternalServerError
 
@@ -214,7 +213,7 @@ def _check_token(
             return web.json_response(body)
 
     except Exception as e:
-        _logger.exception(f"{e}")
+        _LOGGER.exception(f"{e}")
 
     raise HTTPInternalServerError
 
@@ -269,7 +268,7 @@ def _auth_any(
             if "did" in bot:
                 user_add_bot(tmpuser["userid"], bot["did"])
             else:
-                _logger.error(f"No DID for bot: {bot}")
+                _LOGGER.error(f"No DID for bot: {bot}")
 
         if "checkLogin" in request.path:  # If request was to check a token do so
             checkToken = _check_token(
@@ -300,5 +299,5 @@ def _auth_any(
         return body
 
     except Exception as e:
-        _logger.exception(f"{e}")
+        _LOGGER.exception(f"{e}")
         return {}
