@@ -334,7 +334,7 @@ class WebServer:
                     else:
                         # handle json
                         async with session.request(
-                            request.method, request.url, json=request.json()
+                            request.method, request.url, json=await request.json()
                         ) as resp:
                             response = await resp.text()
                             proxymodelog.info(
