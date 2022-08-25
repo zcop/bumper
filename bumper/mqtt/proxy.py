@@ -3,7 +3,8 @@ import asyncio
 import re
 import ssl
 import typing
-from typing import Any, MutableMapping
+from collections.abc import MutableMapping
+from typing import Any
 from urllib.parse import urlparse, urlunparse
 
 import websockets

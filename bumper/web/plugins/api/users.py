@@ -1,7 +1,8 @@
 """Users plugin module."""
 import json
 import logging
-from typing import Any, Iterable, Mapping
+from collections.abc import Iterable, Mapping
+from typing import Any
 
 from aiohttp import web
 from aiohttp.abc import Request

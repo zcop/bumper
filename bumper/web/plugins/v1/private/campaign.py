@@ -1,6 +1,6 @@
 """Campaign plugin module."""
+from collections.abc import Iterable
 from datetime import datetime, timedelta
-from typing import Iterable
 
 from aiohttp import web
 from aiohttp.web_request import Request

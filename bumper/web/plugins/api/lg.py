@@ -4,7 +4,7 @@ import logging
 import random
 import string
 import xml.etree.ElementTree as ET
-from typing import Iterable
+from collections.abc import Iterable
 
 from aiohttp import web
 from aiohttp.web_request import Request

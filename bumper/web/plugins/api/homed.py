@@ -1,6 +1,6 @@
 """Homed plugin module."""
 import logging
-from typing import Iterable
+from collections.abc import Iterable
 
 from aiohttp import web
 from aiohttp.web_exceptions import HTTPInternalServerError

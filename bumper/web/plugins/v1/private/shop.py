@@ -1,5 +1,5 @@
 """Shop plugin module."""
-from typing import Iterable
+from collections.abc import Iterable
 
 from aiohttp import web
 from aiohttp.web_request import Request

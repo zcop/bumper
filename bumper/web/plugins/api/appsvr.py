@@ -2,7 +2,8 @@
 import copy
 import json
 import logging
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 from aiohttp import web
 from aiohttp.web_exceptions import HTTPInternalServerError

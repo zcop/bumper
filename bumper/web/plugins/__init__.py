@@ -2,10 +2,11 @@
 import inspect
 import sys
 from abc import abstractmethod
+from collections.abc import Iterable
 from glob import glob
 from os.path import dirname, isfile, join
 from types import ModuleType
-from typing import Any, Iterable
+from typing import Any
 
 from aiohttp import web
 from aiohttp.web_response import Response

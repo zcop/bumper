@@ -1,9 +1,9 @@
 import logging
 import os
 import sys
+from collections.abc import MutableMapping
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
-from typing import MutableMapping, Union
 
 logformat = logging.Formatter(
     "[%(asctime)s] :: %(levelname)s :: %(name)s :: %(module)s :: %(funcName)s :: %(lineno)d :: %(message)s"

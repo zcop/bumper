@@ -3,7 +3,7 @@ import json
 import logging
 import random
 import string
-from typing import Iterable
+from collections.abc import Iterable
 
 from aiohttp import web
 from aiohttp.web_exceptions import HTTPInternalServerError

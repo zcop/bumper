@@ -2,7 +2,8 @@
 import asyncio
 import json
 import ssl
-from typing import Any, MutableMapping
+from collections.abc import MutableMapping
+from typing import Any
 
 from cachetools import TTLCache
 from gmqtt import Client, Subscription
