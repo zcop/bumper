@@ -1,3 +1,4 @@
+"""Models module."""
 import json
 import uuid
 from datetime import datetime, timedelta
@@ -8,6 +9,8 @@ from bumper.util import convert_to_millis
 
 
 class VacBotDevice:
+    """Vacuum device."""
+
     def __init__(
         self,
         did: str = "",
@@ -27,6 +30,7 @@ class VacBotDevice:
         self.xmpp_connection = False
 
     def asdict(self) -> dict[str, str | bool]:
+        """Convert to dict."""
         return {
             "class": self.vac_bot_device_class,
             "company": self.company,
@@ -40,16 +44,21 @@ class VacBotDevice:
 
 
 class BumperUser:
+    """Bumper user."""
+
     def __init__(self, userid: str = ""):
         self.userid = userid
         self.devices: list[str] = []
         self.bots: list[str] = []
 
     def asdict(self) -> dict[str, Any]:
+        """Convert to dict."""
         return {"userid": self.userid, "devices": self.devices, "bots": self.bots}
 
 
-class GlobalVacBotDevice(VacBotDevice):  # EcoVacs Home
+class GlobalVacBotDevice(VacBotDevice):
+    """Global vacuum device."""
+
     UILogicId = ""
     ota = True
     updateInfo = {"changeLog": "", "needUpdate": False}
@@ -58,6 +67,8 @@ class GlobalVacBotDevice(VacBotDevice):  # EcoVacs Home
 
 
 class VacBotClient:
+    """Vacuum client."""
+
     def __init__(self, userid: str = "", realm: str = "", token: str = ""):
         self.userid = userid
         self.realm = realm
@@ -66,6 +77,7 @@ class VacBotClient:
         self.xmpp_connection = False
 
     def asdict(self) -> dict[str, Any]:
+        """Convert to dict."""
         return {
             "userid": self.userid,
             "realm": self.realm,
@@ -76,6 +88,8 @@ class VacBotClient:
 
 
 class EcoVacs_Login:
+    """Ecovacs login."""
+
     accessToken = ""
     country = ""
     email = ""
@@ -83,16 +97,21 @@ class EcoVacs_Login:
     username = ""
 
     def toJSON(self) -> str:
+        """Convert to json."""
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=False)
 
 
 class EcoVacsHome_Login(EcoVacs_Login):
+    """Ecovacs home login."""
+
     loginName = ""
     mobile: str | None = ""
     ucUid = ""
 
 
 class OAuth:
+    """Oauth."""
+
     access_token = ""
     expire_at = ""
     refresh_token = ""
@@ -103,6 +122,7 @@ class OAuth:
 
     @classmethod
     def create_new(cls, userId: str) -> "OAuth":
+        """Create new."""
         oauth = OAuth()
         oauth.userId = userId
         oauth.access_token = uuid.uuid4().hex
@@ -113,9 +133,11 @@ class OAuth:
         return oauth
 
     def toDB(self) -> dict:
+        """Convert for db."""
         return self.__dict__
 
     def toResponse(self) -> dict:
+        """Convert to response."""
         data = self.__dict__
         data["expire_at"] = convert_to_millis(
             datetime.fromisoformat(self.expire_at).timestamp()

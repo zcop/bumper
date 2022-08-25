@@ -1,3 +1,4 @@
+"""Init module."""
 import asyncio
 import logging
 import os
@@ -5,8 +6,8 @@ import socket
 import sys
 
 from bumper.db import (
-    bot_reset_connectionStatus,
-    client_reset_connectionStatus,
+    bot_reset_connection_status,
+    client_reset_connection_status,
     revoke_expired_oauths,
     revoke_expired_tokens,
 )
@@ -18,6 +19,7 @@ from bumper.xmppserver import XMPPServer
 
 
 def strtobool(strbool: str | bool | None) -> bool:
+    """Convert str to bool."""
     if str(strbool).lower() in ["true", "1", "t", "y", "on", "yes"]:
         return True
     else:
@@ -77,13 +79,14 @@ web_server_bindings = [
 
 
 async def start() -> None:
+    """Start bumper."""
     # Reset xmpp/mqtt to false in database for bots and clients
-    bot_reset_connectionStatus()
-    client_reset_connectionStatus()
+    bot_reset_connection_status()
+    client_reset_connection_status()
 
     try:
         loop = asyncio.get_event_loop()
-    except:
+    except:  # noqa: E722
         loop = asyncio.new_event_loop()
 
     if bumper_debug:
@@ -150,22 +153,28 @@ async def start() -> None:
 
 
 async def maintenance() -> None:
+    """Run maintenance."""
     revoke_expired_tokens()
     revoke_expired_oauths()
 
 
 async def shutdown() -> None:
+    """Shutdown bumper."""
     try:
         bumperlog.info("Shutting down")
         global shutting_down
         shutting_down = True
 
+        global mqtt_helperbot
         await mqtt_helperbot.disconnect()
+        global web_server
         await web_server.shutdown()
+        global mqtt_server
         while mqtt_server.state == "starting":
             await asyncio.sleep(0.1)
         if mqtt_server.state == "started":
             await mqtt_server.shutdown()
+        global xmpp_server
         if xmpp_server.server:
             if xmpp_server.server.is_serving:
                 xmpp_server.server.close()
@@ -177,6 +186,7 @@ async def shutdown() -> None:
 
 
 def main(argv: None | list[str] = None) -> None:
+    """Start everything."""
     import argparse
 
     global bumper_debug

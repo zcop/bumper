@@ -11,7 +11,7 @@ def test_db_path():
     env = os.environ.copy()
     env.pop("DB_FILE")
     with mock.patch.dict(os.environ, env, clear=True):
-        assert db.db_file() == os.path.join(data_dir, "bumper.db")
+        assert db._db_file() == os.path.join(data_dir, "bumper.db")
 
 
 def test_user_db():
@@ -24,7 +24,7 @@ def test_user_db():
     db.user_add_device("testuser", "dev_1234")  # Add device to testuser
 
     assert (
-        db.user_by_deviceid("dev_1234")["userid"] == "testuser"
+        db.user_by_device_id("dev_1234")["userid"] == "testuser"
     )  # Test that testuser was found by deviceid
 
     db.user_remove_device("testuser", "dev_1234")  # Remove device from testuser

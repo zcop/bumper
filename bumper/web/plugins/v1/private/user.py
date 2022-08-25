@@ -8,7 +8,7 @@ from aiohttp.web_request import Request
 from aiohttp.web_response import Response
 from aiohttp.web_routedef import AbstractRouteDef
 
-from bumper.db import check_token, user_by_deviceid, user_revoke_token
+from bumper.db import check_token, user_by_device_id, user_revoke_token
 from bumper.web import auth_util
 
 from ... import WebserverPlugin, get_success_response
@@ -84,7 +84,7 @@ async def _logout(request: Request) -> Response:
     try:
         user_device_id = request.match_info.get("devid", None)
         if user_device_id:
-            user = user_by_deviceid(user_device_id)
+            user = user_by_device_id(user_device_id)
             if user:
                 if check_token(user["userid"], request.query["accessToken"]):
                     # Deactivate old tokens and authcodes
@@ -101,7 +101,7 @@ async def _logout(request: Request) -> Response:
 async def _get_user_account_info(request: Request) -> Response:
     try:
         user_devid = request.match_info.get("devid", "")
-        user = user_by_deviceid(user_devid)
+        user = user_by_device_id(user_devid)
         if user:
             username = f"fusername_{user['userid']}"
             return get_success_response(

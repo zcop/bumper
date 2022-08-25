@@ -253,6 +253,8 @@ class BumperMQTTServerPlugin:
     async def on_broker_client_subscribed(
         self, client_id: str, topic: str, qos: QOS_0 | QOS_1 | QOS_2
     ) -> None:
+        """Is called when a client subscribes on the broker."""
+
         if bumper.bumper_proxy_mqtt:
             # if proxy mode, also subscribe on ecovacs server
             if client_id in self._proxy_clients:

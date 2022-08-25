@@ -10,7 +10,13 @@ from aiohttp.web_response import Response
 from aiohttp.web_routedef import AbstractRouteDef
 
 from bumper import bumper_announce_ip
-from bumper.db import bot_remove, bot_set_nick, check_authcode, db_get, loginByItToken
+from bumper.db import (
+    _db_get,
+    bot_remove,
+    bot_set_nick,
+    check_authcode,
+    login_by_it_token,
+)
 
 from .. import WebserverPlugin
 
@@ -81,7 +87,7 @@ async def _handle_usersapi(request: Request) -> Response:
                             "userId": postbody["userId"],
                         }
                 else:  # EcoVacs Home LoginByITToken
-                    login_token = loginByItToken(postbody["token"])
+                    login_token = login_by_it_token(postbody["token"])
                     if login_token:
                         body = {
                             "resource": postbody["resource"],
@@ -95,7 +101,7 @@ async def _handle_usersapi(request: Request) -> Response:
 
             elif todo == "GetDeviceList":
                 body = {
-                    "devices": db_get().table("bots").all(),
+                    "devices": _db_get().table("bots").all(),
                     "result": "ok",
                     "todo": "result",
                 }

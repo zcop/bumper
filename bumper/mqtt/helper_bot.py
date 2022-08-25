@@ -154,6 +154,7 @@ class HelperBot:
             self._commands.pop(request_id, None)
 
     def publish(self, topic: str, data: bytes) -> None:
+        """Publish message."""
         self._client.publish(topic, data)
 
     async def disconnect(self) -> None:

@@ -1,3 +1,4 @@
+"""Database module."""
 import os
 from datetime import datetime, timedelta
 from typing import Any
@@ -13,17 +14,17 @@ from .util import get_logger
 _LOGGER = get_logger("db")
 
 
-def db_file() -> str:
-    return os.environ.get("DB_FILE") or os_db_path()
+def _db_file() -> str:
+    return os.environ.get("DB_FILE") or _os_db_path()
 
 
-def os_db_path() -> str:  # createdir=True):
+def _os_db_path() -> str:  # createdir=True):
     return os.path.join(bumper.data_dir, "bumper.db")
 
 
-def db_get() -> TinyDB:
+def _db_get() -> TinyDB:
     # Will create the database if it doesn't exist
-    db = TinyDB(db_file())
+    db = TinyDB(_db_file())
 
     # Will create the tables if they don't exist
     db.table("users", cache_size=0)
@@ -36,29 +37,32 @@ def db_get() -> TinyDB:
 
 
 def user_add(userid: str) -> None:
+    """Add user."""
     newuser = BumperUser()
     newuser.userid = userid
 
     user = user_get(userid)
     if not user:
         _LOGGER.info(f"Adding new user with userid: {newuser.userid}")
-        user_full_upsert(newuser.asdict())
+        _user_full_upsert(newuser.asdict())
 
 
 def user_get(userid: str) -> None | Document:
-    users = db_get().table("users")
+    """Get user."""
+    users = _db_get().table("users")
     User = Query()
     return users.get(User.userid == userid)
 
 
-def user_by_deviceid(deviceid: str) -> None | Document:
-    users = db_get().table("users")
+def user_by_device_id(deviceid: str) -> None | Document:
+    """Get user by device id."""
+    users = _db_get().table("users")
     User = Query()
     return users.get(User.devices.any([deviceid]))
 
 
-def user_full_upsert(user: dict[str, Any]) -> None:
-    opendb = db_get()
+def _user_full_upsert(user: dict[str, Any]) -> None:
+    opendb = _db_get()
     with opendb:
         users = opendb.table("users")
         User = Query()
@@ -66,21 +70,23 @@ def user_full_upsert(user: dict[str, Any]) -> None:
 
 
 def user_add_device(userid: str, devid: str) -> None:
-    opendb = db_get()
+    """Add device to user."""
+    opendb = _db_get()
     with opendb:
         users = opendb.table("users")
         User = Query()
         user = users.get(User.userid == userid)
         if user:
             userdevices = list(user["devices"])
-            if not devid in userdevices:
+            if devid not in userdevices:
                 userdevices.append(devid)
 
         users.upsert({"devices": userdevices}, User.userid == userid)
 
 
 def user_remove_device(userid: str, devid: str) -> None:
-    opendb = db_get()
+    """Remove device from user."""
+    opendb = _db_get()
     with opendb:
         users = opendb.table("users")
         User = Query()
@@ -94,21 +100,23 @@ def user_remove_device(userid: str, devid: str) -> None:
 
 
 def user_add_bot(userid: str, did: str) -> None:
-    opendb = db_get()
+    """Add bot to user."""
+    opendb = _db_get()
     with opendb:
         users = opendb.table("users")
         User = Query()
         user = users.get(User.userid == userid)
         if user:
             userbots = list(user["bots"])
-            if not did in userbots:
+            if did not in userbots:
                 userbots.append(did)
 
         users.upsert({"bots": userbots}, User.userid == userid)
 
 
 def user_remove_bot(userid: str, did: str) -> None:
-    opendb = db_get()
+    """Remove bot from user."""
+    opendb = _db_get()
     with opendb:
         users = opendb.table("users")
         User = Query()
@@ -122,17 +130,20 @@ def user_remove_bot(userid: str, did: str) -> None:
 
 
 def user_get_tokens(userid: str) -> list[Document]:
-    tokens = db_get().table("tokens")
+    """Get all tokens by given user."""
+    tokens = _db_get().table("tokens")
     return tokens.search(Query().userid == userid)
 
 
 def user_get_token(userid: str, token: str) -> Document | None:
-    tokens = db_get().table("tokens")
+    """Get token by user."""
+    tokens = _db_get().table("tokens")
     return tokens.get((Query().userid == userid) & (Query().token == token))
 
 
 def user_add_token(userid: str, token: str) -> None:
-    opendb = db_get()
+    """Ass token for given user."""
+    opendb = _db_get()
     with opendb:
         tokens = opendb.table("tokens")
         tmptoken = tokens.get((Query().userid == userid) & (Query().token == token))
@@ -151,7 +162,8 @@ def user_add_token(userid: str, token: str) -> None:
 
 
 def user_revoke_all_tokens(userid: str) -> None:
-    opendb = db_get()
+    """Revoke all tokens for given user."""
+    opendb = _db_get()
     with opendb:
         tokens = opendb.table("tokens")
         tsearch = tokens.search(Query().userid == userid)
@@ -160,7 +172,8 @@ def user_revoke_all_tokens(userid: str) -> None:
 
 
 def user_revoke_expired_tokens(userid: str) -> None:
-    opendb = db_get()
+    """Revoke expired user tokens."""
+    opendb = _db_get()
     with opendb:
         tokens = opendb.table("tokens")
         tsearch = tokens.search(Query().userid == userid)
@@ -171,7 +184,8 @@ def user_revoke_expired_tokens(userid: str) -> None:
 
 
 def user_revoke_token(userid: str, token: str) -> None:
-    opendb = db_get()
+    """Revoke user token."""
+    opendb = _db_get()
     with opendb:
         tokens = opendb.table("tokens")
         tmptoken = tokens.get((Query().userid == userid) & (Query().token == token))
@@ -180,7 +194,8 @@ def user_revoke_token(userid: str, token: str) -> None:
 
 
 def user_add_authcode(userid: str, token: str, authcode: str) -> None:
-    opendb = db_get()
+    """Add user authcode."""
+    opendb = _db_get()
     with opendb:
         tokens = opendb.table("tokens")
         tmptoken = tokens.get((Query().userid == userid) & (Query().token == token))
@@ -192,7 +207,8 @@ def user_add_authcode(userid: str, token: str, authcode: str) -> None:
 
 
 def user_revoke_authcode(userid: str, token: str) -> None:
-    opendb = db_get()
+    """Revoke user authcode."""
+    opendb = _db_get()
     with opendb:
         tokens = opendb.table("tokens")
         tmptoken = tokens.get((Query().userid == userid) & (Query().token == token))
@@ -204,7 +220,8 @@ def user_revoke_authcode(userid: str, token: str) -> None:
 
 
 def revoke_expired_oauths() -> None:
-    opendb = db_get()
+    """Revoke expired oauths."""
+    opendb = _db_get()
     with opendb:
         table = opendb.table("oauth")
         entries = table.all()
@@ -217,7 +234,8 @@ def revoke_expired_oauths() -> None:
 
 
 def user_revoke_expired_oauths(userid: str) -> None:
-    opendb = db_get()
+    """Revoke expired oauths by user."""
+    opendb = _db_get()
     with opendb:
         table = opendb.table("oauth")
         search = table.search(Query().userid == userid)
@@ -229,8 +247,9 @@ def user_revoke_expired_oauths(userid: str) -> None:
 
 
 def user_add_oauth(userid: str) -> OAuth:
+    """Add oauth for user."""
     user_revoke_expired_oauths(userid)
-    opendb = db_get()
+    opendb = _db_get()
     with opendb:
         table = opendb.table("oauth")
         entry = table.get(Query().userid == userid)
@@ -244,19 +263,22 @@ def user_add_oauth(userid: str) -> OAuth:
 
 
 def token_by_authcode(authcode: str) -> Document | None:
-    tokens = db_get().table("tokens")
+    """Get token by authcode."""
+    tokens = _db_get().table("tokens")
     return tokens.get(Query().authcode == authcode)
 
 
 def get_disconnected_xmpp_clients() -> list[Document]:
-    clients = db_get().table("clients")
-    Client = Query()
-    return clients.search(Client.xmpp_connection == False)
+    """Get disconnected XMPP clients."""
+    clients = _db_get().table("clients")
+    client = Query()
+    return clients.search(client.xmpp_connection == False)  # noqa: E712
 
 
 def check_authcode(uid: str, authcode: str) -> bool:
+    """Check authcode."""
     _LOGGER.debug(f"Checking for authcode: {authcode}")
-    tokens = db_get().table("tokens")
+    tokens = _db_get().table("tokens")
     tmpauth = tokens.get(
         (Query().authcode == authcode)
         & (  # Match authcode
@@ -270,9 +292,10 @@ def check_authcode(uid: str, authcode: str) -> bool:
     return False
 
 
-def loginByItToken(authcode: str) -> dict[str, str]:
+def login_by_it_token(authcode: str) -> dict[str, str]:
+    """Login by token."""
     _LOGGER.debug(f"Checking for authcode: {authcode}")
-    tokens = db_get().table("tokens")
+    tokens = _db_get().table("tokens")
     tmpauth = tokens.get(
         Query().authcode
         == authcode
@@ -288,8 +311,9 @@ def loginByItToken(authcode: str) -> dict[str, str]:
 
 
 def check_token(uid: str, token: str) -> bool:
+    """Check token."""
     _LOGGER.debug(f"Checking for token: {token}")
-    tokens = db_get().table("tokens")
+    tokens = _db_get().table("tokens")
     tmpauth = tokens.get(
         (Query().token == token)
         & (  # Match token
@@ -304,122 +328,137 @@ def check_token(uid: str, token: str) -> bool:
 
 
 def revoke_expired_tokens() -> None:
-    tokens = db_get().table("tokens").all()
+    """Revoke expired tokens."""
+    tokens = _db_get().table("tokens").all()
     for i in tokens:
         if datetime.now() >= datetime.fromisoformat(i["expiration"]):
             _LOGGER.debug("Removing token {} due to expiration".format(i["token"]))
-            db_get().table("tokens").remove(doc_ids=[i.doc_id])
+            _db_get().table("tokens").remove(doc_ids=[i.doc_id])
 
 
-def bot_add(sn: str, did: str, devclass: str, resource: str, company: str) -> None:
-    newbot = VacBotDevice()
-    newbot.did = did
-    newbot.name = sn
-    newbot.vac_bot_device_class = devclass
-    newbot.resource = resource
-    newbot.company = company
+def bot_add(sn: str, did: str, dev_class: str, resource: str, company: str) -> None:
+    """Add bot."""
+    new_bot = VacBotDevice()
+    new_bot.did = did
+    new_bot.name = sn
+    new_bot.vac_bot_device_class = dev_class
+    new_bot.resource = resource
+    new_bot.company = company
 
     bot = bot_get(did)
     if not bot:  # Not existing bot in database
         if (
-            not devclass == "" or "@" not in sn or "tmp" not in sn
+            not dev_class == "" or "@" not in sn or "tmp" not in sn
         ):  # try to prevent bad additions to the bot list
-            _LOGGER.info(f"Adding new bot with SN: {newbot.name} DID: {newbot.did}")
-            bot_full_upsert(newbot.asdict())
+            _LOGGER.info(f"Adding new bot with SN: {new_bot.name} DID: {new_bot.did}")
+            bot_full_upsert(new_bot.asdict())
 
 
 def bot_remove(did: str) -> None:
-    bots = db_get().table("bots")
+    """Remove bot."""
+    bots = _db_get().table("bots")
     bot = bot_get(did)
     if bot:
         bots.remove(doc_ids=[bot.doc_id])
 
 
 def bot_get(did: str) -> Document | None:
-    bots = db_get().table("bots")
-    Bot = Query()
-    return bots.get(Bot.did == did)
+    """Get bot."""
+    bots = _db_get().table("bots")
+    bot = Query()
+    return bots.get(bot.did == did)
 
 
 def bot_full_upsert(vacbot: dict[str, Any]) -> None:
-    bots = db_get().table("bots")
-    Bot = Query()
+    """Upsert bot."""
+    bots = _db_get().table("bots")
+    bot = Query()
     if "did" in vacbot:
-        bots.upsert(vacbot, Bot.did == vacbot["did"])
+        bots.upsert(vacbot, bot.did == vacbot["did"])
     else:
         _LOGGER.error(f"No DID in vacbot: {vacbot}")
 
 
 def bot_set_nick(did: str, nick: str) -> None:
-    bots = db_get().table("bots")
-    Bot = Query()
-    bots.upsert({"nick": nick}, Bot.did == did)
+    """Bot set nickname."""
+    bots = _db_get().table("bots")
+    bot = Query()
+    bots.upsert({"nick": nick}, bot.did == did)
 
 
 def bot_set_mqtt(did: str, mqtt: bool) -> None:
-    bots = db_get().table("bots")
-    Bot = Query()
-    bots.upsert({"mqtt_connection": mqtt}, Bot.did == did)
+    """Bot ste MQTT status."""
+    bots = _db_get().table("bots")
+    bot = Query()
+    bots.upsert({"mqtt_connection": mqtt}, bot.did == did)
 
 
 def bot_set_xmpp(did: str, xmpp: bool) -> None:
-    bots = db_get().table("bots")
-    Bot = Query()
-    bots.upsert({"xmpp_connection": xmpp}, Bot.did == did)
+    """Bot set XMPP status."""
+    bots = _db_get().table("bots")
+    bot = Query()
+    bots.upsert({"xmpp_connection": xmpp}, bot.did == did)
 
 
 def client_add(userid: str, realm: str, resource: str) -> None:
-    newclient = VacBotClient()
-    newclient.userid = userid
-    newclient.realm = realm
-    newclient.resource = resource
+    """Add client."""
+    new_client = VacBotClient()
+    new_client.userid = userid
+    new_client.realm = realm
+    new_client.resource = resource
 
     client = client_get(resource)
     if not client:
-        _LOGGER.info(f"Adding new client with resource {newclient.resource}")
-        client_full_upsert(newclient.asdict())
+        _LOGGER.info(f"Adding new client with resource {new_client.resource}")
+        _client_full_upsert(new_client.asdict())
 
 
 def client_remove(resource: str) -> None:
-    clients = db_get().table("clients")
+    """Remove client."""
+    clients = _db_get().table("clients")
     client = client_get(resource)
     if client:
         clients.remove(doc_ids=[client.doc_id])
 
 
 def client_get(resource: str) -> Document | None:
-    clients = db_get().table("clients")
-    Client = Query()
-    return clients.get(Client.resource == resource)
+    """Get client by resource."""
+    clients = _db_get().table("clients")
+    client = Query()
+    return clients.get(client.resource == resource)
 
 
-def client_full_upsert(client: dict[str, Any]) -> None:
-    clients = db_get().table("clients")
-    Client = Query()
-    clients.upsert(client, Client.resource == client["resource"])
+def _client_full_upsert(client: dict[str, Any]) -> None:
+    clients = _db_get().table("clients")
+    client_query = Query()
+    clients.upsert(client, client_query.resource == client["resource"])
 
 
 def client_set_mqtt(resource: str, mqtt: bool) -> None:
-    clients = db_get().table("clients")
-    Client = Query()
-    clients.upsert({"mqtt_connection": mqtt}, Client.resource == resource)
+    """Client set MQTT status."""
+    clients = _db_get().table("clients")
+    client = Query()
+    clients.upsert({"mqtt_connection": mqtt}, client.resource == resource)
 
 
 def client_set_xmpp(resource: str, xmpp: bool) -> None:
-    clients = db_get().table("clients")
-    Client = Query()
-    clients.upsert({"xmpp_connection": xmpp}, Client.resource == resource)
+    """Client set XMPP status."""
+    clients = _db_get().table("clients")
+    client = Query()
+    clients.upsert({"xmpp_connection": xmpp}, client.resource == resource)
 
 
-def bot_reset_connectionStatus() -> None:
-    bots = db_get().table("bots")
+def bot_reset_connection_status() -> None:
+    """Reset all bot connection status."""
+    bots = _db_get().table("bots")
     for bot in bots:
         bot_set_mqtt(bot["did"], False)
         bot_set_xmpp(bot["did"], False)
 
 
-def client_reset_connectionStatus() -> None:
-    clients = db_get().table("clients")
+def client_reset_connection_status() -> None:
+    """Reset all client connection status."""
+    clients = _db_get().table("clients")
     for client in clients:
         client_set_mqtt(client["resource"], False)
         client_set_xmpp(client["resource"], False)

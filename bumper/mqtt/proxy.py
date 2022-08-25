@@ -1,6 +1,5 @@
 """Mqtt proxy module."""
 import asyncio
-import re
 import ssl
 import typing
 from collections.abc import MutableMapping
@@ -52,6 +51,7 @@ class ProxyClient:
         self._port = port
 
     async def connect(self, username: str, password: str) -> None:
+        """Connect."""
         try:
             await self._client.connect(
                 f"mqtts://{username}:{password}@{self._host}:{self._port}"
@@ -96,12 +96,15 @@ class ProxyClient:
                 )
 
     async def subscribe(self, topic: str, qos: QOS_0 | QOS_1 | QOS_2 = QOS_0) -> None:
+        """Subscribe to topic."""
         await self._client.subscribe([(topic, qos)])
 
     async def disconnect(self) -> None:
+        """Disconnect."""
         await self._client.disconnect()
 
     async def publish(self, topic: str, message: bytes, qos: int | None = None) -> None:
+        """Publish message."""
         await self._client.publish(topic, message, qos)
 
 

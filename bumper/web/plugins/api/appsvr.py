@@ -13,7 +13,7 @@ from aiohttp.web_routedef import AbstractRouteDef
 from amqtt.session import Session
 
 import bumper
-from bumper.db import db_get, token_by_authcode, user_add_oauth
+from bumper.db import _db_get, token_by_authcode, user_add_oauth
 
 from .. import WebserverPlugin
 from .pim import get_product_iot_map
@@ -73,7 +73,7 @@ async def _handle_appsvr_app(request: Request) -> Response:
         todo = postbody["todo"]
 
         if todo == "GetGlobalDeviceList":
-            bots = db_get().table("bots").all()
+            bots = _db_get().table("bots").all()
             devices = []
             for bot in bots:
                 if bot["class"] != "":

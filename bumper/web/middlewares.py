@@ -14,7 +14,10 @@ _LOGGER = get_logger("webserver_requests")
 
 
 class CustomEncoder(json.JSONEncoder):
+    """Custom json encoder, which supports set."""
+
     def default(self, obj: Any) -> Any:
+        """Convert objects, which are not supported by the default JSONEncoder."""
         if isinstance(obj, set):
             return list(obj)
         return json.JSONEncoder.default(self, obj)
@@ -30,6 +33,7 @@ _EXCLUDE_FROM_LOGGING = [
 
 @web.middleware
 async def log_all_requests(request: Request, handler: Handler) -> StreamResponse:
+    """Middleware to log all requests."""
     if (
         not request.match_info.route.resource
     ) or request.match_info.route.resource.canonical in _EXCLUDE_FROM_LOGGING:

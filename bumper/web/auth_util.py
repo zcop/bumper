@@ -11,13 +11,13 @@ from aiohttp.web_response import Response
 
 from bumper import db, use_auth
 from bumper.db import (
-    db_get,
+    _db_get,
     user_add,
     user_add_authcode,
     user_add_bot,
     user_add_device,
     user_add_token,
-    user_by_deviceid,
+    user_by_device_id,
     user_get,
     user_get_token,
     user_revoke_expired_tokens,
@@ -60,7 +60,7 @@ async def login(request: Request) -> Response:
             if (
                 not user_devid == ""
             ):  # Performing basic "auth" using devid, super insecure
-                user = user_by_deviceid(user_devid)
+                user = user_by_device_id(user_devid)
                 if user:
                     if "checkLogin" in request.path:
                         _check_token(
@@ -132,7 +132,7 @@ async def get_authcode(request: Request) -> Response:
             user_devid = request.query["deviceId"]  # Ecovacs Home
 
         if user_devid:
-            user = user_by_deviceid(user_devid)
+            user = user_by_device_id(user_devid)
             if user:
                 if "accessToken" in request.query:
                     token = user_get_token(user["userid"], request.query["accessToken"])
@@ -224,8 +224,8 @@ def _auth_any(
     try:
         user_devid = devid
         countrycode = country
-        user = user_by_deviceid(user_devid)
-        bots = db_get().table("bots").all()
+        user = user_by_device_id(user_devid)
+        bots = _db_get().table("bots").all()
         login_details: EcoVacs_Login | EcoVacsHome_Login
 
         if user:  # Default to user 0

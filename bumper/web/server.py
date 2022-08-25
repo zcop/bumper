@@ -15,7 +15,7 @@ from aiohttp.web_request import Request
 from aiohttp.web_response import Response
 
 import bumper
-from bumper.db import bot_get, bot_remove, client_get, client_remove, db_get
+from bumper.db import _db_get, bot_get, bot_remove, client_get, client_remove
 from bumper.dns import get_resolver_with_public_nameserver
 from bumper.util import get_logger
 from bumper.web.middlewares import log_all_requests
@@ -148,8 +148,8 @@ class WebServer:
 
     async def _handle_base(self, request: Request) -> Response:
         try:
-            bots = db_get().table("bots").all()
-            clients = db_get().table("clients").all()
+            bots = _db_get().table("bots").all()
+            clients = _db_get().table("clients").all()
             mq_sessions = []
             for (session, _) in bumper.mqtt_server.broker._sessions.values():
                 mq_sessions.append(

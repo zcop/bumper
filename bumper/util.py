@@ -1,3 +1,5 @@
+"""Util module."""
+
 import logging
 import os
 import sys
@@ -14,6 +16,7 @@ log_to_stdout = os.environ.get("LOG_TO_STDOUT")
 
 
 def get_logger(name: str, rotate: RotatingFileHandler | None = None) -> logging.Logger:
+    """Get logger."""
     found_logger = __loggers.get(name)
     if found_logger:
         return found_logger
@@ -53,4 +56,5 @@ def convert_to_millis(seconds: int | float) -> int:
 
 
 def get_current_time_as_millis() -> int:
+    """Get current time in millis."""
     return convert_to_millis(datetime.utcnow().timestamp())
