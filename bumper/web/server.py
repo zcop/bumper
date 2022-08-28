@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import ssl
+from typing import Any
 
 import aiohttp
 import aiohttp_jinja2
@@ -22,22 +23,21 @@ from bumper.web.middlewares import log_all_requests
 from bumper.web.plugins import add_plugins
 
 
-class _aiohttp_filter(logging.Filter):
+class _AiohttpFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         if record.name == "aiohttp.access" and record.levelno == 20:
             # Filters aiohttp.access log to switch it from INFO to DEBUG
             record.levelno = 10
             record.levelname = "DEBUG"
 
-        if record.levelno == 10 and get_logger("confserver").getEffectiveLevel() == 10:
-            return True
-        else:
-            return False
+        return (
+            record.levelno == 10 and get_logger("confserver").getEffectiveLevel() == 10
+        )
 
 
 _LOGGER = get_logger("webserver")
 # Add logging filter above to aiohttp.access
-logging.getLogger("aiohttp.access").addFilter(_aiohttp_filter())
+logging.getLogger("aiohttp.access").addFilter(_AiohttpFilter())
 _LOGGER_PROXY = logging.getLogger("web_proxy")
 
 
@@ -129,9 +129,9 @@ class WebServer:
                 )
 
                 await site.start()
-        except Exception as e:
-            _LOGGER.exception(f"{e}")
-            raise e
+        except Exception:
+            _LOGGER.exception("An exception occurred", exc_info=True)
+            raise
 
     async def shutdown(self) -> None:
         """Shutdown server."""
@@ -143,15 +143,16 @@ class WebServer:
             self._runners.clear()
             await self._app.shutdown()
 
-        except Exception as e:
-            _LOGGER.exception(f"{e}")
+        except Exception:
+            _LOGGER.exception("An exception occurred", exc_info=True)
+            raise
 
     async def _handle_base(self, request: Request) -> Response:
         try:
             bots = _db_get().table("bots").all()
             clients = _db_get().table("clients").all()
             mq_sessions = []
-            for (session, _) in bumper.mqtt_server.broker._sessions.values():
+            for session in bumper.mqtt_server.sessions:
                 mq_sessions.append(
                     {
                         "username": session.username,
@@ -159,7 +160,7 @@ class WebServer:
                         "state": session.transitions.state,
                     }
                 )
-            all = {
+            context = {
                 "bots": bots,
                 "clients": clients,
                 "helperbot": {"connected": bumper.mqtt_helperbot.is_connected},
@@ -172,9 +173,11 @@ class WebServer:
                 },
                 "xmpp_server": bumper.xmpp_server,
             }
-            return aiohttp_jinja2.render_template("home.jinja2", request, context=all)
-        except Exception as e:
-            _LOGGER.exception(f"{e}")
+            return aiohttp_jinja2.render_template(
+                "home.jinja2", request, context=context
+            )
+        except Exception:  # pylint: disable=broad-except
+            _LOGGER.exception("An exception occurred", exc_info=True)
 
         raise HTTPInternalServerError
 
@@ -208,9 +211,10 @@ class WebServer:
                 return web.json_response({"status": "complete"})
 
             return web.json_response({"status": "invalid service"})
-        except Exception as e:
-            _LOGGER.exception(f"{e}")
-            raise
+        except Exception:  # pylint: disable=broad-except
+            _LOGGER.exception("An exception occurred", exc_info=True)
+
+        raise HTTPInternalServerError
 
     async def _handle_remove_bot(self, request: Request) -> Response:
         try:
@@ -218,11 +222,11 @@ class WebServer:
             bot_remove(did)
             if bot_get(did):
                 return web.json_response({"status": "failed to remove bot"})
-            else:
-                return web.json_response({"status": "successfully removed bot"})
 
-        except Exception as e:
-            _LOGGER.exception(f"{e}")
+            return web.json_response({"status": "successfully removed bot"})
+
+        except Exception:  # pylint: disable=broad-except
+            _LOGGER.exception("An exception occurred", exc_info=True)
 
         raise HTTPInternalServerError
 
@@ -232,11 +236,11 @@ class WebServer:
             client_remove(resource)
             if client_get(resource):
                 return web.json_response({"status": "failed to remove client"})
-            else:
-                return web.json_response({"status": "successfully removed client"})
 
-        except Exception as e:
-            _LOGGER.exception(f"{e}")
+            return web.json_response({"status": "successfully removed client"})
+
+        except Exception:  # pylint: disable=broad-except
+            _LOGGER.exception("An exception occurred", exc_info=True)
 
         raise HTTPInternalServerError
 
@@ -255,22 +259,18 @@ class WebServer:
                     srvip = bumper.bumper_announce_ip
                     srvport = 5223
                     _LOGGER.info(
-                        "Announcing EcoMsgNew Server to bot as: {}:{}".format(
-                            srvip, srvport
-                        )
+                        "Announcing EcoMsgNew Server to bot as: %s:%d", srvip, srvport
                     )
                     server = json.dumps({"ip": srvip, "port": srvport, "result": "ok"})
                     # bot seems to be very picky about having no spaces, only way was with text
                     server = server.replace(" ", "")
                     return web.json_response(text=server)
 
-                elif service == "EcoUpdate":
+                if service == "EcoUpdate":
                     srvip = "47.88.66.164"  # EcoVacs Server
                     srvport = 8005
                     _LOGGER.info(
-                        "Announcing EcoUpdate Server to bot as: {}:{}".format(
-                            srvip, srvport
-                        )
+                        "Announcing EcoUpdate Server to bot as: %s:%d", srvip, srvport
                     )
                     return web.json_response(
                         {"result": "ok", "ip": srvip, "port": srvport}
@@ -278,8 +278,8 @@ class WebServer:
 
             return web.json_response({})
 
-        except Exception as e:
-            _LOGGER.exception(f"{e}")
+        except Exception:  # pylint: disable=broad-except
+            _LOGGER.exception("An exception occurred", exc_info=True)
 
         raise HTTPInternalServerError
 
@@ -297,8 +297,8 @@ class WebServer:
 
             return web.json_response(body)
 
-        except Exception as e:
-            _LOGGER.exception(f"{e}")
+        except Exception:  # pylint: disable=broad-except
+            _LOGGER.exception("An exception occurred", exc_info=True)
 
         raise HTTPInternalServerError
 
@@ -316,62 +316,54 @@ class WebServer:
                     verify_ssl=False, resolver=get_resolver_with_public_nameserver()
                 ),
             ) as session:
+                data: Any = None
+                json_data: Any = None
                 if request.content.total_bytes > 0:
                     read_body = await request.read()
                     _LOGGER_PROXY.info(
-                        f"HTTP Proxy Request to EcoVacs (body=true) (URL:{request.url}) - {read_body.decode('utf-8')}"
+                        "HTTP Proxy Request to EcoVacs (body=true) (URL:%s) - %s",
+                        request.url,
+                        read_body.decode("utf-8"),
                     )
                     if request.content_type == "application/x-www-form-urlencoded":
                         # android apps use form
-                        fdata = await request.post()
-                        async with session.request(
-                            request.method, request.url, data=fdata
-                        ) as resp:
-                            response = await resp.text()
-                            _LOGGER_PROXY.info(
-                                f"HTTP Proxy Response from EcoVacs (URL: {request.url}) - (Status: {resp.status}) - {response}"
-                            )
+                        data = await request.post()
                     else:
                         # handle json
-                        async with session.request(
-                            request.method, request.url, json=await request.json()
-                        ) as resp:
-                            response = await resp.text()
-                            _LOGGER_PROXY.info(
-                                f"HTTP Proxy Response from EcoVacs (URL: {request.url}) - (Status: {resp.status}) - {response}"
-                            )
+                        json_data = await request.json()
 
                 else:
                     _LOGGER_PROXY.info(
-                        f"HTTP Proxy Request to EcoVacs (body=false) (URL:{request.url})"
+                        "HTTP Proxy Request to EcoVacs (body=false) (URL:%s)",
+                        request.url,
                     )
-                    async with session.request(request.method, request.url) as resp:
-                        if resp.content_type == "application/octet-stream":
-                            _LOGGER_PROXY.info(
-                                f"HTTP Proxy Response from EcoVacs (URL: {request.url}) - (Status: {resp.status}) - <BYTES CONTENT>"
-                            )
-                            return web.Response(body=await resp.read())
-                        else:
-                            response = await resp.text()
-                            _LOGGER_PROXY.info(
-                                f"HTTP Proxy Response from EcoVacs (URL: {request.url}) - (Status: {resp.status}) - {response}"
-                            )
 
-                if resp.status == 200:
-                    if resp.content_type == "application/json":
-                        response = json.loads(response)
-                        return web.json_response(response)
+                async with session.request(
+                    request.method, request.url, data=data, json=json_data
+                ) as resp:
                     if resp.content_type == "application/octet-stream":
-                        return web.Response(body=response)
+                        _LOGGER_PROXY.info(
+                            "HTTP Proxy Response from EcoVacs (URL: %s) - (Status: %d) - <BYTES CONTENT>",
+                            request.url,
+                            resp.status,
+                        )
+                        return web.Response(body=await resp.read())
 
-                return web.Response(text=response)
+                    response = await resp.text()
+                    _LOGGER_PROXY.info(
+                        "HTTP Proxy Response from EcoVacs (URL: %s) - (Status: %d) - %s",
+                        request.url,
+                        resp.status,
+                        response,
+                    )
+                    return web.Response(text=response)
         except asyncio.CancelledError:
             _LOGGER_PROXY.exception(
-                f"Request cancelled or timeout - {request.url}", exc_info=True
+                "Request cancelled or timeout - %s", request.url, exc_info=True
             )
             raise
 
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             _LOGGER_PROXY.exception("An exception occurred", exc_info=True)
 
         raise HTTPInternalServerError

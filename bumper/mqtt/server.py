@@ -89,9 +89,10 @@ class MQTTServer:
         return self._broker.transitions.state
 
     @property
-    def broker(self) -> Broker:
-        """Get MQTT broker."""
-        return self._broker
+    def sessions(self) -> list[Session]:
+        """Get sessions."""
+        # pylint: disable-next=protected-access
+        return [session for (session, _) in self._broker._sessions.values()]
 
     async def start(self) -> None:
         """Start MQTT server."""
@@ -151,28 +152,30 @@ class BumperMQTTServerPlugin:
                 return True
 
             if "@" in client_id:
-                didsplit = str(client_id).split("@")
-                if "ecouser" not in didsplit[1]:
+                client_id_split = str(client_id).split("@")
+                client_details_split = client_id_split[1].split("/")
+                if "ecouser" not in client_id_split[1]:
                     # if ecouser aren't in details it is a bot
-                    tmpbotdetail = str(didsplit[1]).split("/")
                     bot_add(
                         username,
-                        didsplit[0],
-                        tmpbotdetail[0],
-                        tmpbotdetail[1],
+                        client_id_split[0],
+                        client_details_split[0],
+                        client_details_split[1],
                         "eco-ng",
                     )
                     _LOGGER.info(
                         "Bumper Authentication Success - Bot - SN: %s - DID: %s - Class: %s",
                         username,
-                        didsplit[0],
-                        tmpbotdetail[0],
+                        client_id_split[0],
+                        client_details_split[0],
                     )
 
                     if bumper.bumper_proxy_mqtt:
                         mqtt_server = await dns.resolve("mq-ww.ecouser.net")
                         _LOGGER_PROXY.info(
-                            f"MQTT Proxy Mode - Using server {mqtt_server} for client {client_id}"
+                            "MQTT Proxy Mode - Using server %s for client %s",
+                            mqtt_server,
+                            client_id,
                         )
                         proxy = ProxyClient(
                             client_id, mqtt_server, config={"check_hostname": False}
@@ -182,13 +185,12 @@ class BumperMQTTServerPlugin:
 
                     return True
 
-                tmpclientdetail = str(didsplit[1]).split("/")
-                userid = didsplit[0]
-                realm = tmpclientdetail[0]
-                resource = tmpclientdetail[1]
-
-                if check_authcode(didsplit[0], password) or not bumper.use_auth:
-                    client_add(userid, realm, resource)
+                if check_authcode(client_id_split[0], password) or not bumper.use_auth:
+                    client_add(
+                        client_id_split[0],
+                        client_details_split[0],
+                        client_details_split[1],
+                    )
                     _LOGGER.info(
                         "Bumper Authentication Success - Client - Username: %s - ClientID: %s",
                         username,
@@ -260,20 +262,22 @@ class BumperMQTTServerPlugin:
             if client_id in self._proxy_clients:
                 await self._proxy_clients[client_id].subscribe(topic, qos)
                 _LOGGER_PROXY.info(
-                    f"MQTT Proxy Mode - New MQTT Topic Subscription - Client: {client_id} - Topic: {topic}"
+                    "MQTT Proxy Mode - New MQTT Topic Subscription - Client: %s - Topic: %s",
+                    client_id,
+                    topic,
                 )
             elif client_id != HELPER_BOT_CLIENT_ID:
                 _LOGGER_PROXY.warning(
-                    f"MQTT Proxy Mode - No proxy client found! - Client: {client_id} - Topic: {topic}"
+                    "MQTT Proxy Mode - No proxy client found! - Client: %s - Topic: %s",
+                    client_id,
+                    topic,
                 )
 
     async def on_broker_client_connected(self, client_id: str) -> None:
         """On client connected."""
         self._set_client_connected(client_id, True)
 
-    def _set_client_connected(  # pylint: disable=no-self-use
-        self, client_id: str, connected: bool
-    ) -> None:
+    def _set_client_connected(self, client_id: str, connected: bool) -> None:
         didsplit = str(client_id).split("@")
 
         bot = bot_get(didsplit[0])
@@ -286,7 +290,7 @@ class BumperMQTTServerPlugin:
         if client:
             client_set_mqtt(client["resource"], connected)
 
-    async def on_broker_message_received(  # pylint: disable=no-self-use
+    async def on_broker_message_received(
         self, message: IncomingApplicationMessage, client_id: str
     ) -> None:
         """On message received."""
@@ -316,28 +320,34 @@ class BumperMQTTServerPlugin:
                     )
                     if ttopic[6] == "":
                         _LOGGER_PROXY.warning(
-                            "Request mapper is missing entry, "
-                            f"probably request took to long... Client_id: {client_id}"
-                            f" - Request_id: {ttopic[10]}"
+                            "Request mapper is missing entry, probably request took to"
+                            " long... Client_id: %s - Request_id: %s",
+                            client_id,
+                            ttopic[10],
                         )
                         return
 
                     ttopic_join = "/".join(ttopic)
                     _LOGGER_PROXY.info(
-                        f"Bot Message Converted Topic From {message.topic} TO {ttopic_join} "
-                        f"with message: {data_decoded}"
+                        "Bot Message Converted Topic From %s TO %s with message: %s",
+                        message.topic,
+                        ttopic_join,
+                        data_decoded,
                     )
                 else:
                     ttopic_join = message.topic
                     _LOGGER_PROXY.info(
-                        f"Bot Message From {ttopic_join} with message: {data_decoded}"
+                        "Bot Message From %s with message: %s",
+                        ttopic_join,
+                        data_decoded,
                     )
 
                 try:
                     # Send back to ecovacs
                     _LOGGER_PROXY.info(
-                        "Proxy Forward Message to Ecovacs - Topic:"
-                        f" {ttopic_join} - Message: {data_decoded}"
+                        "Proxy Forward Message to Ecovacs - Topic: %s - Message: %s",
+                        ttopic_join,
+                        data_decoded,
                     )
                     await self._proxy_clients[client_id].publish(
                         ttopic_join, data_decoded.encode(), message.qos

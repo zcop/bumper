@@ -1,5 +1,4 @@
 """Models module."""
-import json
 import uuid
 from datetime import datetime, timedelta
 from typing import Any
@@ -85,28 +84,6 @@ class VacBotClient:
             "mqtt_connection": self.mqtt_connection,
             "xmpp_connection": self.xmpp_connection,
         }
-
-
-class EcoVacs_Login:
-    """Ecovacs login."""
-
-    accessToken = ""
-    country = ""
-    email = ""
-    uid = ""
-    username = ""
-
-    def toJSON(self) -> str:
-        """Convert to json."""
-        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=False)
-
-
-class EcoVacsHome_Login(EcoVacs_Login):
-    """Ecovacs home login."""
-
-    loginName = ""
-    mobile: str | None = ""
-    ucUid = ""
 
 
 class OAuth:

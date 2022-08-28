@@ -10,7 +10,6 @@ from aiohttp.web_exceptions import HTTPInternalServerError
 from aiohttp.web_request import Request
 from aiohttp.web_response import Response
 from aiohttp.web_routedef import AbstractRouteDef
-from amqtt.session import Session
 
 import bumper
 from bumper.db import _db_get, token_by_authcode, user_add_oauth
@@ -136,8 +135,7 @@ def _include_product_iot_map_info(bot: dict[str, Any]) -> dict[str, Any]:
             )
 
             # mqtt_connection is not always set correctly, therefore workaround until fixed properly
-            session: Session
-            for (session, _) in bumper.mqtt_server.broker._sessions.values():
+            for session in bumper.mqtt_server.sessions:
                 did = session.client_id.split("@")[0]
                 if did == bot["did"] and session.transitions.state == "connected":
                     result["status"] = 1

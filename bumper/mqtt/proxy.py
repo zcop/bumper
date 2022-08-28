@@ -90,7 +90,7 @@ class ProxyClient:
                 )
 
                 bumper.mqtt_helperbot.publish(topic, message.data)
-            except Exception:  # pylint: disable=broad-except
+            except Exception:
                 _LOGGER.error(
                     "An error occurred during handling a message", exc_info=True
                 )
@@ -109,6 +109,7 @@ class ProxyClient:
 
 
 class _NoCertVerifyClient(MQTTClient):  # type:ignore[misc]
+    # pylint: disable=all
     """
     Mqtt client, which is not verify the certificate.
 

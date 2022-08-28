@@ -16,11 +16,11 @@ _LOGGER = get_logger("webserver_requests")
 class CustomEncoder(json.JSONEncoder):
     """Custom json encoder, which supports set."""
 
-    def default(self, obj: Any) -> Any:
+    def default(self, o: Any) -> Any:
         """Convert objects, which are not supported by the default JSONEncoder."""
-        if isinstance(obj, set):
-            return list(obj)
-        return json.JSONEncoder.default(self, obj)
+        if isinstance(o, set):
+            return list(o)
+        return json.JSONEncoder.default(self, o)
 
 
 _EXCLUDE_FROM_LOGGING = [
@@ -32,7 +32,9 @@ _EXCLUDE_FROM_LOGGING = [
 
 
 @web.middleware
-async def log_all_requests(request: Request, handler: Handler) -> StreamResponse:
+async def log_all_requests(  # pylint: disable=too-many-branches
+    request: Request, handler: Handler
+) -> StreamResponse:
     """Middleware to log all requests."""
     if (
         not request.match_info.route.resource
@@ -45,7 +47,7 @@ async def log_all_requests(request: Request, handler: Handler) -> StreamResponse
             "url": str(request.url),
             "path": request.path,
             "query_string": request.query_string,
-            "headers": {h for h in request.headers.items()},
+            "headers": set(request.headers.items()),
             "route_resource": request.match_info.route.resource.canonical,
         }
     }
@@ -56,7 +58,7 @@ async def log_all_requests(request: Request, handler: Handler) -> StreamResponse
                 if request.content_type == "application/json":
                     to_log["request"]["body"] = await request.json()
                 else:
-                    to_log["request"]["body"] = {h for h in await request.post()}
+                    to_log["request"]["body"] = set(await request.post())
         except Exception:
             _LOGGER.exception(
                 "An exception occurred during logging the request.", exc_info=True
@@ -75,7 +77,7 @@ async def log_all_requests(request: Request, handler: Handler) -> StreamResponse
 
             to_log["response"] = {
                 "status": f"{response.status}",
-                "headers": {h for h in response.headers.items()},
+                "headers": set(response.headers.items()),
             }
 
             if isinstance(response, Response) and response.body:
@@ -93,7 +95,7 @@ async def log_all_requests(request: Request, handler: Handler) -> StreamResponse
             raise
 
     except web.HTTPNotFound:
-        _LOGGER.debug(f"Request path {request.raw_path} not found")
+        _LOGGER.debug("Request path %s not found", request.raw_path)
         raise
 
     finally:
