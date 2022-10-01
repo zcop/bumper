@@ -19,7 +19,7 @@ import bumper
 from bumper.db import _db_get, bot_get, bot_remove, client_get, client_remove
 from bumper.dns import get_resolver_with_public_nameserver
 from bumper.util import get_logger
-from bumper.web.middlewares import log_all_requests
+from bumper.web.middlewares import CustomEncoder, log_all_requests
 from bumper.web.plugins import add_plugins
 
 
@@ -39,6 +39,7 @@ _LOGGER = get_logger("webserver")
 # Add logging filter above to aiohttp.access
 logging.getLogger("aiohttp.access").addFilter(_AiohttpFilter())
 _LOGGER_PROXY = logging.getLogger("web_proxy")
+_LOGGER_WEB_LOG = logging.getLogger("web_log")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -54,7 +55,10 @@ class WebServer:
     """Web server."""
 
     def __init__(
-        self, bindings: list[WebserverBinding] | WebserverBinding, proxy_mode: bool
+        self,
+        bindings: list[WebserverBinding] | WebserverBinding,
+        proxy_mode: bool,
+        debug: bool = False,
     ):
         self._runners: list[web.AppRunner] = []
 
@@ -73,10 +77,10 @@ class WebServer:
                 os.path.join(bumper.bumper_dir, "bumper", "web", "templates")
             ),
         )
-        self._add_routes(proxy_mode)
+        self._add_routes(proxy_mode, debug)
         self._app.freeze()  # no modification allowed anymore
 
-    def _add_routes(self, proxy_mode: bool) -> None:
+    def _add_routes(self, proxy_mode: bool, debug: bool) -> None:
         self._app.add_routes(
             [
                 web.get("/bot/remove/{did}", self._handle_remove_bot),
@@ -105,6 +109,12 @@ class WebServer:
                     web.post("/newauth.do", self._handle_newauth),
                 ]
             )
+            if debug:
+                self._app.add_routes(
+                    [
+                        web.post("/log", self._handle_log),
+                    ]
+                )
             add_plugins(self._app)
 
     async def start(self) -> None:
@@ -367,3 +377,21 @@ class WebServer:
             _LOGGER_PROXY.exception("An exception occurred", exc_info=True)
 
         raise HTTPInternalServerError
+
+    async def _handle_log(self, request: Request) -> Response:
+        to_log = {}
+        try:
+            to_log = {
+                "query_string": request.query_string,
+                "headers": set(request.headers.items()),
+            }
+            if request.content_length:
+                to_log["body"] = set(await request.post())
+        except Exception:  # pylint: disable=broad-except
+            _LOGGER_WEB_LOG.exception(
+                "An exception occurred during logging the request.", exc_info=True
+            )
+        finally:
+            _LOGGER_WEB_LOG.debug(json.dumps(to_log, cls=CustomEncoder))
+
+        return web.Response()

@@ -126,7 +126,7 @@ async def start() -> None:
     global mqtt_helperbot
     mqtt_helperbot = HelperBot(bumper_listen, mqtt_listen_port)
     global web_server
-    web_server = WebServer(web_server_bindings, bumper_proxy_web)
+    web_server = WebServer(web_server_bindings, bumper_proxy_web, bumper_debug)
     global xmpp_server
     xmpp_server = XMPPServer(bumper_listen, xmpp_listen_port)
 
