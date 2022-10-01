@@ -38,8 +38,8 @@ class _AiohttpFilter(logging.Filter):
 _LOGGER = get_logger("webserver")
 # Add logging filter above to aiohttp.access
 logging.getLogger("aiohttp.access").addFilter(_AiohttpFilter())
-_LOGGER_PROXY = logging.getLogger("web_proxy")
-_LOGGER_WEB_LOG = logging.getLogger("web_log")
+_LOGGER_PROXY = get_logger("web_proxy")
+_LOGGER_WEB_LOG = get_logger("web_log")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -381,10 +381,12 @@ class WebServer:
     async def _handle_log(self, request: Request) -> Response:
         to_log = {}
         try:
-            to_log = {
-                "query_string": request.query_string,
-                "headers": set(request.headers.items()),
-            }
+            to_log.update(
+                {
+                    "query_string": request.query_string,
+                    "headers": set(request.headers.items()),
+                }
+            )
             if request.content_length:
                 to_log["body"] = set(await request.post())
         except Exception:  # pylint: disable=broad-except
@@ -392,6 +394,6 @@ class WebServer:
                 "An exception occurred during logging the request.", exc_info=True
             )
         finally:
-            _LOGGER_WEB_LOG.debug(json.dumps(to_log, cls=CustomEncoder))
+            _LOGGER_WEB_LOG.info(json.dumps(to_log, cls=CustomEncoder))
 
         return web.Response()
