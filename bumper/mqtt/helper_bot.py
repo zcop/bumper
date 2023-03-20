@@ -56,11 +56,12 @@ class HelperBot:
             client: Client, topic: str, payload: bytes, qos: int, properties: dict
         ) -> None:
             try:
+                decoded_payload = payload.decode()
                 _LOGGER.debug(
-                    "Got message: topic=%s; payload=%s;", topic, payload.decode()
+                    "Got message: topic=%s; payload=%s;", topic, decoded_payload
                 )
                 topic_split = topic.split("/")
-                data_decoded = str(payload.decode())
+                data_decoded = str(decoded_payload)
                 if topic_split[10] in self._commands:
                     self._commands[topic_split[10]].add_response(data_decoded)
             except Exception:  # pylint: disable=broad-except
@@ -137,7 +138,7 @@ class HelperBot:
             command_dto = CommandDto(cmdjson["payloadType"])
             self._commands[request_id] = command_dto
 
-            _LOGGER.debug("Sending message %s", topic)
+            _LOGGER.debug("Sending message: topic=%s; payload=%s;", topic, payload)
             self._client.publish(topic, payload.encode())
 
             resp = await self._wait_for_resp(command_dto, request_id)
