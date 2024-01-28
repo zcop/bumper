@@ -56,12 +56,15 @@ class MQTTServer:
             config = {
                 "listeners": {
                     "default": {"type": "tcp"},
-                    "tls1": {
+                    "tcp-tsl": {
                         "bind": f"{host}:{port}",
                         "ssl": "on",
                         "certfile": bumper.server_cert,
                         "keyfile": bumper.server_key,
                     },
+                    "tcp-insecure": {
+                        "bind": f"{host}:1883",
+                    }
                 },
                 "sys_interval": 0,
                 "auth": {
