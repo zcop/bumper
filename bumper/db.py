@@ -345,13 +345,13 @@ def bot_add(sn: str, did: str, dev_class: str, resource: str, company: str) -> N
     new_bot.resource = resource
     new_bot.company = company
 
-    bot = bot_get(did)
-    if not bot:  # Not existing bot in database
-        if (
-            not dev_class == "" or "@" not in sn or "tmp" not in sn
-        ):  # try to prevent bad additions to the bot list
-            _LOGGER.info(f"Adding new bot with SN: {new_bot.name} DID: {new_bot.did}")
-            bot_full_upsert(new_bot.asdict())
+    if (not dev_class) or "@" in sn or "tmp" in sn:
+        # try to prevent bad additions to the bot list
+        _LOGGER.warning(f"Skipping new bot with DID: {new_bot.did}: {new_bot.asdict()}")
+        return
+
+    _LOGGER.info(f"Adding new bot with SN: {new_bot.name} DID: {new_bot.did}")
+    bot_full_upsert(new_bot.asdict())
 
 
 def bot_remove(did: str) -> None:
