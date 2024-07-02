@@ -1,4 +1,4 @@
-ARG ARCH=amd64
+ARG ARCH=arm32v7
 
 FROM $ARCH/python:3.10-alpine
 
@@ -8,6 +8,9 @@ EXPOSE 8007
 EXPOSE 8883
 
 COPY requirements.txt /requirements.txt
+
+RUN apk add --update gcc
+RUN apk add libc-dev && apk add libffi-dev
 
 # install required python packages
 RUN apk add git && pip3 install -r requirements.txt
